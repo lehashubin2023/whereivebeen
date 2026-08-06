@@ -1,0 +1,10 @@
+## Interface: 20506
+## Title: WhereIveBeen
+## Notes: Write your path
+## Version: 1.0
+## SavedVariables: WhereIveBeenDB
+
+Core.lua
+Session.lua
+Methods.lua
+Commands.lua
