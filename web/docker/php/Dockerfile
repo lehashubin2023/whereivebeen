@@ -21,7 +21,6 @@ RUN apk add --no-cache \
         gd \
         zip \
         intl \
-        opcache \
         exif \
         pcntl
 
