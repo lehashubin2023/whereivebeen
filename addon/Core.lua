@@ -1,4 +1,4 @@
-WhereIveBeen = {}                 -- глобальный контейнер аддона (вариант В)
+WhereIveBeen = WhereIveBeen or {} -- глобальный контейнер аддона (вариант В); `or {}` — чтобы не затирать Libs, загруженные раньше
 local WIVBN = WhereIveBeen        -- локальный алиас
 
 -- STATE
