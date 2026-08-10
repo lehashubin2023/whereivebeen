@@ -82,21 +82,21 @@ end
 function WIVBN.DescribePoint(p)
     local e = p.event
 
-    if e == "mount"     then return p.mounted and "сел на маунта" or "слез с маунта" end
-    if e == "combat"    then return p.inCombat and "|cffff5555бой начался|r" or "бой окончен" end
-    if e == "death"     then return "|cffff0000смерть|r" end
-    if e == "resurrect" then return "|cff00ff00воскрешение|r" end
-    if e == "levelup"   then return "уровень "..tostring(p.level) end
-    if e == "loot"      then return ("лут: %s x%s"):format(p.itemName or tostring(p.itemId), tostring(p.count or 1)) end
-    if e == "visit"     then return "визит: "..tostring(p.place) end
-    if e == "group"     then return ("группа: %s %s"):format(tostring(p.action), tostring(p.member)) end
-    if e == "quest"     then return ("квест: %s %s"):format(tostring(p.action), p.title or tostring(p.questID)) end
-    if e == "taxi"      then return p.onTaxi and "взлёт (такси)" or "посадка (такси)" end
-    if e == "gap"       then return "|cffff8800разрыв маршрута|r" end
+    if e == "mount"     then return p.mounted and "mounted" or "dismounted" end
+    if e == "combat"    then return p.inCombat and "|cffff5555combat started|r" or "combat ended" end
+    if e == "death"     then return "|cffff0000death|r" end
+    if e == "resurrect" then return "|cff00ff00resurrect|r" end
+    if e == "levelup"   then return "level "..tostring(p.level) end
+    if e == "loot"      then return ("loot: %s x%s"):format(p.itemName or tostring(p.itemId), tostring(p.count or 1)) end
+    if e == "visit"     then return "visit: "..tostring(p.place) end
+    if e == "group"     then return ("group: %s %s"):format(tostring(p.action), tostring(p.member)) end
+    if e == "quest"     then return ("quest: %s %s"):format(tostring(p.action), p.title or tostring(p.questID)) end
+    if e == "taxi"      then return p.onTaxi and "takeoff (taxi)" or "landing (taxi)" end
+    if e == "gap"       then return "|cffff8800route gap|r" end
 
-    if p.IsMounted ~= nil then return p.IsMounted and "путь (верхом)" or "путь (пеший)" end  -- легаси
+    if p.IsMounted ~= nil then return p.IsMounted and "path (mounted)" or "path (on foot)" end  -- легаси
 
-    return "путь"
+    return "path"
 end
 
 function WIVBN.FormatPoint(p)

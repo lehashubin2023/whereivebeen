@@ -83,7 +83,7 @@ end
 
 local function CreateListFrame()
     local f = CreateWindow("WhereIveBeenSessionsFrame",
-        440, NUM_ROWS * ROW_HEIGHT + 74, "WhereIveBeen — сессии")
+        440, NUM_ROWS * ROW_HEIGHT + 74, "WhereIveBeen — Sessions")
 
     local scroll = CreateFrame("ScrollFrame", "$parentScroll", f, "FauxScrollFrameTemplate")
     scroll:SetPoint("TOPLEFT", 16, -48)
@@ -150,11 +150,11 @@ end
 
 local function CreateExportFrame()
     local f = CreateWindow("WhereIveBeenExportFrame", 560, 420,
-        "WhereIveBeen — экспорт (base64)")
+        "WhereIveBeen — Export (base64)")
 
     local hint = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     hint:SetPoint("BOTTOM", 0, 18)
-    hint:SetText("Ctrl+C — скопировать, Esc — закрыть")
+    hint:SetText("Ctrl+C to copy, Esc to close")
 
     local scroll = CreateFrame("ScrollFrame", "$parentScroll", f, "UIPanelScrollFrameTemplate")
     scroll:SetPoint("TOPLEFT", 16, -48)
