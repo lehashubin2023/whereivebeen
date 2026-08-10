@@ -22,16 +22,16 @@ return new class extends Migration
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->unsignedTinyInteger('event_type')
+            $table->unsignedTinyInteger('event_type_id')
                 ->nullable();
             $table->json('payload')
                 ->nullable()
                 ->default(null);
 
             $table->primary(['game_session_id', 'sequence']);
-            $table->index(['user_id', 'event_type']);
+            $table->index(['user_id', 'event_type_id']);
 
-            $table->foreign('event_type')
+            $table->foreign('event_type_id')
                 ->references('id')
                 ->on('event_types')
                 ->onUpdate('cascade')
