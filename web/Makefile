@@ -15,3 +15,9 @@ build:
 
 restart:
 	docker compose -f docker-compose.yml restart
+
+up-test-db:
+	docker compose -f docker-compose.yml up -d mysql-test
+
+test: up-test-db
+	docker compose -f docker-compose.yml exec -T app php artisan test
