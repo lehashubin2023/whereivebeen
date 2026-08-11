@@ -26,8 +26,10 @@ return new class extends Migration
             $table->dateTime('session_start_at');
             $table->mediumInteger('version')
                 ->unsigned();
-            $table->enum('import_status', ['success', 'failed', 'in_progress', 'new'])
+            $table->enum('import_status', ['completed', 'failed', 'in_process', 'new'])
                 ->default('new');
+            $table->text('import_error_message')
+                ->nullable();
             $table->timestamps();
 
             $table->unique(['user_id', 'game_session_id']);

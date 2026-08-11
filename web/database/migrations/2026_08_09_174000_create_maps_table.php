@@ -17,7 +17,7 @@ return new class extends Migration
                 ->primary();
             $table->string('name', 32)
                 ->unique();
-            $table->path('image_path', 128)
+            $table->string('image_path', 128)
                 ->nullable()
                 ->default(null);
         });

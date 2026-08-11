@@ -1,0 +1,15 @@
+Settings -> Account
+GameSession
+	Actions
+		Decode
+		Parse
+	Controller
+		GameSession
+			Upload
+			Get
+			Index
+			Delete
+		WarPoint
+			Get
+		Payment
+			
