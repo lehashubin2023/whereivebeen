@@ -26,6 +26,7 @@ return new class extends Migration
             $table->dateTime('session_start_at');
             $table->mediumInteger('version')
                 ->unsigned();
+            $table->string('realm');
             $table->enum('import_status', ['completed', 'failed', 'in_process', 'new'])
                 ->default('new');
             $table->text('import_error_message')

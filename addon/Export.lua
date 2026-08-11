@@ -10,7 +10,7 @@ function WIVBN.BuildSessionExport(id)
 
     return {
         version    = select(4, GetBuildInfo()),   -- числовой tocversion клиента (напр. 20506) = версия ВоВ
-        session_id = id,                           -- ключ массива сессий = game_session_id в веб-схеме
+        sessionID  = id,                           -- ключ массива сессий = game_session_id в веб-схеме
         started    = session.started,
         char       = session.char,
         realm      = session.realm,
