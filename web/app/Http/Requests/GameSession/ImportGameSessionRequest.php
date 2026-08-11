@@ -6,7 +6,7 @@ use App\Models\GameSession;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ParseGameSessionRequest extends FormRequest
+class ImportGameSessionRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

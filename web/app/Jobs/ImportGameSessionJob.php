@@ -3,14 +3,13 @@
 namespace App\Jobs;
 
 use App\Actions\GameSession\DecodeGameSession;
-use App\Actions\GameSession\ParseGameSession;
+use App\Actions\GameSession\ImportGameSession;
 use App\Exceptions\InvalidGameSessionInputException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Queue;
-
 #[Queue('import')]
-class ParseGameSessionJob implements ShouldQueue
+class ImportGameSessionJob implements ShouldQueue
 {
     use Queueable;
 
@@ -25,13 +24,13 @@ class ParseGameSessionJob implements ShouldQueue
      * Execute the job.
      */
     public function handle(
-        DecodeGameSession $decoder, 
-        ParseGameSession $parser
+        DecodeGameSession $decoder,
+        ImportGameSession $importer
     ): void
     {
         try {
             $decodedInput = $decoder->exec($this->gameSessionInput);
-            $parser->exec($decodedInput);
+            $importer->exec($decodedInput);
         } catch (InvalidGameSessionInputException $e) {
             // report($e);
             // $this->delete(); 
