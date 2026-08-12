@@ -3,7 +3,6 @@
 namespace App\Actions\GameSession;
 
 use App\DTOs\GameSession\CreateGameSessionDTO;
-use App\Models\Character;
 use App\Models\GameSession;
 use App\Models\User;
 
@@ -16,9 +15,9 @@ class CreateGameSession
             // throw new LimitExceededException('Game session limit exceeded');
         }
     
-        GameSession::create([
+        return GameSession::create([
             ...$dto->toArray(),
-            'user_id'       => $user->id,
+            'user_id' => $user->id,
         ]);
     }
 }

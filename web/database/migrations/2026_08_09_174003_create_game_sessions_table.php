@@ -17,16 +17,13 @@ return new class extends Migration
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->foreignId('character_id')
-                ->constrained()
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
             $table->integer('game_session_id')
                 ->unsigned();
             $table->dateTime('session_start_at');
             $table->mediumInteger('version')
                 ->unsigned();
             $table->string('realm');
+            $table->string('character');
             $table->enum('import_status', ['completed', 'failed', 'in_process', 'new'])
                 ->default('new');
             $table->text('import_error_message')

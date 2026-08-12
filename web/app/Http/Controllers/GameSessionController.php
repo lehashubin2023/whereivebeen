@@ -24,6 +24,6 @@ class GameSessionController extends Controller
     {
         $input = $request->input('game_session');
 
-        ImportGameSessionJob::dispatch($input);
+        ImportGameSessionJob::dispatch($input, auth()->user());
     }
 }

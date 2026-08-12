@@ -4,6 +4,7 @@ namespace App\Actions\GameSession;
 
 use App\Actions\GameSession\CreateGameSession;
 use App\DTOs\GameSession\CreateGameSessionDTO;
+use App\Models\User;
 use App\Validators\GameSessionJsonValidator;
 
 class ImportGameSession
@@ -13,13 +14,13 @@ class ImportGameSession
     )
     {}
 
-    public function exec(array $input): void
+    public function exec(array $input, User $user): void
     {
         $validated = GameSessionJsonValidator::validate($input);
 
         $this->createGameSession->exec(
             CreateGameSessionDTO::fromArray($validated), 
-            auth()->user()
+            $user
         );
     }
 }

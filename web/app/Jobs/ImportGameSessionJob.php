@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Actions\GameSession\DecodeGameSession;
 use App\Actions\GameSession\ImportGameSession;
 use App\Exceptions\InvalidGameSessionInputException;
+use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Queue;
@@ -18,6 +19,7 @@ class ImportGameSessionJob implements ShouldQueue
      */
     public function __construct(
         public string $gameSessionInput,
+        public User $user
     ) {}
 
     /**
@@ -30,7 +32,7 @@ class ImportGameSessionJob implements ShouldQueue
     {
         try {
             $decodedInput = $decoder->exec($this->gameSessionInput);
-            $importer->exec($decodedInput);
+            $importer->exec($decodedInput, $this->user);
         } catch (InvalidGameSessionInputException $e) {
             // report($e);
             // $this->delete(); 
