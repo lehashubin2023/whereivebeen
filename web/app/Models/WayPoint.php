@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(['game_session_id', 'map_id', 'sequence', 'time', 'x', 'y', 'state'])]
 #[WithoutTimestamps]
-class Waypoint extends Model
+class WayPoint extends Model
 {
     //
 }
