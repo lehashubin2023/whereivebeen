@@ -26,9 +26,9 @@ return new class extends Migration
                 ->unsigned();
             $table->smallInteger('y')
                 ->unsigned();
-            $table->tinyInteger('state')
-                ->unsigned()
-                ->default(0);
+            // $table->tinyInteger('state')
+            //     ->unsigned()
+            //     ->default(0);
 
             $table->primary(['game_session_id', 'sequence']);
 

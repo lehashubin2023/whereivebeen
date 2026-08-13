@@ -3,7 +3,7 @@
 namespace App\Actions\GameSession;
 
 use App\Actions\GameSession\CreateGameSession;
-use App\Actions\GameSession\CreateWayPoints;
+use App\Actions\GameSession\createWay;
 use App\DTOs\GameSession\CreateGameSessionDTO;
 use App\Models\User;
 use App\Validators\GameSessionJsonValidator;
@@ -13,7 +13,7 @@ class ImportGameSession
 {
     public function __construct(
         private CreateGameSession $createGameSession,
-        private CreateWayPoints $createWayPoints
+        private CreateWay $createWay
     )
     {}
 
@@ -28,7 +28,7 @@ class ImportGameSession
                     $user
                 );
 
-                $this->createWayPoints->exec($gameSession, $validated['points'], $user);
+                $this->createWay->exec($gameSession, $validated['points'], $user);
             });
         } catch (\Illuminate\Database\QueryException $e) {
             // TODO: should i use a custom exception here? or just report the error and move on?
