@@ -26,6 +26,9 @@ return new class extends Migration
             $table->string('character');
             $table->enum('import_status', ['completed', 'failed', 'in_process', 'new'])
                 ->default('new');
+            $table->decimal('execution_time', 4, 2)
+                ->unsigned()
+                ->default(0);
             $table->text('import_error_message')
                 ->nullable();
             $table->timestamps();

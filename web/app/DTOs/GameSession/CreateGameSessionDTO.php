@@ -16,7 +16,8 @@ class CreateGameSessionDTO implements DTOContract
         public readonly ImportStatusEnum $import_status,
         public readonly ?string $import_error_message,
         public readonly string $version,
-        public readonly string $realm
+        public readonly string $realm,
+        public readonly int $execution_time
     )
     {}
 
@@ -36,7 +37,8 @@ class CreateGameSessionDTO implements DTOContract
             import_status: $data['import_status'] ? ImportStatusEnum::from($data['import_status']) : ImportStatusEnum::NEW,
             import_error_message: $data['import_error_message'] ?? null,
             version: $data['version'],
-            realm: $data['realm']
+            realm: $data['realm'],
+            execution_time: $data['execution_time'] ?? 0
         );
     }
 
@@ -50,7 +52,8 @@ class CreateGameSessionDTO implements DTOContract
             'import_status' => $this->import_status,
             'import_error_message' => $this->import_error_message,
             'version' => $this->version,
-            'realm' => $this->realm
+            'realm' => $this->realm,
+            'execution_time' => $this->execution_time
         ];
     }
 }

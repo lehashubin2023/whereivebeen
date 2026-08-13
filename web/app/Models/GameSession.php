@@ -6,7 +6,7 @@ use App\Enums\GameSession\ImportStatusEnum;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['user_id', 'character', 'game_session_id', 'session_start_at', 'import_status', 'import_error_message', 'version', 'realm'])]
+#[Fillable(['user_id', 'character', 'game_session_id', 'session_start_at', 'import_status', 'import_error_message', 'version', 'realm', 'execution_time'])]
 class GameSession extends Model
 {
     const MAX_IMPORT_SIZE = 20971520; // 20mb

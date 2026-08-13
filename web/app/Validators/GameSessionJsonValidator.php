@@ -22,16 +22,15 @@ class GameSessionJsonValidator
             'points'     => 'required|array',
             'points.*.x' => 'required|numeric',
             'points.*.y' => 'required|numeric',
-            'points.*.mapID'   => 'required|numeric',
+            'points.*.mapID' => 'required|numeric',
+            'points.*.event' => 'sometimes|string',
+            
             'points.*.questID' => 'sometimes|numeric',
             'points.*.level'   => 'sometimes|numeric',
-
-            'points.*.event'  => 'sometimes|string',
-            'points.*.action' => 'sometimes|string',
-            'points.*.title'  => 'sometimes|string',
-            'points.*.place'  => 'sometimes|string',
-            'points.*.member' => 'sometimes|string',
-
+            'points.*.action'  => 'sometimes|string',
+            'points.*.title'   => 'sometimes|string',
+            'points.*.place'   => 'sometimes|string',
+            'points.*.member'  => 'sometimes|string',
             'points.*.inCombat' => 'sometimes|boolean',
             'points.*.mounted'  => 'sometimes|boolean',
             'points.*.onTaxi'   => 'sometimes|boolean',

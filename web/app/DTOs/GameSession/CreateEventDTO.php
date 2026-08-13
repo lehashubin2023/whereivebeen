@@ -11,7 +11,7 @@ class CreateEventDTO implements DTOContract
         private readonly int $game_session_id,
         private readonly int $sequence,
         private readonly ?int $event_type_id,
-        private readonly ?array $payload
+        private readonly string $payload
     )
     {}
 
@@ -21,7 +21,17 @@ class CreateEventDTO implements DTOContract
             game_session_id: $gameSessionId,
             sequence: $sequence,
             event_type_id: $eventTypeId,
-            payload: $point['payload'] ?? null
+            payload: json_encode([
+                'level' => $point['level'] ?? null,
+                'action' => $point['action'] ?? null,
+                'title' => $point['title'] ?? null,
+                'place' => $point['place'] ?? null,
+                'member' => $point['member'] ?? null,
+                'in_combat' => $point['inCombat'] ?? null,
+                'mounted' => $point['mounted'] ?? null,
+                'on_taxi' => $point['onTaxi'] ?? null,
+                'quest_id' => $point['questID'] ?? null,
+            ])
         );
     }
 
