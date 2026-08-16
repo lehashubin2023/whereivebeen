@@ -2,13 +2,15 @@
 
 namespace App\Jobs;
 
-use App\Actions\GameSession\DecodeGameSession;
 use App\Actions\GameSession\ImportGameSession;
-use App\Exceptions\InvalidGameSessionInputException;
+use App\DTOs\GameSession\CreateImportLogDTO;
+use App\Enums\GameSession\ImportStatusEnum;
+use App\Models\ImportLog;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Queue;
+
 #[Queue('import')]
 class ImportGameSessionJob implements ShouldQueue
 {
@@ -18,7 +20,7 @@ class ImportGameSessionJob implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public string $gameSessionInput,
+        public string $rawGameSessionInput,
         public User $user
     ) {}
 
@@ -26,18 +28,18 @@ class ImportGameSessionJob implements ShouldQueue
      * Execute the job.
      */
     public function handle(
-        DecodeGameSession $decoder,
         ImportGameSession $importer
     ): void
     {
         try {
-            $decodedInput = $decoder->exec($this->gameSessionInput);
-            $importer->exec($decodedInput, $this->user);
-        } catch (InvalidGameSessionInputException $e) {
-            // report($e);
-            // $this->delete(); 
+            $importLog = ImportLog::create(CreateImportLogDTO::fromArray([])->toArray());
+            $importer->exec($importLog, $this->rawGameSessionInput, $this->user);
         } catch (\Throwable $e) {
-            report($e);
+            $importLog->update([
+                'status' => ImportStatusEnum::FAILED,
+                'status_message' => $e->getMessage(),
+                'execution_time' => strtotime($importLog->created_at) - time(),
+            ]);
         }
     }
 }

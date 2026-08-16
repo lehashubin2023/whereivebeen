@@ -11,23 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('game_sessions', function (Blueprint $table) {
+        Schema::create('import_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')
+            $table->foreignId('game_session_id')
                 ->nullable()
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->integer('game_session_id')
-                ->unsigned();
-            $table->dateTime('session_start_at');
-            $table->mediumInteger('version')
-                ->unsigned();
-            $table->string('realm');
-            $table->string('character');
+            $table->enum('status', ['completed', 'failed', 'in_process', 'new'])
+                ->default('new');
+            $table->decimal('execution_time', 4, 2)
+                ->unsigned()
+                ->default(0);
+            $table->text('error_message')
+                ->nullable();
             $table->timestamps();
-
-            $table->unique(['user_id', 'game_session_id']);
         });
     }
 
@@ -36,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('game_sessions');
+        Schema::dropIfExists('import_logs');
     }
 };
