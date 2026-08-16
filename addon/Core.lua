@@ -1,7 +1,5 @@
-WhereIveBeen = WhereIveBeen or {} -- глобальный контейнер аддона (вариант В); `or {}` — чтобы не затирать Libs, загруженные раньше
-local WIVBN = WhereIveBeen        -- локальный алиас
-
--- STATE
+WhereIveBeen = WhereIveBeen or {}
+local WIVBN = WhereIveBeen
 
 WIVBN.sessionId     = nil
 WIVBN.timeElapsed   = 0
@@ -9,19 +7,15 @@ WIVBN.wasMounted    = false
 WIVBN.wasDead       = false
 WIVBN.groupRoster   = {}
 WIVBN.eventHandlers = {}
-WIVBN.lastMapID     = nil         -- последняя записанная позиция (для фильтра движения)
+WIVBN.lastMapId     = nil
 WIVBN.lastX         = nil
 WIVBN.lastY         = nil
-WIVBN.wasOnTaxi     = false       -- для отслеживания начала/конца полёта
+WIVBN.wasOnTaxi     = false
 
--- CONSTANTS
-
-WIVBN.WRITING_INTERVAL = 20       -- секунд между периодическими точками
-WIVBN.MIN_MOVE         = 0.005    -- мин. смещение (координаты 0..1) для новой периодической точки
+WIVBN.WRITING_INTERVAL = 20
+WIVBN.MIN_MOVE         = 0.005
 
 WIVBN.PREFIX = "|cffff0000WhereIveBeen|r: "
-
--- EVENT HANDLERS
 
 local eventHandlers = WIVBN.eventHandlers
 
@@ -57,11 +51,11 @@ end
 
 function eventHandlers.PLAYER_ENTERING_WORLD(self, isInitialLogin, isReload)
     WIVBN.wasDead    = UnitIsDeadOrGhost("player") and true or false
-    WIVBN.wasMounted = IsMounted() and true or false            -- сидинг, чтобы вход верхом не дал ложный маркер
-    WIVBN.wasOnTaxi  = UnitOnTaxi("player") and true or false   -- то же для входа в полёте
+    WIVBN.wasMounted = IsMounted() and true or false
+    WIVBN.wasOnTaxi  = UnitOnTaxi("player") and true or false
 
     if not isInitialLogin and not isReload then
-        WIVBN.SaveEvent({ event = "gap" })   -- только реальный переход: портал, хартстоун, инст, лодка (не логин/reload)
+        WIVBN.SaveEvent({ event = "gap" })
     end
 end
 
@@ -85,9 +79,6 @@ function eventHandlers.CHAT_MSG_LOOT(self, text)
     })
 end
 
--- Бой/такси пишутся парами (start/end). На границе сессий пара может разойтись
--- (start в одной сессии, end в другой) — это ожидаемо. Вариант A: рендер достраивает
--- непарные (висячий start закрывается концом сессии, висячий end — её началом).
 function eventHandlers.PLAYER_REGEN_DISABLED(self)
     WIVBN.SaveEvent({ event = "combat", inCombat = true })
 end
@@ -109,12 +100,12 @@ function eventHandlers.AUCTION_HOUSE_SHOW(self)
 end
 
 function eventHandlers.QUEST_ACCEPTED(self, arg1, arg2)
-    local questID = arg2 or arg1                       -- payload зависит от версии клиента
-    WIVBN.SaveEvent({ event = "quest", action = "accept", questID = questID, title = WIVBN.QuestTitle(questID) })
+    local questId = arg2 or arg1
+    WIVBN.SaveEvent({ event = "quest", action = "accept", questId = questId, title = WIVBN.QuestTitle(questId) })
 end
 
-function eventHandlers.QUEST_TURNED_IN(self, questID)
-    WIVBN.SaveEvent({ event = "quest", action = "turnin", questID = questID, title = WIVBN.QuestTitle(questID) })
+function eventHandlers.QUEST_TURNED_IN(self, questId)
+    WIVBN.SaveEvent({ event = "quest", action = "turnin", questId = questId, title = WIVBN.QuestTitle(questId) })
 end
 
 function eventHandlers.PLAYER_CONTROL_LOST(self)
@@ -124,8 +115,6 @@ end
 function eventHandlers.PLAYER_CONTROL_GAINED(self)
     WIVBN.SaveTaxiState()
 end
-
--- FRAME, REGISTRATION, DISPATCH
 
 local frame = CreateFrame("Frame")
 

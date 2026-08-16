@@ -15,31 +15,31 @@ function WIVBN.ClearInterval()
 end
 
 function WIVBN.GetPlayerPosition()
-    local mapID = C_Map.GetBestMapForUnit("player")
-    if not mapID then return nil end
+    local mapId = C_Map.GetBestMapForUnit("player")
+    if not mapId then return nil end
 
-    local position = C_Map.GetPlayerMapPosition(mapID, "player")
+    local position = C_Map.GetPlayerMapPosition(mapId, "player")
     if not position then return nil end
 
     local x, y = position:GetXY()
     if x == nil or y == nil or (x == 0 and y == 0) then return nil end
 
-    return mapID, x, y
+    return mapId, x, y
 end
 
 function WIVBN.SavePosition(extra)
     if not WIVBN.IsSessionActive() then return nil end
 
-    local mapID, x, y = WIVBN.GetPlayerPosition()
-    if not mapID then return nil end
+    local mapId, x, y = WIVBN.GetPlayerPosition()
+    if not mapId then return nil end
 
     local session = WhereIveBeenDB.sessions[WIVBN.sessionId]
 
     local point = {
         x = x,
         y = y,
-        mapID = mapID,
-        t = math.floor((GetTime() - session.clock) * 10) / 10,   -- секунд от старта сессии
+        mapId = mapId,
+        t = math.floor((GetTime() - session.clock) * 10) / 10,
     }
     if extra then
         for k, v in pairs(extra) do point[k] = v end
@@ -47,7 +47,7 @@ function WIVBN.SavePosition(extra)
 
     table.insert(session.points, point)
 
-    WIVBN.lastMapID, WIVBN.lastX, WIVBN.lastY = mapID, x, y       -- для фильтра движения
+    WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = mapId, x, y
 end
 
 function WIVBN.SaveEvent(extra)
@@ -58,13 +58,13 @@ end
 function WIVBN.SaveTimedPosition()
     if not WIVBN.IsSessionActive() then return nil end
 
-    local mapID, x, y = WIVBN.GetPlayerPosition()
-    if not mapID then return nil end
+    local mapId, x, y = WIVBN.GetPlayerPosition()
+    if not mapId then return nil end
 
-    if WIVBN.lastMapID == mapID and WIVBN.lastX then
+    if WIVBN.lastMapId == mapId and WIVBN.lastX then
         local dx, dy = x - WIVBN.lastX, y - WIVBN.lastY
         if (dx * dx + dy * dy) < (WIVBN.MIN_MOVE * WIVBN.MIN_MOVE) then
-            return nil                                            -- стоим на месте — не пишем
+            return nil
         end
     end
 
@@ -122,10 +122,9 @@ function WIVBN.OnResurrect()
     WIVBN.SaveEvent({ event = "resurrect" })
 end
 
--- имя квеста по id (может вернуть nil, если API недоступно/не закэшировано)
-function WIVBN.QuestTitle(questID)
-    if questID and C_QuestLog and C_QuestLog.GetTitleForQuestID then
-        return C_QuestLog.GetTitleForQuestID(questID)
+function WIVBN.QuestTitle(questId)
+    if questId and C_QuestLog and C_QuestLog.GetTitleForQuestID then
+        return C_QuestLog.GetTitleForQuestID(questId)
     end
     return nil
 end

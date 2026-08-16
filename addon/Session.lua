@@ -19,7 +19,7 @@ function WIVBN.StartSession()
     end
 
     local id = time()
-    while WhereIveBeenDB.sessions[id] do   -- ключ должен быть уникальным (несколько стартов в одну секунду)
+    while WhereIveBeenDB.sessions[id] do
         id = id + 1
     end
     WIVBN.sessionId = id
@@ -31,7 +31,7 @@ function WIVBN.StartSession()
         points  = {},
     }
 
-    WIVBN.lastMapID, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
+    WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
     print(WIVBN.PREFIX.."Session successfully started")
 end
@@ -65,14 +65,12 @@ function WIVBN.ClearAllSessions()
     print(WIVBN.PREFIX.."Sessions successfully clean")
 end
 
--- LOG OUTPUT
-
 function WIVBN.GetCurrentOrLastSession()
     if WIVBN.sessionId and WhereIveBeenDB.sessions[WIVBN.sessionId] then
         return WhereIveBeenDB.sessions[WIVBN.sessionId]
     end
 
-    local lastId                                   -- нет активной — берём самую свежую (id = time())
+    local lastId
     for id in pairs(WhereIveBeenDB.sessions) do
         if not lastId or id > lastId then lastId = id end
     end
@@ -90,18 +88,16 @@ function WIVBN.DescribePoint(p)
     if e == "loot"      then return ("loot: %s x%s"):format(p.itemName or tostring(p.itemId), tostring(p.count or 1)) end
     if e == "visit"     then return "visit: "..tostring(p.place) end
     if e == "group"     then return ("group: %s %s"):format(tostring(p.action), tostring(p.member)) end
-    if e == "quest"     then return ("quest: %s %s"):format(tostring(p.action), p.title or tostring(p.questID)) end
+    if e == "quest"     then return ("quest: %s %s"):format(tostring(p.action), p.title or tostring(p.questId)) end
     if e == "taxi"      then return p.onTaxi and "takeoff (taxi)" or "landing (taxi)" end
     if e == "gap"       then return "|cffff8800route gap|r" end
-
-    if p.IsMounted ~= nil then return p.IsMounted and "path (mounted)" or "path (on foot)" end  -- легаси
 
     return "path"
 end
 
 function WIVBN.FormatPoint(p)
-    local info = C_Map.GetMapInfo(p.mapID)
-    local zone = (info and info.name) or ("map "..tostring(p.mapID))
+    local info = C_Map.GetMapInfo(p.mapId)
+    local zone = (info and info.name) or ("map "..tostring(p.mapId))
     local t    = p.t and ("%.1f"):format(p.t) or "--"
 
     return ("|cffaaaaaa[%ss]|r %.1f, %.1f  %s  — %s"):format(
@@ -122,7 +118,7 @@ function WIVBN.ShowLog()
         return
     end
 
-    local limit = 20                               -- последние 20 записей
+    local limit = 20
     local from  = math.max(1, total - limit + 1)
 
     print(WIVBN.PREFIX..("last %d of %d points:"):format(total - from + 1, total))

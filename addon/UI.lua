@@ -3,11 +3,9 @@ local WIVBN = WhereIveBeen
 local ROW_HEIGHT = 22
 local NUM_ROWS   = 12
 
-local listFrame    -- окно со списком сессий (создаётся лениво)
-local exportFrame  -- окно экспорта base64 (создаётся лениво)
-local sessionIds   -- отсортированный массив id, кэш на время показа списка
-
--- COMMON: рамочное окно с заголовком, кнопкой закрытия и закрытием по Esc
+local listFrame
+local exportFrame
+local sessionIds
 
 local function CreateWindow(name, width, height, title)
     local f = CreateFrame("Frame", name, UIParent, "BackdropTemplate")
@@ -27,7 +25,7 @@ local function CreateWindow(name, width, height, title)
     f:SetScript("OnDragStop", f.StopMovingOrSizing)
     f:SetClampedToScreen(true)
 
-    tinsert(UISpecialFrames, name)   -- Esc закрывает окно
+    tinsert(UISpecialFrames, name)
 
     local titleFS = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     titleFS:SetPoint("TOP", 0, -16)
@@ -40,15 +38,13 @@ local function CreateWindow(name, width, height, title)
     return f
 end
 
--- SESSIONS LIST WINDOW
-
 local function CollectSessionIds()
     local ids = {}
     local sessions = WhereIveBeenDB and WhereIveBeenDB.sessions or {}
     for id in pairs(sessions) do
         ids[#ids + 1] = id
     end
-    table.sort(ids, function(a, b) return a > b end)   -- свежие сверху (id = time())
+    table.sort(ids, function(a, b) return a > b end)
     return ids
 end
 
@@ -138,9 +134,6 @@ function WIVBN.ShowSessionsWindow()
     listFrame:Raise()
 end
 
--- EXPORT WINDOW (base64)
-
--- Программная установка текста без срабатывания «защиты от правки».
 local function SetExportText(edit, text)
     edit.wivbnSetting = true
     edit:SetText(text)
@@ -168,8 +161,6 @@ local function CreateExportFrame()
     edit:SetScript("OnEscapePressed", function() f:Hide() end)
     edit:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
 
-    -- Read-only-поведение: любой пользовательский ввод откатываем к исходному base64,
-    -- чтобы строка для копирования всегда оставалась целой.
     edit:SetScript("OnTextChanged", function(self, userInput)
         if userInput and not self.wivbnSetting and self.wivbnText then
             self.wivbnSetting = true

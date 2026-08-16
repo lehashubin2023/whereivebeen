@@ -31,6 +31,9 @@ class CreateEventDTO implements DTOContract
                 'mounted' => $point['mounted'] ?? null,
                 'on_taxi' => $point['onTaxi'] ?? null,
                 'quest_id' => $point['questId'] ?? null,
+                'item_id' => $point['itemId'] ?? null,
+                'item_name' => $point['itemName'] ?? null,
+                'count' => $point['count'] ?? null,
             ])
         );
     }
