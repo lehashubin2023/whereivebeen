@@ -23,8 +23,8 @@ class CreateWayPointDTO implements DTOContract
     {
         return new self(
             game_session_id: $gameSessionId,
-            map_id: $point['map_id'] ?? null,
-            time: $point['time'] ?? 0,
+            map_id: $point['mapId'] ?? null,
+            time: $point['t'] ?? 0,
             sequence: $sequence,
             x: $point['x'] ?? 0,
             y: $point['y'] ?? 0,

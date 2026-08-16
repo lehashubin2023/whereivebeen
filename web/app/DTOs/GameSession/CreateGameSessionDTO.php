@@ -28,7 +28,7 @@ class CreateGameSessionDTO implements DTOContract
         return new self(
             user_id: $data['user_id'] ?? null,
             character: $data['char'],
-            game_session_id: $data['sessionID'],
+            game_session_id: $data['sessionId'],
             session_start_at: date('Y-m-d H:i:s', $data['started']),
             version: $data['version'],
             realm: $data['realm']

@@ -28,6 +28,7 @@ class ImportGameSession
         $validated = GameSessionJsonValidator::validate($decodedInput);
 
         DB::transaction(function () use ($validated, $user, $importLog) {
+            // TODO: add checking already exist game session with session_id
             $gameSession = $this->createGameSession->exec(
                 CreateGameSessionDTO::fromArray($validated), 
                 $user
