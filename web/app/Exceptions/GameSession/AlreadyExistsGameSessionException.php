@@ -6,5 +6,5 @@ use Exception;
 
 class AlreadyExistsGameSessionException extends Exception
 {
-    //
+    protected $message = 'This game session already exists';
 }

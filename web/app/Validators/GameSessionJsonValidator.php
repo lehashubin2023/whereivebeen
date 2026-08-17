@@ -60,18 +60,4 @@ class GameSessionJsonValidator
     {
         return Validator::make($data, static::rules(), static::messages())->validate();
     }
-
-    /**
-     * Validate the array and return a boolean status alongside errors.
-     */
-    public static function check(array $data): array
-    {
-        $validator = Validator::make($data, static::rules(), static::messages());
-
-        return [
-            'passes' => $validator->passes(),
-            'errors' => $validator->errors()->toArray(),
-            'data'   => $validator->validated(),
-        ];
-    }
 }

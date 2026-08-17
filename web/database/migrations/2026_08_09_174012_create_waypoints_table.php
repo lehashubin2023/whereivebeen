@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('waypoints', function (Blueprint $table) {
             $table->foreignId('game_session_id')
-                ->nullable()
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->unsignedSmallInteger('map_id')
-                ->nullable();
             $table->smallInteger('sequence')
                 ->unsigned();
+
+            $table->unsignedSmallInteger('map_id')
+                ->nullable();
             $table->mediumInteger('time')
                 ->unsigned();
             $table->smallInteger('x')
