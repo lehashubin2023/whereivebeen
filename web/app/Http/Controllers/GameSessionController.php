@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\GameSession\ImportGameSessionRequest;
 use App\Jobs\ImportGameSessionJob;
-use Illuminate\Routing\Attributes\Controllers\Middleware;
 use Spatie\RouteAttributes\Attributes\Get;
+use Spatie\RouteAttributes\Attributes\Group;
+use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
-use Spatie\RouteAttributes\Attributes\Prefix;
 
 #[Middleware('auth')]
-#[Prefix('game-sessions')]
+#[Group(prefix: 'game-session', as: 'game-session.')]
 class GameSessionController extends Controller
 {
     #[Get('import')]
@@ -19,11 +19,9 @@ class GameSessionController extends Controller
         //
     }
 
-    #[Post('import')]
+    #[Post('import', name: "import")]
     public function import(ImportGameSessionRequest $request)
     {
-        $input = $request->input('game_session');
-
-        ImportGameSessionJob::dispatch($input, auth()->user());
+        ImportGameSessionJob::dispatch($request->game_session, auth()->user());
     }
 }

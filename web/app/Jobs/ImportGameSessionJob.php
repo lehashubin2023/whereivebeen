@@ -33,16 +33,17 @@ class ImportGameSessionJob implements ShouldQueue
     {
         try {
             $importLog = ImportLog::create(CreateImportLogDTO::fromArray([])->toArray());
-            $importer->exec($this->rawGameSessionInput, $this->user);
+            $gameSessionId = $importer->exec($this->rawGameSessionInput, $this->user);
             $importLog->update([
+                'game_session_id' => $gameSessionId,
                 'status' => ImportStatusEnum::COMPLETED,
-                'execution_time' => strtotime($importLog->created_at) - time(),
+                'execution_time' => time() - strtotime($importLog->created_at),
             ]);
         } catch (\Throwable $e) {
             $importLog->update([
                 'status' => ImportStatusEnum::FAILED,
-                'status_message' => $e->getMessage(),
-                'execution_time' => strtotime($importLog->created_at) - time(),
+                'error_message' => $e->getMessage(),
+                'execution_time' => time() - strtotime($importLog->created_at),
             ]);
         }
     }
