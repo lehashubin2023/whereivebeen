@@ -3,6 +3,7 @@
 namespace App\Actions\GameSession;
 
 use App\DTOs\GameSession\CreateGameSessionDTO;
+use App\Exceptions\GameSession\AlreadyExistsGameSessionException;
 use App\Models\GameSession;
 use App\Models\User;
 
@@ -14,9 +15,19 @@ class CreateGameSession
         if (false) {
             // throw new LimitExceededException('Game session limit exceeded');
         }
-    
+
+        $data = $dto->toArray();
+        
+        $alredyExist = GameSession::where('user_id', $user->id)
+            ->where('game_session_id', $data['sessionId'])
+            ->count();
+
+        if ($alredyExist) {
+            throw new AlreadyExistsGameSessionException();
+        }
+
         return GameSession::create([
-            ...$dto->toArray(),
+            ...$data,
             'user_id' => $user->id,
         ]);
     }

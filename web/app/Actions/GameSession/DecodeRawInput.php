@@ -4,7 +4,7 @@ namespace App\Actions\GameSession;
 
 use App\Exceptions\InvalidGameSessionInputException;
 
-class DecodeGameSession
+class DecodeRawInput
 {
     public function exec(string $input): array
     {
