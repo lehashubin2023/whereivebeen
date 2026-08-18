@@ -18,7 +18,7 @@ class CreateGameSession
 
         $data = $dto->toArray();
         
-        if ($user->doesGameSessionAlreadyExist($data['sessionId'])) {
+        if ($user->doesGameSessionAlreadyExist($data['game_session_id'])) {
             throw new AlreadyExistsGameSessionException();
         }
 

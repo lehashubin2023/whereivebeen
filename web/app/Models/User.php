@@ -60,6 +60,6 @@ class User extends Authenticatable
     {
         return $this->gameSessions()
             ->where('game_session_id', $sessionId)
-            ->exist();
+            ->count() >= 1;
     }
 }
