@@ -15,7 +15,6 @@ class CreateWayPointDTO implements DTOContract
         private readonly int $sequence, 
         private readonly int $x,
         private readonly int $y,
-        // private readonly int $state
     )
     {}
 
@@ -28,7 +27,6 @@ class CreateWayPointDTO implements DTOContract
             sequence: $sequence,
             x: $point['x'] ?? 0,
             y: $point['y'] ?? 0,
-            // state: $point['state'] ?? 0
         );
     }
 
@@ -46,7 +44,6 @@ class CreateWayPointDTO implements DTOContract
             sequence: $data['sequence'] ?? 0,
             x: $data['x'] ?? 0,
             y: $data['y'] ?? 0,
-            // state: $data['state'] ?? 0
         );
     }
 
@@ -59,7 +56,6 @@ class CreateWayPointDTO implements DTOContract
             'sequence' => $this->sequence,
             'x' => $this->x,
             'y' => $this->y,
-            'state' => $this->state
         ];
     }
 }

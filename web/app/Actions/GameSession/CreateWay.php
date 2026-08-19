@@ -15,17 +15,17 @@ class CreateWay
     const CHUNK_SIZE = 1000;
 
     private array $eventTypes;
+    private int $sequence = 1;
 
     public function __construct()
     {
+        // TODO: Cache
         $this->eventTypes = EventType::pluck('id', 'name')->toArray();
     }
 
     public function exec(GameSession $gameSession, array $waypoints): void
     {
-        $waypoints = array_values($waypoints);
-
-        foreach (array_chunk($waypoints, self::CHUNK_SIZE) as $chunk) {
+        foreach (array_chunk($waypoints, $this->getChunkSize()) as $chunk) {
             [$wayPointData, $eventData] = $this->prepareWayData($chunk, $gameSession->id);
 
             DB::transaction(function () use ($wayPointData, $eventData) {
@@ -40,20 +40,25 @@ class CreateWay
         $wayPointData = [];
         $eventData = [];
 
-        foreach ($chunk as $sequence => $waypoint) {
-            $wayPointData[] = CreateWayPointDTO::fromPoint($waypoint, $gameSessionId, $sequence)->toArray();
+        foreach ($chunk as $waypoint) {
+            $wayPointData[] = CreateWayPointDTO::fromPoint($waypoint, $gameSessionId, $this->sequence)->toArray();
 
             if (!empty($waypoint['event'])) {
                 $eventTypeId = $this->eventTypes[$waypoint['event']] ?? null;
 
-                if (empty($eventTypeId)) {
-                    continue; // Skip if event type is not found
+                if (!empty($eventTypeId)) {
+                    $eventData[] = CreateEventDTO::fromPoint($waypoint, $gameSessionId, $this->sequence, $eventTypeId)->toArray();
                 }
-
-                $eventData[] = CreateEventDTO::fromPoint($waypoint, $gameSessionId, $sequence, $eventTypeId)->toArray();
             }
+
+            $this->sequence += 1;
         }
 
         return [$wayPointData, $eventData];
+    }
+
+    public function getChunkSize()
+    {
+        return self::CHUNK_SIZE;
     }
 }

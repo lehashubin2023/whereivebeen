@@ -44,15 +44,17 @@ class CreateGameSessionTest extends TestCase
         );
     }
 
-    // public function test_importer()
-    // {
-    //     $user = User::factory()->create();
-    //     $importer = app()->make(ImportGameSession::class);
+    public function test_game_session_created_correctly_with_full_data()
+    {
+        $user = User::factory()->create();
+        $session = GameSession::factory()->make();
 
-    //     $validSession1 = file_get_contents(base_path() . '/tests/Fixtures/game-sessions/session1.txt');
-    //     $validSession2 = file_get_contents(base_path() . '/tests/Fixtures/game-sessions/session1.txt');
-    //     $notValidSession = file_get_contents(base_path() . '/tests/Fixtures/game-sessions/not-valid-session.txt');
+        app()->make(CreateGameSession::class)->exec(
+            CreateGameSessionDTO::fromModel($session), 
+            $user
+        );
 
-    //     $importer->exec($validSession1, $user);
-    // }
+        $this->assertDatabaseHas((new GameSession)->getTable(), ['game_session_id' => $session->game_session_id]);
+        $this->assertDatabaseCount((new GameSession)->getTable(), 1);
+    }
 }

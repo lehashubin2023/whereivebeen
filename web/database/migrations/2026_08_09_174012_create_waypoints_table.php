@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('waypoints', function (Blueprint $table) {
+        Schema::create('way_points', function (Blueprint $table) {
             $table->foreignId('game_session_id')
                 ->constrained()
                 ->onUpdate('cascade')
@@ -19,7 +19,8 @@ return new class extends Migration
             $table->smallInteger('sequence')
                 ->unsigned();
 
-            $table->unsignedSmallInteger('map_id')
+            $table->smallInteger('map_id')
+                ->unsigned()
                 ->nullable();
             $table->mediumInteger('time')
                 ->unsigned();
@@ -46,6 +47,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('waypoints');
+        Schema::dropIfExists('way_points');
     }
 };
