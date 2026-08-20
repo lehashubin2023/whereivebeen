@@ -18,6 +18,9 @@ class CreateGameSessionWayTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected $seed = true;
+    protected $seeder = EventTypeSeeder::class;
+
     public function test_way_session_created_correctly()
     {
         $mock = $this->partialMock(CreateWay::class, fn($mock) => $mock->shouldReceive('getChunkSize')->andReturn(2));

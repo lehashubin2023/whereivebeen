@@ -4,8 +4,8 @@ namespace App\Actions\GameSession;
 
 use App\DTOs\GameSession\CreateEventDTO;
 use App\DTOs\GameSession\CreateWayPointDTO;
+use App\Enums\GameSession\EventTypeEnum;
 use App\Models\Event;
-use App\Models\EventType;
 use App\Models\GameSession;
 use App\Models\WayPoint;
 use Illuminate\Support\Facades\DB;
@@ -14,14 +14,7 @@ class CreateWay
 {
     const CHUNK_SIZE = 1000;
 
-    private array $eventTypes;
     private int $sequence = 1;
-
-    public function __construct()
-    {
-        // TODO: Cache
-        $this->eventTypes = EventType::pluck('id', 'name')->toArray();
-    }
 
     public function exec(GameSession $gameSession, array $waypoints): void
     {
@@ -44,10 +37,10 @@ class CreateWay
             $wayPointData[] = CreateWayPointDTO::fromPoint($waypoint, $gameSessionId, $this->sequence)->toArray();
 
             if (!empty($waypoint['event'])) {
-                $eventTypeId = $this->eventTypes[$waypoint['event']] ?? null;
+                $eventType = EventTypeEnum::fromSlug($waypoint['event']);
 
-                if (!empty($eventTypeId)) {
-                    $eventData[] = CreateEventDTO::fromPoint($waypoint, $gameSessionId, $this->sequence, $eventTypeId)->toArray();
+                if ($eventType !== null) {
+                    $eventData[] = CreateEventDTO::fromPoint($waypoint, $gameSessionId, $this->sequence, $eventType->value)->toArray();
                 }
             }
 

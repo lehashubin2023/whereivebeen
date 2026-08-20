@@ -2,37 +2,24 @@
 
 namespace Database\Seeders;
 
+use App\Enums\GameSession\EventTypeEnum;
 use App\Models\EventType;
 use Illuminate\Database\Seeder;
 
 class EventTypeSeeder extends Seeder
 {
     /**
-     * Справочник типов событий. Значения name соответствуют полю `event`
-     * в точках, которые пишет аддон (см. addon/Core.lua, addon/Methods.lua).
-     * id фиксированы — на них ссылается events.event_type_id, поэтому
-     * существующие пары id→name менять нельзя, новые добавлять в конец.
+     * Справочник типов событий. Источник правды — EventTypeEnum:
+     * id = значение кейса енама, name = slug (поле `event`, которое пишет аддон).
+     * Таблица нужна для FK events.event_type_id и джойнов/метаданных.
+     * id менять нельзя — на них ссылается events; новые типы добавляйте в енам.
      */
-    private const TYPES = [
-        1  => 'mount',
-        2  => 'combat',
-        3  => 'death',
-        4  => 'resurrect',
-        5  => 'levelup',
-        6  => 'loot',
-        7  => 'visit',
-        8  => 'group',
-        9  => 'quest',
-        10 => 'taxi',
-        11 => 'gap',
-    ];
-
     public function run(): void
     {
-        $rows = [];
-        foreach (self::TYPES as $id => $name) {
-            $rows[] = ['id' => $id, 'name' => $name];
-        }
+        $rows = array_map(
+            fn (EventTypeEnum $type) => ['id' => $type->value, 'name' => $type->slug()],
+            EventTypeEnum::cases()
+        );
 
         EventType::upsert($rows, ['id'], ['name']);
     }
