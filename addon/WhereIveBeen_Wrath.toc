@@ -5,7 +5,6 @@
 ## SavedVariables: WhereIveBeenDB
 
 Libs\dkjson.lua
-Libs\base64.lua
 Core.lua
 Session.lua
 Methods.lua

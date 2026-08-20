@@ -143,7 +143,7 @@ end
 
 local function CreateExportFrame()
     local f = CreateWindow("WhereIveBeenExportFrame", 560, 420,
-        "WhereIveBeen — Export (base64)")
+        "WhereIveBeen — Export (JSON)")
 
     local hint = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     hint:SetPoint("BOTTOM", 0, 18)

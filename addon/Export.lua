@@ -25,5 +25,5 @@ function WIVBN.ExportSession(id)
         return nil, "json encode failed: " .. tostring(json)
     end
 
-    return WIVBN.base64.encode(json)
+    return json
 end

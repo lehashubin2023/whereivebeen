@@ -21,6 +21,6 @@ SlashCmdList.WHEREIVEBEEN = function(command)
     elseif command == "get_sessions" then
         WIVBN.ShowSessionsWindow()
     else
-        print(WIVBN.PREFIX.."Unknown command. Available commands are: \n- start - create new session, \n- end - close current session and disable working of saving pathes, \n- status - check status of session, \n- clear - clear pathes of current session, \n- log - print last 20 log entries, \n- get_sessions - open the sessions window and export a session as base64")
+        print(WIVBN.PREFIX.."Unknown command. Available commands are: \n- start - create new session, \n- end - close current session and disable working of saving pathes, \n- status - check status of session, \n- clear - clear pathes of current session, \n- log - print last 20 log entries, \n- get_sessions - open the sessions window and export a session as JSON")
     end
 end
