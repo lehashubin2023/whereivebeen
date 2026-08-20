@@ -8,6 +8,8 @@ use App\Enums\GameSession\EventTypeEnum;
 use App\Models\Event;
 use App\Models\GameSession;
 use App\Models\WayPoint;
+use App\Support\GameSession\ImportProgress\ImportGameSessionProgressContract;
+use App\Support\GameSession\ImportProgress\NullImportGameSessionProgress;
 use Illuminate\Support\Facades\DB;
 
 class CreateWay
@@ -16,8 +18,11 @@ class CreateWay
 
     private int $sequence = 1;
 
-    public function exec(GameSession $gameSession, array $waypoints): void
-    {
+    public function exec(
+        GameSession $gameSession,
+        array $waypoints,
+        ImportGameSessionProgressContract $progress = new NullImportGameSessionProgress()
+    ): void {
         foreach (array_chunk($waypoints, $this->getChunkSize()) as $chunk) {
             [$wayPointData, $eventData] = $this->prepareWayData($chunk, $gameSession->id);
 
@@ -25,6 +30,8 @@ class CreateWay
                 WayPoint::insert($wayPointData);
                 Event::insert($eventData);
             });
+
+            $progress->track($this->sequence - 1);
         }
     }
 

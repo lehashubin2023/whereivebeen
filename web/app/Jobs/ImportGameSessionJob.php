@@ -3,10 +3,8 @@
 namespace App\Jobs;
 
 use App\Actions\GameSession\ImportGameSession;
-use App\DTOs\GameSession\CreateImportLogDTO;
-use App\Enums\GameSession\ImportStatusEnum;
-use App\Models\ImportLog;
 use App\Models\User;
+use App\Support\GameSession\ImportProgress\ImportGameSessionProgress;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Queue;
@@ -27,26 +25,15 @@ class ImportGameSessionJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(
-        ImportGameSession $importer
-    ): void
+    public function handle(ImportGameSession $importer): void
     {
-        $importLog = ImportLog::create(CreateImportLogDTO::fromArray([])->toArray());
+        $progress = new ImportGameSessionProgress();
 
         try {
-            $gameSessionId = $importer->exec($this->rawGameSessionInput, $this->user);
-            $importLog->update([
-                'game_session_id' => $gameSessionId,
-                'status' => ImportStatusEnum::COMPLETED,
-                'execution_time' => time() - strtotime($importLog->created_at),
-            ]);
+            $gameSessionId = $importer->exec($this->rawGameSessionInput, $this->user, $progress);
+            $progress->complete($gameSessionId);
         } catch (\Throwable $e) {
-            dd($e->getMessage());
-            $importLog->update([
-                'status' => ImportStatusEnum::FAILED,
-                'error_message' => $e->getMessage(),
-                'execution_time' => time() - strtotime($importLog->created_at),
-            ]);
+            $progress->fail($e);
         }
     }
 }
