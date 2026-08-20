@@ -13,4 +13,8 @@ abstract class TestCase extends BaseTestCase
             $this->markTestSkipped($message ?? "Fortify feature [{$feature}] is not enabled.");
         }
     }
+
+    protected function getFixturesPath(string $path): string {
+        return base_path('tests/Fixtures/' . ltrim($path, '/'));
+    }
 }

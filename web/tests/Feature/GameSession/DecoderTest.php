@@ -32,7 +32,8 @@ class DecoderTest extends TestCase
         app()->make(DecodeRawInput::class)->exec(base64_encode(json_encode([
             1234123 => [
                 'points' => [
-                    'someVal' => false
+                    'someVal' => false,
+                    'someVal2' => []
                 ]
             ]
         ])));

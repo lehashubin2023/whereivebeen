@@ -17,24 +17,33 @@ class CreateEventDTO implements DTOContract
 
     public static function fromPoint(array $point, int $gameSessionId, int $sequence, int $eventTypeId): self
     {
+        $map = [
+            'level'     => 'level',
+            'action'    => 'action',
+            'title'     => 'title',
+            'place'     => 'place',
+            'member'    => 'member',
+            'in_combat' => 'inCombat',
+            'mounted'   => 'mounted',
+            'on_taxi'   => 'onTaxi',
+            'quest_id'  => 'questId',
+            'item_id'   => 'itemId',
+            'item_name' => 'itemName',
+            'count'     => 'count',
+        ];
+
+        $payload = [];
+        foreach ($map as $payloadKey => $pointKey) {
+            if (isset($point[$pointKey])) {
+                $payload[$payloadKey] = $point[$pointKey];
+            }
+        }
+
         return new self(
             game_session_id: $gameSessionId,
             sequence: $sequence,
             event_type_id: $eventTypeId,
-            payload: json_encode([
-                'level' => $point['level'] ?? null,
-                'action' => $point['action'] ?? null,
-                'title' => $point['title'] ?? null,
-                'place' => $point['place'] ?? null,
-                'member' => $point['member'] ?? null,
-                'in_combat' => $point['inCombat'] ?? null,
-                'mounted' => $point['mounted'] ?? null,
-                'on_taxi' => $point['onTaxi'] ?? null,
-                'quest_id' => $point['questId'] ?? null,
-                'item_id' => $point['itemId'] ?? null,
-                'item_name' => $point['itemName'] ?? null,
-                'count' => $point['count'] ?? null,
-            ])
+            payload: json_encode($payload)
         );
     }
 

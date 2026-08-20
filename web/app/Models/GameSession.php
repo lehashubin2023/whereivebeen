@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\GameSession\ImportStatusEnum;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +15,5 @@ class GameSession extends Model
 
     public $casts = [
         'session_start_at' => 'datetime',
-        'import_status' => ImportStatusEnum::class,
     ];
 }
