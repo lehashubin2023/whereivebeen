@@ -15,8 +15,9 @@ return new class extends Migration
             $table->smallInteger('id')
                 ->unsigned()
                 ->primary();
-            $table->string('name', 32)
-                ->unique();
+            // Полный набор карт WoW: имена не уникальны (несколько «Dalaran» и т.п.)
+            // и могут быть длиннее 32 символов.
+            $table->string('name', 128);
             $table->string('image_path', 128)
                 ->nullable()
                 ->default(null);
