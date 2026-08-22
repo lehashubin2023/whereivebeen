@@ -8,62 +8,52 @@ class ImportMaps
 {
     private const CHUNK = 500;
 
-    /** Порядок важен: ищем изображение карты по первому подходящему расширению. */
-    private const IMAGE_EXTENSIONS = ['png', 'webp', 'jpg', 'jpeg'];
-
-    /**
-     * Наполняет таблицу maps из манифеста (id + name) и папки изображений.
-     * image_path проставляется, если в $imagesDir лежит файл <id>.<ext>.
-     *
-     * @param  array<int, array<string, mixed>>  $manifest  [{id, name}, ...] из аддона /wivbn maps или UiMap.db2
-     * @return array{total: int, withImage: int, skipped: int}
-     */
-    public function exec(array $manifest, string $imagesDir, string $urlPrefix): array
+    public function exec(array $rows): array
     {
-        $rows = [];
+        $out = [];
         $skipped = 0;
-        $withImage = 0;
 
-        foreach ($manifest as $entry) {
-            $id = filter_var($entry['id'] ?? null, FILTER_VALIDATE_INT);
-            $name = isset($entry['name']) && is_string($entry['name']) ? trim($entry['name']) : '';
+        foreach ($rows as $entry) {
+            $id = $this->prepareId($entry);
+            $name = $this->prepareName($entry);
 
-            // smallint unsigned + непустое имя — иначе строка манифеста некорректна
-            if ($id === false || $id <= 0 || $id > 65535 || $name === '') {
+            if (! is_int($id) || ! $name) {
                 $skipped++;
 
                 continue;
             }
 
-            $imagePath = $this->resolveImagePath($id, $imagesDir, $urlPrefix);
-            if ($imagePath !== null) {
-                $withImage++;
-            }
-
-            $rows[] = [
-                'id' => $id,
-                'name' => mb_substr($name, 0, 128),
-                'image_path' => $imagePath,
-            ];
+            $out[] = ['id' => $id, 'name' => $name];
         }
 
-        foreach (array_chunk($rows, self::CHUNK) as $chunk) {
-            Map::upsert($chunk, ['id'], ['name', 'image_path']);
+        foreach (array_chunk($out, self::CHUNK) as $chunk) {
+            Map::upsert($chunk, ['id'], ['name']);
         }
 
-        return ['total' => count($rows), 'withImage' => $withImage, 'skipped' => $skipped];
+        return ['total' => count($out), 'skipped' => $skipped];
     }
 
-    private function resolveImagePath(int $id, string $imagesDir, string $urlPrefix): ?string
+    private function prepareId(array $entry): int|false
     {
-        $dir = rtrim($imagesDir, "/\\");
-
-        foreach (self::IMAGE_EXTENSIONS as $ext) {
-            if (is_file($dir.DIRECTORY_SEPARATOR.$id.'.'.$ext)) {
-                return rtrim($urlPrefix, '/').'/'.$id.'.'.$ext;
-            }
+        if (! isset($entry['id'])) {
+            return false;
         }
 
-        return null;
+        $id = filter_var($entry['id'], FILTER_VALIDATE_INT);
+
+        if ($id === false || $id <= 0 || $id > 65535) {
+            return false;
+        }
+
+        return $id;
+    }
+
+    private function prepareName(array $entry): string|false
+    {
+        if (! isset($entry['name']) || ! is_string($entry['name']) || ! mb_strlen(trim($entry['name']))) {
+            return false;
+        }
+
+        return mb_substr(trim($entry['name']), 0, 128);
     }
 }

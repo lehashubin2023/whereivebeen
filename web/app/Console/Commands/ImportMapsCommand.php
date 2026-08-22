@@ -3,50 +3,42 @@
 namespace App\Console\Commands;
 
 use App\Actions\Map\ImportMaps;
+use App\Actions\Map\ParseUiMapCsv;
+use App\Exceptions\Map\InvalidUiMapCsvException;
 use Illuminate\Console\Command;
 
 class ImportMapsCommand extends Command
 {
     protected $signature = 'maps:import
-        {manifest : Путь к JSON-манифесту карт ([{id,name}] — из аддона /wivbn maps или UiMap.db2)}
-        {--images=public/maps : Каталог с изображениями карт (файлы <uiMapID>.png)}
-        {--url-prefix=/maps : Префикс URL, из которого раздаются изображения}';
+        {--source=storage/app/private/UiMap.csv : UiMap.db2 export (CSV: ID;Name_lang)}';
 
-    protected $description = 'Импорт карт (id, name, image_path) в таблицу maps из манифеста и папки изображений';
+    protected $description = 'Import maps from UiMap and attach each zone image from public/maps by name';
 
-    public function handle(ImportMaps $importer): int
+    public function handle(ImportMaps $importer, ParseUiMapCsv $parseCsv): int
     {
-        $path = $this->argument('manifest');
+        $source = $this->resolvePath($this->option('source'));
 
-        if (! is_file($path)) {
-            $this->error("Манифест не найден: {$path}");
-
-            return self::FAILURE;
-        }
-
-        $manifest = json_decode((string) file_get_contents($path), true);
-
-        if (! is_array($manifest)) {
-            $this->error('Манифест не является валидным JSON-массивом');
+        try {
+            $rows = $parseCsv->exec($source);
+        } catch (InvalidUiMapCsvException $e) {
+            $this->error($e->getMessage());
 
             return self::FAILURE;
         }
 
-        $imagesDir = $this->option('images');
-        // Относительный путь резолвим от корня проекта
-        if (! preg_match('#^([a-zA-Z]:|/)#', $imagesDir)) {
-            $imagesDir = base_path($imagesDir);
-        }
-
-        $stats = $importer->exec($manifest, $imagesDir, $this->option('url-prefix'));
+        $stats = $importer->exec($rows);
 
         $this->info(sprintf(
-            'Импортировано карт: %d (с изображением: %d), пропущено: %d',
-            $stats['total'],
-            $stats['withImage'],
-            $stats['skipped']
+            'Imported maps: %d, skipped rows: %d',
+            (int) $stats['total'],
+            (int) $stats['skipped']
         ));
 
         return self::SUCCESS;
+    }
+
+    private function resolvePath(string $path): string
+    {
+        return preg_match('#^([a-zA-Z]:|/)#', $path) ? $path : base_path($path);
     }
 }
