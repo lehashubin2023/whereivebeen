@@ -4,6 +4,7 @@ namespace Tests\Feature\GameSession;
 
 use App\Enums\GameSession\ImportStatusEnum;
 use App\Models\GameSession;
+use App\Models\User;
 use App\Support\GameSession\ImportProgress\ImportGameSessionProgress;
 use App\Support\GameSession\ImportProgress\NullImportGameSessionProgress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,17 +15,29 @@ class ImportGameSessionProgressTest extends TestCase
 {
     use RefreshDatabase;
 
+    private User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->user = User::factory()->create();
+    }
+
     public function test_constructor_creates_new_import_log()
     {
-        new ImportGameSessionProgress();
+        new ImportGameSessionProgress($this->user);
 
         $this->assertDatabaseCount('import_logs', 1);
-        $this->assertDatabaseHas('import_logs', ['status' => ImportStatusEnum::NEW]);
+        $this->assertDatabaseHas('import_logs', [
+            'status' => ImportStatusEnum::NEW,
+            'user_id' => $this->user->id,
+        ]);
     }
 
     public function test_process_marks_in_process_with_total()
     {
-        (new ImportGameSessionProgress())->process(500);
+        (new ImportGameSessionProgress($this->user))->process(500);
 
         $this->assertDatabaseHas('import_logs', [
             'status'       => ImportStatusEnum::IN_PROCESS,
@@ -34,7 +47,7 @@ class ImportGameSessionProgressTest extends TestCase
 
     public function test_track_records_done_points()
     {
-        (new ImportGameSessionProgress())->track(123);
+        (new ImportGameSessionProgress($this->user))->track(123);
 
         $this->assertDatabaseHas('import_logs', ['points_done' => 123]);
     }
@@ -43,7 +56,7 @@ class ImportGameSessionProgressTest extends TestCase
     {
         $session = GameSession::factory()->create();
 
-        (new ImportGameSessionProgress())->complete($session->id);
+        (new ImportGameSessionProgress($this->user))->complete($session->id);
 
         $this->assertDatabaseHas('import_logs', [
             'status'          => ImportStatusEnum::COMPLETED,
@@ -53,7 +66,7 @@ class ImportGameSessionProgressTest extends TestCase
 
     public function test_fail_sets_failed_and_error_message()
     {
-        (new ImportGameSessionProgress())->fail(new RuntimeException('boom'));
+        (new ImportGameSessionProgress($this->user))->fail(new RuntimeException('boom'));
 
         $this->assertDatabaseHas('import_logs', [
             'status'        => ImportStatusEnum::FAILED,
@@ -63,7 +76,7 @@ class ImportGameSessionProgressTest extends TestCase
 
     public function test_id_returns_created_log_id()
     {
-        $progress = new ImportGameSessionProgress();
+        $progress = new ImportGameSessionProgress($this->user);
 
         $this->assertDatabaseHas('import_logs', ['id' => $progress->id()]);
     }

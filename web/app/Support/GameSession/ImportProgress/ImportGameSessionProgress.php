@@ -5,6 +5,7 @@ namespace App\Support\GameSession\ImportProgress;
 use App\DTOs\GameSession\CreateImportLogDTO;
 use App\Enums\GameSession\ImportStatusEnum;
 use App\Models\ImportLog;
+use App\Models\User;
 use Throwable;
 
 class ImportGameSessionProgress implements ImportGameSessionProgressContract
@@ -13,10 +14,12 @@ class ImportGameSessionProgress implements ImportGameSessionProgressContract
 
     private float $startedAt;
 
-    public function __construct()
+    public function __construct(User $user)
     {
         $this->startedAt = microtime(true);
-        $this->log = ImportLog::create(CreateImportLogDTO::fromArray([])->toArray());
+        $this->log = ImportLog::create(
+            CreateImportLogDTO::fromArray(['user_id' => $user->id])->toArray()
+        );
     }
 
     public function process(int $total): void

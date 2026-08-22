@@ -27,7 +27,7 @@ class ImportGameSessionJob implements ShouldQueue
      */
     public function handle(ImportGameSession $importer): void
     {
-        $progress = new ImportGameSessionProgress();
+        $progress = new ImportGameSessionProgress($this->user);
 
         try {
             $gameSessionId = $importer->exec($this->rawGameSessionInput, $this->user, $progress);
