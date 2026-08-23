@@ -9,13 +9,13 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-primary/90",
+          "border border-[hsl(42_56%_40%)] bg-gradient-to-b from-[hsl(42_62%_44%)] via-[hsl(38_56%_30%)] to-[hsl(34_50%_22%)] text-[hsl(46_92%_90%)] tracking-wide shadow-[inset_0_1px_0_hsl(46_82%_72%/0.38),0_4px_12px_-6px_hsl(0_0%_0%/0.7)] hover:from-[hsl(44_66%_48%)] hover:to-[hsl(36_52%_24%)] hover:shadow-[inset_0_1px_0_hsl(46_86%_76%/0.48),0_0_16px_hsl(42_72%_46%/0.45)]",
         destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "border border-destructive/60 bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "border border-[hsl(40_32%_36%)] bg-gradient-to-b from-[hsl(30_13%_16%)] to-[hsl(28_14%_10%)] text-[hsl(42_56%_70%)] shadow-xs hover:border-[hsl(42_56%_50%)] hover:text-[hsl(46_72%_80%)] hover:shadow-[0_0_14px_hsl(42_62%_42%/0.3)]",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border border-border/60 bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
