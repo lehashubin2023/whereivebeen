@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\GameSession\ImportGameSessionRequest;
 use App\Jobs\ImportGameSessionJob;
 use App\Models\ImportLog;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Get;
@@ -23,7 +24,7 @@ class GameSessionController extends Controller
     }
 
     #[Post('import', name: 'import.store')]
-    public function import(ImportGameSessionRequest $request)
+    public function import(ImportGameSessionRequest $request): RedirectResponse
     {
         ImportGameSessionJob::dispatch($request->game_session, $request->user());
 

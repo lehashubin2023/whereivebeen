@@ -21,6 +21,8 @@ class ImportFlowTest extends TestCase
     {
         parent::setUp();
 
+        $this->withoutVite();
+
         $this->user = User::factory()->create();
     }
 
@@ -53,8 +55,9 @@ class ImportFlowTest extends TestCase
         Queue::fake();
 
         $this->actingAs($this->user)
-            ->post('/game-session/import', [])
-            ->assertSessionHasErrors('game_session');
+            ->postJson('/game-session/import', [])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('game_session');
 
         Queue::assertNothingPushed();
     }
