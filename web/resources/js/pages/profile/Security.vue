@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
+import ProfileController from '@/actions/App/Http/Controllers/ProfileController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { edit } from '@/routes/security';
+import { security } from '@/routes/profile';
 
 type Props = {
     passwordRules: string;
@@ -19,7 +19,7 @@ defineOptions({
         breadcrumbs: [
             {
                 title: 'Security settings',
-                href: edit(),
+                href: security(),
             },
         ],
     },
@@ -39,7 +39,7 @@ defineOptions({
         />
 
         <Form
-            v-bind="SecurityController.update.form()"
+            v-bind="ProfileController.updatePassword.form()"
             :options="{
                 preserveScroll: true,
             }"

@@ -1,7 +1,7 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
-import SettingsLayout from '@/layouts/settings/Layout.vue';
+import ProfileLayout from '@/layouts/profile/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -14,8 +14,8 @@ createInertiaApp({
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
-            case name.startsWith('settings/'):
-                return [AppLayout, SettingsLayout];
+            case name.startsWith('profile/'):
+                return [AppLayout, ProfileLayout];
             default:
                 return AppLayout;
         }

@@ -31,7 +31,7 @@ const actions = [
         icon: User,
         title: 'Your profile',
         text: 'Manage your traveler account and settings.',
-        href: '/settings/profile',
+        href: '/profile',
     },
 ];
 </script>
@@ -74,17 +74,16 @@ const actions = [
             </Link>
         </div>
 
-        <div class="wow-map-frame relative flex-1">
-            <img
-                src="/maps/Hellfire_Peninsula.png"
-                alt="Map of Hellfire Peninsula, Outland"
-                class="h-full object-cover"
-            />
+        <div class="wow-map-frame relative min-h-[280px] flex-1">
             <div
-                class="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 text-center"
+                class="relative flex h-full min-h-[268px] items-center justify-center bg-cover bg-center p-6"
+                style="background-image: url('/maps/Hellfire_Peninsula.png')"
             >
                 <div
-                    class="wow-panel pointer-events-auto flex flex-col items-center gap-2 px-8 py-6"
+                    class="pointer-events-none absolute inset-0 bg-background/55"
+                ></div>
+                <div
+                    class="wow-panel relative z-10 flex flex-col items-center gap-2 px-8 py-6 text-center"
                 >
                     <Compass class="text-gold size-7" />
                     <p class="text-gold font-display text-lg tracking-wide">

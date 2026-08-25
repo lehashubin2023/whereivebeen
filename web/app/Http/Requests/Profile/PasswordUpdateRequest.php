@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Requests\Settings;
+namespace App\Http\Requests\Profile;
 
+use App\Concerns\PasswordValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Laravel\Fortify\InteractsWithTwoFactorState;
 
-class TwoFactorAuthenticationRequest extends FormRequest
+class PasswordUpdateRequest extends FormRequest
 {
-    use InteractsWithTwoFactorState;
+    use PasswordValidationRules;
 
     /**
      * Get the validation rules that apply to the request.
@@ -17,6 +17,9 @@ class TwoFactorAuthenticationRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [];
+        return [
+            'current_password' => $this->currentPasswordRules(),
+            'password' => $this->passwordRules(),
+        ];
     }
 }

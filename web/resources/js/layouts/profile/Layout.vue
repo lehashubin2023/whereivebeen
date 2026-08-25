@@ -5,28 +5,27 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { toUrl } from '@/lib/utils';
-import { edit as editProfile } from '@/routes/profile';
-import { edit as editSecurity } from '@/routes/security';
+import { edit, security } from '@/routes/profile';
 import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
     {
         title: 'Profile',
-        href: editProfile(),
+        href: edit(),
     },
     {
         title: 'Security',
-        href: editSecurity(),
+        href: security(),
     },
 ];
 
-const { isCurrentOrParentUrl } = useCurrentUrl();
+const { isCurrentUrl } = useCurrentUrl();
 </script>
 
 <template>
     <div class="px-4 py-6">
         <Heading
-            title="Settings"
+            title="Profile"
             description="Manage your profile and account settings"
         />
 
@@ -34,7 +33,7 @@ const { isCurrentOrParentUrl } = useCurrentUrl();
             <aside class="w-full max-w-xl lg:w-48">
                 <nav
                     class="flex flex-col space-y-1 space-x-0"
-                    aria-label="Settings"
+                    aria-label="Profile"
                 >
                     <Button
                         v-for="item in sidebarNavItems"
@@ -42,7 +41,7 @@ const { isCurrentOrParentUrl } = useCurrentUrl();
                         variant="ghost"
                         :class="[
                             'w-full justify-start',
-                            { 'bg-muted': isCurrentOrParentUrl(item.href) },
+                            { 'bg-muted': isCurrentUrl(item.href) },
                         ]"
                         as-child
                     >

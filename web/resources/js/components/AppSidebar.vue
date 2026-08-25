@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Upload, User } from '@lucide/vue';
+import { LayoutGrid, ScrollText, Upload, User } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -17,13 +17,23 @@ import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
+        title: 'Dashboard',
+        href: '/dashboard',
+        icon: LayoutGrid,
+    },
+    {
         title: 'Import',
         href: '/game-session/import',
         icon: Upload,
     },
     {
+        title: 'Imports',
+        href: '/game-session/imports',
+        icon: ScrollText,
+    },
+    {
         title: 'Profile',
-        href: '/settings/profile',
+        href: '/profile',
         icon: User,
     },
 ];
