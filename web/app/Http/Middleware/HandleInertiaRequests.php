@@ -42,6 +42,18 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'backgroundMap' => $this->randomMapUrl(),
         ];
+    }
+
+    private function randomMapUrl(): string
+    {
+        $maps = glob(public_path('maps/*.png')) ?: [];
+
+        if ($maps === []) {
+            return '/maps/Hellfire_Peninsula.png';
+        }
+
+        return '/maps/'.basename($maps[array_rand($maps)]);
     }
 }

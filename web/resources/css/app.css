@@ -200,6 +200,20 @@
 }
 
 @layer components {
+    .page-bg {
+        background-image:
+            linear-gradient(
+                to bottom,
+                hsl(28 14% 6% / 0.9),
+                hsl(28 14% 6% / 0.82)
+            ),
+            var(--page-bg-image, url('/maps/Hellfire_Peninsula.png'));
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        background-attachment: fixed;
+    }
+
     .wow-panel {
         position: relative;
         border-radius: var(--radius-lg);
