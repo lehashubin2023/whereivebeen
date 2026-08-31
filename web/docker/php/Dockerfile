@@ -1,22 +1,21 @@
 FROM php:8.5-fpm-alpine
 
-# Системные зависимости для сборки PHP-расширений
+# Устанавливаем базовые системные утилиты, нужные для работы Laravel и окружения
 RUN apk add --no-cache \
         git \
         curl \
         zip \
         unzip \
         bash \
-        libpng-dev \
-        libjpeg-turbo-dev \
-        freetype-dev \
-        libzip-dev \
-        icu-dev \
-        oniguruma-dev \
+        supervisor \
         nodejs \
-        npm \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" \
+        npm
+
+# Скачиваем официальный установщик расширений PHP
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+
+# Устанавливаем все нужные расширения (включая зависимости для GD и Redis) одной командой
+RUN install-php-extensions \
         pdo_mysql \
         mysqli \
         bcmath \
@@ -24,7 +23,8 @@ RUN apk add --no-cache \
         zip \
         intl \
         exif \
-        pcntl
+        pcntl \
+        redis
 
 # Composer из официального образа
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
