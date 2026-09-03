@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\GameSession\BuildSessionZones;
+use App\Enums\GameSession\EventTypeEnum;
 use App\Http\Requests\GameSession\ImportGameSessionRequest;
 use App\Jobs\ImportGameSessionJob;
+use App\Models\GameSession;
 use App\Models\ImportLog;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -17,6 +20,10 @@ use Spatie\RouteAttributes\Attributes\Post;
 #[Group(prefix: 'game-session', as: 'game-session.')]
 class GameSessionController extends Controller
 {
+    public function __construct(
+        private readonly BuildSessionZones $buildSessionZones,
+    ) {}
+
     #[Get('import', name: 'import')]
     public function showImportPage(): Response
     {
@@ -51,6 +58,46 @@ class GameSessionController extends Controller
 
         return Inertia::render('game-session/Imports', [
             'imports' => $imports,
+        ]);
+    }
+
+    #[Get('sessions', name: 'sessions')]
+    public function sessions(): Response
+    {
+        $sessions = GameSession::query()
+            ->where('user_id', auth()->id())
+            ->withCount('wayPoints')
+            ->latest('session_start_at')
+            ->paginate(20)
+            ->through(fn (GameSession $session) => [
+                'id' => $session->id,
+                'game_session_id' => $session->game_session_id,
+                'character' => $session->character,
+                'realm' => $session->realm,
+                'points_count' => $session->way_points_count,
+                'session_start_at' => $session->session_start_at->toIso8601String(),
+            ]);
+
+        return Inertia::render('game-session/Sessions', [
+            'sessions' => $sessions,
+        ]);
+    }
+
+    #[Get('sessions/{gameSession}', name: 'sessions.show')]
+    public function showSession(GameSession $gameSession): Response
+    {
+        abort_unless($gameSession->user_id === auth()->id(), 403);
+
+        return Inertia::render('game-session/Session', [
+            'session' => [
+                'id' => $gameSession->id,
+                'game_session_id' => $gameSession->game_session_id,
+                'character' => $gameSession->character,
+                'realm' => $gameSession->realm,
+                'session_start_at' => $gameSession->session_start_at->toIso8601String(),
+            ],
+            'zones' => $this->buildSessionZones->exec($gameSession), // todo: add resource
+            'eventTypes' => EventTypeEnum::map(),
         ]);
     }
 }

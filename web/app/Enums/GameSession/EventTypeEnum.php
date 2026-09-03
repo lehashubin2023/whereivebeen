@@ -47,4 +47,18 @@ enum EventTypeEnum: int
 
         return null;
     }
+
+    /**
+     * @return array<string, int>
+     */
+    public static function map(): array
+    {
+        $map = [];
+
+        foreach (self::cases() as $case) {
+            $map[$case->slug()] = $case->value;
+        }
+
+        return $map;
+    }
 }

@@ -25,8 +25,8 @@ class CreateWayPointDTO implements DTOContract
             map_id: $point['mapId'] ?? null,
             time: $point['t'] ?? 0,
             sequence: $sequence,
-            x: $point['x'] ? $point['x'] * 65535 : 0,
-            y: $point['y'] ? $point['y'] * 65535 : 0,
+            x: $point['x'] ?? 0,
+            y: $point['y'] ?? 0,
         );
     }
 
