@@ -41,7 +41,7 @@ function formatDate(value: string | null): string {
                 Sessions
             </h1>
             <Link
-                href="/game-session/import"
+                href="/game-session/imports"
                 class="text-gold text-sm underline-offset-4 hover:underline"
             >
                 New import
@@ -106,7 +106,7 @@ function formatDate(value: string | null): string {
         >
             <p class="text-muted-foreground">No sessions yet.</p>
             <Link
-                href="/game-session/import"
+                href="/game-session/imports"
                 class="text-gold underline-offset-4 hover:underline"
             >
                 Import your first session

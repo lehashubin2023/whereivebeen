@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
+import GameSessionController from '@/actions/App/Http/Controllers/GameSessionController';
+import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import { Textarea } from '@/components/ui/textarea';
 
 type ImportStatus = 'new' | 'in_process' | 'completed' | 'failed';
 
@@ -52,18 +58,51 @@ function formatDate(value: string | null): string {
     <Head title="Imports" />
 
     <div class="flex flex-1 flex-col p-4 md:p-8">
-        <div class="mb-6 flex items-center justify-between">
-            <h1
-                class="text-gold font-display text-2xl font-semibold tracking-wide"
+        <h1
+            class="text-gold font-display mb-6 text-2xl font-semibold tracking-wide"
+        >
+            Imports
+        </h1>
+
+        <div class="wow-panel mb-6 p-6">
+            <h2 class="text-gold font-display text-lg tracking-wide">
+                Import Session
+            </h2>
+            <hr class="wow-divider my-4" />
+            <p class="mb-6 text-sm text-muted-foreground">
+                Paste the session exported from the addon and submit it for
+                processing.
+            </p>
+
+            <Form
+                v-bind="GameSessionController.importMethod.form()"
+                :reset-on-success="['game_session']"
+                v-slot="{ errors, processing }"
+                class="flex flex-col gap-4"
             >
-                Imports
-            </h1>
-            <Link
-                href="/game-session/import"
-                class="text-gold text-sm underline-offset-4 hover:underline"
-            >
-                New import
-            </Link>
+                <div class="grid gap-2">
+                    <Label for="game_session">Session data</Label>
+                    <Textarea
+                        id="game_session"
+                        name="game_session"
+                        required
+                        rows="8"
+                        placeholder="Paste exported session JSON…"
+                        class="min-h-48 font-mono"
+                    />
+                    <InputError :message="errors.game_session" />
+                </div>
+
+                <Button
+                    type="submit"
+                    class="w-full"
+                    :disabled="processing"
+                    data-test="import-session-button"
+                >
+                    <Spinner v-if="processing" />
+                    Import
+                </Button>
+            </Form>
         </div>
 
         <div v-if="imports.data.length" class="wow-panel overflow-x-auto">
@@ -120,12 +159,6 @@ function formatDate(value: string | null): string {
             class="wow-panel flex flex-col items-center justify-center gap-3 p-12 text-center"
         >
             <p class="text-muted-foreground">No imports yet.</p>
-            <Link
-                href="/game-session/import"
-                class="text-gold underline-offset-4 hover:underline"
-            >
-                Import your first session
-            </Link>
         </div>
 
         <div

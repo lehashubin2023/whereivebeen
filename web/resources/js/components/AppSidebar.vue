@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { LayoutGrid, Map, ScrollText, Upload, User } from '@lucide/vue';
+import { Map, ScrollText, User } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -17,24 +17,14 @@ import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Import',
-        href: '/game-session/import',
-        icon: Upload,
+        title: 'Sessions',
+        href: '/game-session/sessions',
+        icon: Map,
     },
     {
         title: 'Imports',
         href: '/game-session/imports',
         icon: ScrollText,
-    },
-    {
-        title: 'Sessions',
-        href: '/game-session/sessions',
-        icon: Map,
     },
     {
         title: 'Profile',
@@ -50,7 +40,7 @@ const mainNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link href="/game-session/import">
+                        <Link href="/game-session/sessions">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>

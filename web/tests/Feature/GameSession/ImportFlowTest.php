@@ -26,17 +26,17 @@ class ImportFlowTest extends TestCase
         $this->user = User::factory()->create();
     }
 
-    public function test_guest_is_redirected_from_import_page()
+    public function test_guest_is_redirected_from_imports_page()
     {
-        $this->get('/game-session/import')->assertRedirect('/login');
+        $this->get('/game-session/imports')->assertRedirect('/login');
     }
 
-    public function test_import_page_renders()
+    public function test_imports_page_renders()
     {
         $this->actingAs($this->user)
-            ->get('/game-session/import')
+            ->get('/game-session/imports')
             ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->component('game-session/Import'));
+            ->assertInertia(fn (Assert $page) => $page->component('game-session/Imports'));
     }
 
     public function test_import_dispatches_job_and_redirects_to_list()

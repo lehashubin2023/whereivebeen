@@ -6,6 +6,7 @@ use App\Enums\GameSession\ImportStatusEnum;
 use App\Jobs\ImportGameSessionJob;
 use App\Models\User;
 use Database\Seeders\EventTypeSeeder;
+use Database\Seeders\MapSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,6 +18,7 @@ class ImportGameSessionTest extends TestCase
     {
         parent::setUp();
         $this->seed(EventTypeSeeder::class);
+        $this->seed(MapSeeder::class);
     }
 
     public function test_import_with_first_session_correctly_ended()

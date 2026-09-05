@@ -8,7 +8,6 @@ use App\Support\GameSession\ImportProgress\ImportGameSessionProgress;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Queue;
-use Illuminate\Support\Facades\Log;
 
 #[Queue('import')]
 class ImportGameSessionJob implements ShouldQueue
@@ -31,7 +30,6 @@ class ImportGameSessionJob implements ShouldQueue
         $progress = new ImportGameSessionProgress($this->user);
 
         try {
-            Log::error(123);
             $gameSessionId = $importer->exec($this->rawGameSessionInput, $this->user, $progress);
             $progress->complete($gameSessionId);
         } catch (\Throwable $e) {

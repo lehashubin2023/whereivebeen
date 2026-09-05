@@ -26,12 +26,6 @@ class GameSessionController extends Controller
         private readonly ShowSessionEvent $showSessionEvent,
     ) {}
 
-    #[Get('import', name: 'import')]
-    public function showImportPage(): Response
-    {
-        return Inertia::render('game-session/Import');
-    }
-
     #[Post('import', name: 'import.store')]
     public function import(ImportGameSessionRequest $request): RedirectResponse
     {

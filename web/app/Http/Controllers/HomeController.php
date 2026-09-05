@@ -10,8 +10,8 @@ use Spatie\RouteAttributes\Attributes\Middleware;
 class HomeController extends Controller
 {
     #[Get('', name: 'home')]
-    public function showImportPage(): RedirectResponse
+    public function index(): RedirectResponse
     {
-        return auth()->check() ? to_route('game-session.import') : to_route('login');
+        return auth()->check() ? to_route('game-session.sessions') : to_route('login');
     }
 }

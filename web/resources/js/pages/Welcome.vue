@@ -2,7 +2,8 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Compass, Footprints, Map, ScrollText } from '@lucide/vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
-import { dashboard, login, register } from '@/routes';
+import { login, register } from '@/routes';
+import { sessions } from '@/routes/game-session';
 
 const page = usePage();
 const appName = page.props.name;
@@ -33,7 +34,7 @@ const features = [
         <header
             class="mx-auto flex w-full max-w-6xl items-center justify-between"
         >
-            <Link :href="dashboard()" class="flex items-center gap-3">
+            <Link :href="sessions()" class="flex items-center gap-3">
                 <div
                     class="wow-frame flex size-11 items-center justify-center bg-sidebar"
                 >
@@ -47,7 +48,7 @@ const features = [
             <nav class="flex items-center gap-3">
                 <Link
                     v-if="page.props.auth.user"
-                    :href="dashboard()"
+                    :href="sessions()"
                     class="wow-btn"
                 >
                     Enter
@@ -86,7 +87,7 @@ const features = [
                     <div class="mt-9 flex flex-wrap items-center gap-4">
                         <Link
                             v-if="page.props.auth.user"
-                            :href="dashboard()"
+                            :href="sessions()"
                             class="wow-btn text-sm"
                         >
                             <Compass class="size-4" />

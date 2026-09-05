@@ -99,8 +99,5 @@ npm run types:check # vue-tsc --noEmit
 
 ## Известные шероховатости
 
-- В [ImportGameSessionJob](web/app/Jobs/ImportGameSessionJob.php) в `catch` остался
-  отладочный `dd($e->getMessage())` — он прерывает выполнение до записи ошибки в `import_logs`.
-  Убрать при работе над обработкой ошибок импорта.
 - Часть архитектуры из [plan.md](web/plan.md) (SSE-статусы, рендеринг на Leaflet, раскраска
   по `state`) ещё не реализована — сверяйся с планом, что уже есть, а что нет.
