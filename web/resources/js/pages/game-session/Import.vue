@@ -19,7 +19,7 @@ defineOptions({
     <div class="flex flex-1 justify-center p-4 md:p-8">
         <div class="wow-panel w-full max-w-2xl p-6 md:p-8">
             <h1
-                class="font-display text-gold text-2xl font-semibold tracking-wide"
+                class="text-gold font-display text-2xl font-semibold tracking-wide"
             >
                 Import Session
             </h1>

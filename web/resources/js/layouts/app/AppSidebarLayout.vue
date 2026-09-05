@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
-import { watchEffect } from 'vue';
 import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
@@ -15,25 +13,12 @@ type Props = {
 withDefaults(defineProps<Props>(), {
     breadcrumbs: () => [],
 });
-
-const page = usePage();
-
-watchEffect(() => {
-    const map = page.props.backgroundMap;
-
-    if (map && typeof document !== 'undefined') {
-        document.documentElement.style.setProperty(
-            '--page-bg-image',
-            `url('${map}')`,
-        );
-    }
-});
 </script>
 
 <template>
     <AppShell variant="sidebar">
         <AppSidebar />
-        <AppContent variant="sidebar" class="page-bg overflow-x-hidden">
+        <AppContent variant="sidebar" class="overflow-x-hidden">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
             <slot />
         </AppContent>

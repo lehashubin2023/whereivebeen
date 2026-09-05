@@ -100,7 +100,7 @@
 
 :root,
 .dark {
-    --background: hsl(28 14% 6%);
+    --background: hsl(28 7% 9%);
     --foreground: hsl(40 32% 84%);
     --card: hsl(28 13% 12%);
     --card-foreground: hsl(40 30% 85%);
@@ -148,24 +148,6 @@
     }
     body {
         @apply bg-background text-foreground;
-        background-image:
-            radial-gradient(
-                ellipse 90% 55% at 50% -12%,
-                hsl(42 48% 22% / 0.5),
-                transparent 68%
-            ),
-            radial-gradient(
-                ellipse 70% 50% at 100% 4%,
-                hsl(96 42% 20% / 0.16),
-                transparent 62%
-            ),
-            radial-gradient(
-                ellipse 70% 55% at 0% 100%,
-                hsl(275 42% 26% / 0.14),
-                transparent 60%
-            );
-        background-attachment: fixed;
-        background-repeat: no-repeat;
     }
     body::before {
         content: '';

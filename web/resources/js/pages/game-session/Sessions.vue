@@ -89,7 +89,7 @@ function formatDate(value: string | null): string {
                         <td class="px-4 py-3 text-right">
                             <Link
                                 :href="`/game-session/sessions/${row.id}`"
-                                class="text-muted-foreground group-hover:text-gold"
+                                class="group-hover:text-gold text-muted-foreground"
                                 aria-label="Open map"
                             >
                                 <ChevronRight class="ml-auto size-4" />

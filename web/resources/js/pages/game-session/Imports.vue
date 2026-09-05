@@ -54,7 +54,7 @@ function formatDate(value: string | null): string {
     <div class="flex flex-1 flex-col p-4 md:p-8">
         <div class="mb-6 flex items-center justify-between">
             <h1
-                class="font-display text-gold text-2xl font-semibold tracking-wide"
+                class="text-gold font-display text-2xl font-semibold tracking-wide"
             >
                 Imports
             </h1>
@@ -85,7 +85,9 @@ function formatDate(value: string | null): string {
                         :key="row.id"
                         class="border-b border-border/40 last:border-0"
                     >
-                        <td class="px-4 py-3">{{ row.game_session_id ?? '—' }}</td>
+                        <td class="px-4 py-3">
+                            {{ row.game_session_id ?? '—' }}
+                        </td>
                         <td class="px-4 py-3">
                             <Badge
                                 variant="outline"
