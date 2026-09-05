@@ -8,6 +8,7 @@ use App\Models\Map;
 use App\Models\WayPoint;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Arr;
 
 class BuildSessionZones
 {
@@ -27,12 +28,7 @@ class BuildSessionZones
             ->whereNotNull('map_id')
             ->leftJoin('events', function (JoinClause $join) {
                 $join->on('events.game_session_id', '=', 'way_points.game_session_id')
-                    ->on('events.sequence', '=', 'way_points.sequence')
-                    ->whereIn('events.event_type_id', [
-                        EventTypeEnum::MOUNT->value,
-                        EventTypeEnum::TAXI->value,
-                        EventTypeEnum::GAP->value,
-                    ]);
+                    ->on('events.sequence', '=', 'way_points.sequence');
             })
             ->orderBy('way_points.sequence')
             ->withCasts(['payload' => 'json'])
@@ -53,6 +49,7 @@ class BuildSessionZones
         $points->transform(function ($point) {
             $point->state = $this->defineState($point);
             $point->gap = $this->defineGap($point);
+            $point->setAttribute('event_slug', $this->defineEvent($point));
 
             return $point;
         });
@@ -61,7 +58,7 @@ class BuildSessionZones
     }
 
     /**
-     * @param  Collection<int, array<string, mixed>>  $points
+     * @param  Collection<int, WayPoint>  $points
      * @return array<int, array<string, mixed>>
      */
     private function buildZones(Collection $points, GameSession $gameSession): array
@@ -95,14 +92,38 @@ class BuildSessionZones
                     ->copy()
                     ->addSeconds((int) $zonePoints->min('time'))
                     ->toIso8601String(),
-                'points' => $zonePoints,
+                'first_sequence' => (int) $zonePoints->min('sequence'),
+                'points' => $this->serializePoints($zonePoints),
             ];
         }
 
         return collect($zones)
-            ->sortBy(fn (array $zone) => $zone['points']->min('sequence'))
+            ->sortBy(fn (array $zone) => $zone['first_sequence'])
+            ->map(fn (array $zone) => Arr::except($zone, 'first_sequence'))
             ->values()
             ->all();
+    }
+
+    /**
+     * @param  iterable<int, WayPoint>  $points
+     * @return array<int, array<string, mixed>>
+     */
+    private function serializePoints(iterable $points): array
+    {
+        $result = [];
+
+        foreach ($points as $point) {
+            $result[] = [
+                'sequence' => (int) $point->getAttribute('sequence'),
+                'x' => $point->getAttribute('x'),
+                'y' => $point->getAttribute('y'),
+                'state' => $point->getAttribute('state'),
+                'gap' => $point->getAttribute('gap'),
+                'event' => $point->getAttribute('event_slug'),
+            ];
+        }
+
+        return $result;
     }
 
     private function defineState(WayPoint &$point): string
@@ -137,5 +158,18 @@ class BuildSessionZones
         $this->prevMapId = $point['map_id'];
 
         return $isGap;
+    }
+
+    private function defineEvent(WayPoint &$point): ?string
+    {
+        $eventTypeId = $point->getAttribute('event_type_id');
+
+        if ($eventTypeId === null) {
+            return null;
+        }
+
+        $type = EventTypeEnum::tryFrom((int) $eventTypeId);
+
+        return $type !== null && $type->hasMarker() ? $type->slug() : null;
     }
 }

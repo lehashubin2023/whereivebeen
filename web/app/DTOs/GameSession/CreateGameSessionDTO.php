@@ -15,8 +15,7 @@ class CreateGameSessionDTO implements DTOContract
         public readonly int $session_start_at,
         public readonly string $version,
         public readonly string $realm
-    )
-    {}
+    ) {}
 
     public static function fromRequest(Request $request): self
     {
@@ -55,7 +54,7 @@ class CreateGameSessionDTO implements DTOContract
             'game_session_id' => $this->game_session_id,
             'session_start_at' => $this->session_start_at,
             'version' => $this->version,
-            'realm' => $this->realm
+            'realm' => $this->realm,
         ];
     }
 }

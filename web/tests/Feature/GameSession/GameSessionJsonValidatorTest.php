@@ -28,7 +28,7 @@ class GameSessionJsonValidatorTest extends TestCase
     public function test_are_string_fields_checked_correctly()
     {
         $data = $this->validPayload([
-            'char'  => 123,
+            'char' => 123,
             'realm' => ['Azeroth'],
         ]);
 
@@ -39,11 +39,11 @@ class GameSessionJsonValidatorTest extends TestCase
     {
         $data = $this->validPayload(
             [
-                'version'   => 'not-an-int',
-                'sessionId' => 'nope',      
+                'version' => 'not-an-int',
+                'sessionId' => 'nope',
             ],
             [
-                'x'     => 'abc',
+                'x' => 'abc',
                 'mapId' => 'zzz',
             ]
         );
@@ -57,8 +57,8 @@ class GameSessionJsonValidatorTest extends TestCase
     {
         $data = $this->validPayload([], [
             'inCombat' => 'yes',
-            'mounted'  => 'nope',
-            'onTaxi'   => 3,
+            'mounted' => 'nope',
+            'onTaxi' => 3,
         ]);
 
         $this->assertFailsValidation($data, [
@@ -69,12 +69,12 @@ class GameSessionJsonValidatorTest extends TestCase
     private function validPayload(array $overrides = [], array $pointOverrides = []): array
     {
         return array_merge([
-            'version'   => 1,
+            'version' => 1,
             'sessionId' => 42,
-            'started'   => 1700000000,
-            'char'      => 'Thrall',
-            'realm'     => 'Silvermoon',
-            'points'    => [
+            'started' => 1700000000,
+            'char' => 'Thrall',
+            'realm' => 'Silvermoon',
+            'points' => [
                 array_merge(['x' => 1.5, 'y' => 2.5, 'mapId' => 10], $pointOverrides),
             ],
         ], $overrides);

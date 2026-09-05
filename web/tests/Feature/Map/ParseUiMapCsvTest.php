@@ -16,7 +16,7 @@ class ParseUiMapCsvTest extends TestCase
     {
         parent::setUp();
 
-        $this->parser = new ParseUiMapCsv();
+        $this->parser = new ParseUiMapCsv;
     }
 
     protected function tearDown(): void

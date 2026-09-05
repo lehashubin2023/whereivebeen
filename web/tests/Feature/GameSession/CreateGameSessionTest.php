@@ -3,10 +3,8 @@
 namespace Tests\Feature\GameSession;
 
 use App\Actions\GameSession\CreateGameSession;
-use App\Actions\GameSession\DecodeRawInput;
 use App\DTOs\GameSession\CreateGameSessionDTO;
 use App\Exceptions\GameSession\AlreadyExistsGameSessionException;
-use App\Exceptions\GameSession\InvalidGameSessionInputException;
 use App\Exceptions\GameSession\LimitGameSessionsExceededException;
 use App\Models\GameSession;
 use App\Models\User;
@@ -26,7 +24,7 @@ class CreateGameSessionTest extends TestCase
         $session = GameSession::factory()->create();
 
         app()->make(CreateGameSession::class)->exec(
-            CreateGameSessionDTO::fromModel($session), 
+            CreateGameSessionDTO::fromModel($session),
             $user
         );
     }
@@ -39,7 +37,7 @@ class CreateGameSessionTest extends TestCase
         $session = GameSession::factory()->forUser($user)->create();
 
         app()->make(CreateGameSession::class)->exec(
-            CreateGameSessionDTO::fromModel($session), 
+            CreateGameSessionDTO::fromModel($session),
             $user
         );
     }
@@ -50,7 +48,7 @@ class CreateGameSessionTest extends TestCase
         $session = GameSession::factory()->make();
 
         app()->make(CreateGameSession::class)->exec(
-            CreateGameSessionDTO::fromModel($session), 
+            CreateGameSessionDTO::fromModel($session),
             $user
         );
 

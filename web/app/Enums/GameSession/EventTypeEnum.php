@@ -23,17 +23,42 @@ enum EventTypeEnum: int
     public function slug(): string
     {
         return match ($this) {
-            self::MOUNT     => 'mount',
-            self::COMBAT    => 'combat',
-            self::DEATH     => 'death',
+            self::MOUNT => 'mount',
+            self::COMBAT => 'combat',
+            self::DEATH => 'death',
             self::RESURRECT => 'resurrect',
-            self::LEVELUP   => 'levelup',
-            self::LOOT      => 'loot',
-            self::VISIT     => 'visit',
-            self::GROUP     => 'group',
-            self::QUEST     => 'quest',
-            self::TAXI      => 'taxi',
-            self::GAP       => 'gap',
+            self::LEVELUP => 'levelup',
+            self::LOOT => 'loot',
+            self::VISIT => 'visit',
+            self::GROUP => 'group',
+            self::QUEST => 'quest',
+            self::TAXI => 'taxi',
+            self::GAP => 'gap',
+        };
+    }
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::MOUNT => 'Mount',
+            self::COMBAT => 'Combat',
+            self::DEATH => 'Death',
+            self::RESURRECT => 'Resurrect',
+            self::LEVELUP => 'Level up',
+            self::LOOT => 'Loot',
+            self::VISIT => 'Visit',
+            self::GROUP => 'Group',
+            self::QUEST => 'Quest',
+            self::TAXI => 'Taxi',
+            self::GAP => 'Route gap',
+        };
+    }
+
+    public function hasMarker(): bool
+    {
+        return match ($this) {
+            self::GAP, self::COMBAT => false,
+            default => true,
         };
     }
 

@@ -12,24 +12,23 @@ class CreateEventDTO implements DTOContract
         private readonly int $sequence,
         private readonly ?int $event_type_id,
         private readonly string $payload
-    )
-    {}
+    ) {}
 
     public static function fromPoint(array $point, int $gameSessionId, int $sequence, int $eventTypeId): self
     {
         $map = [
-            'level'     => 'level',
-            'action'    => 'action',
-            'title'     => 'title',
-            'place'     => 'place',
-            'member'    => 'member',
+            'level' => 'level',
+            'action' => 'action',
+            'title' => 'title',
+            'place' => 'place',
+            'member' => 'member',
             'in_combat' => 'inCombat',
-            'mounted'   => 'mounted',
-            'on_taxi'   => 'onTaxi',
-            'quest_id'  => 'questId',
-            'item_id'   => 'itemId',
+            'mounted' => 'mounted',
+            'on_taxi' => 'onTaxi',
+            'quest_id' => 'questId',
+            'item_id' => 'itemId',
             'item_name' => 'itemName',
-            'count'     => 'count',
+            'count' => 'count',
         ];
 
         $payload = [];
@@ -68,7 +67,7 @@ class CreateEventDTO implements DTOContract
             'game_session_id' => $this->game_session_id,
             'sequence' => $this->sequence,
             'event_type_id' => $this->event_type_id,
-            'payload' => $this->payload
+            'payload' => $this->payload,
         ];
     }
 }

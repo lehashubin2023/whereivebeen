@@ -14,7 +14,8 @@ abstract class TestCase extends BaseTestCase
         }
     }
 
-    protected function getFixturesPath(string $path): string {
-        return base_path('tests/Fixtures/' . ltrim($path, '/'));
+    protected function getFixturesPath(string $path): string
+    {
+        return base_path('tests/Fixtures/'.ltrim($path, '/'));
     }
 }

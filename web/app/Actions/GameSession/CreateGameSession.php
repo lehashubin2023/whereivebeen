@@ -13,13 +13,13 @@ class CreateGameSession
     public function exec(CreateGameSessionDTO $dto, User $user): GameSession
     {
         if ($user->canCreateGameSession()) {
-            throw new LimitGameSessionsExceededException();
+            throw new LimitGameSessionsExceededException;
         }
 
         $data = $dto->toArray();
-        
+
         if ($user->doesGameSessionAlreadyExist($data['game_session_id'])) {
-            throw new AlreadyExistsGameSessionException();
+            throw new AlreadyExistsGameSessionException;
         }
 
         return GameSession::create([

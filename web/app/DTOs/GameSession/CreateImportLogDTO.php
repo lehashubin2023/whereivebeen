@@ -14,8 +14,7 @@ class CreateImportLogDTO implements DTOContract
         public readonly ImportStatusEnum $status,
         public readonly int $execution_time,
         public readonly ?string $error_message
-    )
-    {}
+    ) {}
 
     public static function fromRequest(Request $request): self
     {
@@ -40,7 +39,7 @@ class CreateImportLogDTO implements DTOContract
             'game_session_id' => $this->game_session_id,
             'status' => $this->status,
             'execution_time' => $this->execution_time,
-            'error_message' => $this->error_message
+            'error_message' => $this->error_message,
         ];
     }
 }

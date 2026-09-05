@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Actions\GameSession\BuildSessionZones;
+use App\Actions\GameSession\ShowSessionEvent;
 use App\Http\Requests\GameSession\ImportGameSessionRequest;
 use App\Jobs\ImportGameSessionJob;
 use App\Models\GameSession;
 use App\Models\ImportLog;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,6 +23,7 @@ class GameSessionController extends Controller
 {
     public function __construct(
         private readonly BuildSessionZones $buildSessionZones,
+        private readonly ShowSessionEvent $showSessionEvent,
     ) {}
 
     #[Get('import', name: 'import')]
@@ -95,7 +98,19 @@ class GameSessionController extends Controller
                 'realm' => $gameSession->realm,
                 'session_start_at' => $gameSession->session_start_at->toIso8601String(),
             ],
-            'zones' => $this->buildSessionZones->exec($gameSession), // todo: add resource
+            'zones' => $this->buildSessionZones->exec($gameSession),
         ]);
+    }
+
+    #[Get('sessions/{gameSession}/events/{sequence}', name: 'sessions.event')]
+    public function sessionEvent(GameSession $gameSession, int $sequence): JsonResponse
+    {
+        abort_unless($gameSession->user_id === auth()->id(), 403);
+
+        $event = $this->showSessionEvent->exec($gameSession, $sequence);
+
+        abort_if($event === null, 404);
+
+        return response()->json($event);
     }
 }

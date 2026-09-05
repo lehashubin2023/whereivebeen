@@ -2,9 +2,6 @@
 
 namespace App\Actions\GameSession;
 
-use App\Actions\GameSession\CreateGameSession;
-use App\Actions\GameSession\CreateWay;
-use App\Actions\GameSession\DecodeRawInput;
 use App\DTOs\GameSession\CreateGameSessionDTO;
 use App\Models\User;
 use App\Support\GameSession\ImportProgress\ImportGameSessionProgressContract;
@@ -18,13 +15,12 @@ class ImportGameSession
         private CreateGameSession $createGameSession,
         private DecodeRawInput $decoder,
         private CreateWay $createWay
-    )
-    {}
+    ) {}
 
     public function exec(
         string $rawInput,
         User $user,
-        ImportGameSessionProgressContract $progress = new NullImportGameSessionProgress()
+        ImportGameSessionProgressContract $progress = new NullImportGameSessionProgress
     ): int {
         $decodedInput = $this->decoder->exec($rawInput);
         $validated = GameSessionJsonValidator::validate($decodedInput);

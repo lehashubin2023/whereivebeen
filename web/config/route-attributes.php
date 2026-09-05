@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Routing\Middleware\SubstituteBindings;
+
 return [
     'enabled' => true,
 
@@ -9,7 +11,7 @@ return [
 
     'middleware' => [
         'web',
-        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        SubstituteBindings::class,
     ],
 
     'scope-bindings' => null,

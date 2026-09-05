@@ -287,6 +287,37 @@
         pointer-events: none;
     }
 
+    .wow-medallion {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 9999px;
+        border: 2px solid transparent;
+        background:
+            radial-gradient(
+                    circle at 50% 30%,
+                    hsl(42 42% 27%),
+                    hsl(28 30% 10%) 70%
+                )
+                padding-box,
+            linear-gradient(
+                    160deg,
+                    hsl(46 74% 66%),
+                    hsl(38 55% 38%) 55%,
+                    hsl(46 74% 66%)
+                )
+                border-box;
+        box-shadow:
+            0 0 16px -2px hsl(42 72% 46% / 0.6),
+            inset 0 1px 0 hsl(42 60% 60% / 0.2);
+    }
+
     .text-gold {
         color: hsl(42 68% 62%);
     }

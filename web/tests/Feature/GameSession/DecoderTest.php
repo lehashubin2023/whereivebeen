@@ -33,23 +33,23 @@ class DecoderTest extends TestCase
             1234123 => [
                 'points' => [
                     'someVal' => false,
-                    'someVal2' => []
-                ]
-            ]
+                    'someVal2' => [],
+                ],
+            ],
         ]));
     }
 
     public function test_is_decoder_decode_correct()
     {
         $firstVal = [
-            123456 => 'someVal'
+            123456 => 'someVal',
         ];
         $decodedArray1 = app()->make(DecodeRawInput::class)->exec(json_encode($firstVal));
 
         $secondVal = [
             123456 => [
-                'someVal' => true
-            ]
+                'someVal' => true,
+            ],
         ];
         $decodedArray2 = app()->make(DecodeRawInput::class)->exec(json_encode($secondVal));
 

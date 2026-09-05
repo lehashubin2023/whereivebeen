@@ -40,7 +40,7 @@ class ImportGameSessionProgressTest extends TestCase
         (new ImportGameSessionProgress($this->user))->process(500);
 
         $this->assertDatabaseHas('import_logs', [
-            'status'       => ImportStatusEnum::IN_PROCESS,
+            'status' => ImportStatusEnum::IN_PROCESS,
             'points_total' => 500,
         ]);
     }
@@ -59,7 +59,7 @@ class ImportGameSessionProgressTest extends TestCase
         (new ImportGameSessionProgress($this->user))->complete($session->id);
 
         $this->assertDatabaseHas('import_logs', [
-            'status'          => ImportStatusEnum::COMPLETED,
+            'status' => ImportStatusEnum::COMPLETED,
             'game_session_id' => $session->id,
         ]);
     }
@@ -69,7 +69,7 @@ class ImportGameSessionProgressTest extends TestCase
         (new ImportGameSessionProgress($this->user))->fail(new RuntimeException('boom'));
 
         $this->assertDatabaseHas('import_logs', [
-            'status'        => ImportStatusEnum::FAILED,
+            'status' => ImportStatusEnum::FAILED,
             'error_message' => 'boom',
         ]);
     }
@@ -83,7 +83,7 @@ class ImportGameSessionProgressTest extends TestCase
 
     public function test_null_progress_writes_nothing()
     {
-        $progress = new NullImportGameSessionProgress();
+        $progress = new NullImportGameSessionProgress;
         $progress->process(5);
         $progress->track(2);
         $progress->complete(1);

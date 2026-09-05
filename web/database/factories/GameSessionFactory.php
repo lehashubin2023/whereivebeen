@@ -19,12 +19,12 @@ class GameSessionFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id'          => User::factory(),
-            'game_session_id'  => fake()->unique()->numberBetween(1, 2_000_000_000),
+            'user_id' => User::factory(),
+            'game_session_id' => fake()->unique()->numberBetween(1, 2_000_000_000),
             'session_start_at' => fake()->dateTimeBetween('-30 days'),
-            'version'          => fake()->numberBetween(1, 100),
-            'realm'            => fake()->randomElement(['Silvermoon', 'Ravencrest', 'Kazzak', 'Draenor', 'Argent Dawn']),
-            'character'        => fake()->firstName(),
+            'version' => fake()->numberBetween(1, 100),
+            'realm' => fake()->randomElement(['Silvermoon', 'Ravencrest', 'Kazzak', 'Draenor', 'Argent Dawn']),
+            'character' => fake()->firstName(),
         ];
     }
 

@@ -12,6 +12,6 @@ class HomeController extends Controller
     #[Get('', name: 'home')]
     public function showImportPage(): RedirectResponse
     {
-        return  auth()->check() ? to_route('game-session.import') : to_route('login');
+        return auth()->check() ? to_route('game-session.import') : to_route('login');
     }
 }

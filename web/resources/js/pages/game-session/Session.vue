@@ -4,30 +4,7 @@ import { Compass, MapPin } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import RouteMap from '@/components/map/RouteMap.vue';
 
-interface Point {
-    sequence: number;
-    x: number;
-    y: number;
-    state: 'ground' | 'mounted' | 'flying';
-    gap: boolean;
-}
-
-interface Zone {
-    id: number;
-    name: string;
-    image_path: string;
-    points_count: number;
-    time: string;
-    points: Point[];
-}
-
-interface SessionInfo {
-    id: number;
-    game_session_id: number;
-    character: string;
-    realm: string;
-    session_start_at: string | null;
-}
+import type { SessionInfo, Zone } from '@/types';
 
 const props = defineProps<{
     session: SessionInfo;
@@ -44,7 +21,8 @@ defineOptions({
 });
 
 const title = computed(
-    () => props.session.character || `Session #${props.session.game_session_id}`,
+    () =>
+        props.session.character || `Session #${props.session.game_session_id}`,
 );
 
 const selectedZoneId = ref<number | null>(props.zones[0]?.id ?? null);
@@ -113,7 +91,7 @@ function formatDate(value: string | null): string {
                         class="flex items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors"
                         :class="
                             zone.id === selectedZoneId
-                                ? 'bg-accent text-gold'
+                                ? 'text-gold bg-accent'
                                 : 'text-muted-foreground hover:bg-muted/50'
                         "
                         @click="selectedZoneId = zone.id"
@@ -139,6 +117,7 @@ function formatDate(value: string | null): string {
                     :key="selectedZone.id"
                     :image="selectedZone.image_path"
                     :points="selectedZone.points"
+                    :game-session-id="session.id"
                 />
             </div>
         </div>

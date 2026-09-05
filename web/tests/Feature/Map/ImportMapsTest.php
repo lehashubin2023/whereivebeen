@@ -16,7 +16,7 @@ class ImportMapsTest extends TestCase
     {
         parent::setUp();
 
-        $this->importer = new ImportMaps();
+        $this->importer = new ImportMaps;
     }
 
     public function test_inserts_valid_rows()
