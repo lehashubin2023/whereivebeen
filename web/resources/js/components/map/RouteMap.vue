@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Minus, Plus, RotateCcw } from '@lucide/vue';
 import { useElementSize, useEventListener } from '@vueuse/core';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import EventPopup from '@/components/map/EventPopup.vue';
 import { useSessionEvent } from '@/composables/useSessionEvent';
 import {
@@ -184,6 +184,27 @@ function clamp(value: number, min: number, max: number): number {
     return Math.min(Math.max(value, min), max);
 }
 
+function clampTranslate(): void {
+    const scaledWidth = stageWidth.value * scale.value;
+    const scaledHeight = stageHeight.value * scale.value;
+
+    translateX.value = clamp(
+        translateX.value,
+        Math.min(0, viewportWidth.value - scaledWidth),
+        0,
+    );
+    translateY.value = clamp(
+        translateY.value,
+        Math.min(0, viewportHeight.value - scaledHeight),
+        0,
+    );
+}
+
+watch(
+    [scale, stageWidth, stageHeight, viewportWidth, viewportHeight],
+    clampTranslate,
+);
+
 function zoomAt(pointerX: number, pointerY: number, factor: number): void {
     const next = clamp(scale.value * factor, MIN_SCALE, MAX_SCALE);
     const ratio = next / scale.value;
@@ -192,10 +213,7 @@ function zoomAt(pointerX: number, pointerY: number, factor: number): void {
     translateY.value = pointerY - (pointerY - translateY.value) * ratio;
     scale.value = next;
 
-    if (scale.value === MIN_SCALE) {
-        translateX.value = 0;
-        translateY.value = 0;
-    }
+    clampTranslate();
 }
 
 function onWheel(event: WheelEvent): void {
@@ -215,11 +233,7 @@ function onWheel(event: WheelEvent): void {
 }
 
 function zoomButton(factor: number): void {
-    zoomAt(
-        viewportWidth.value / 2,
-        viewport.value?.clientHeight ? viewport.value.clientHeight / 2 : 0,
-        factor,
-    );
+    zoomAt(viewportWidth.value / 2, viewportHeight.value / 2, factor);
 }
 
 let dragging = false;
@@ -243,6 +257,8 @@ function onPointerMove(event: PointerEvent): void {
     translateY.value += event.clientY - lastY;
     lastX = event.clientX;
     lastY = event.clientY;
+
+    clampTranslate();
 }
 
 function onPointerUp(): void {
@@ -257,172 +273,183 @@ function reset(): void {
 </script>
 
 <template>
-    <div
-        ref="viewport"
-        class="wow-map-frame relative h-[72vh] cursor-grab touch-none overflow-hidden select-none active:cursor-grabbing"
-        @wheel="onWheel"
-        @pointerdown="onPointerDown"
-        @pointermove="onPointerMove"
-        @pointerup="onPointerUp"
-        @pointerleave="onPointerUp"
-    >
-        <div
-            class="absolute top-0 left-0 origin-top-left"
-            :style="{ transform }"
-        >
+    <div class="flex flex-col gap-3">
+        <div class="wow-map-frame">
             <div
-                ref="stage"
-                class="relative"
-                :style="{ width: `${viewportWidth}px` }"
+                ref="viewport"
+                class="relative h-[72vh] cursor-grab touch-none overflow-hidden select-none active:cursor-grabbing"
+                @wheel="onWheel"
+                @pointerdown="onPointerDown"
+                @pointermove="onPointerMove"
+                @pointerup="onPointerUp"
+                @pointerleave="onPointerUp"
             >
-                <img
-                    :src="image"
-                    alt=""
-                    draggable="false"
-                    class="block w-full select-none"
-                />
-            </div>
-        </div>
-
-        <svg
-            v-if="stageWidth > 0 && viewportHeight > 0"
-            class="pointer-events-none absolute inset-0 h-full w-full"
-            :viewBox="`0 0 ${viewportWidth} ${viewportHeight}`"
-        >
-            <g
-                :transform="`translate(${translateX} ${translateY}) scale(${scale})`"
-            >
-                <polyline
-                    v-for="(segment, index) in segments"
-                    :key="index"
-                    :points="segment.points"
-                    fill="none"
-                    :stroke="STATE_COLORS[segment.state].line"
-                    stroke-width="2"
-                    stroke-linejoin="round"
-                    stroke-linecap="round"
-                    stroke-opacity="0.9"
-                    vector-effect="non-scaling-stroke"
-                />
-
-                <circle
-                    v-for="point in points"
-                    :key="point.sequence"
-                    :cx="point.x * stageWidth"
-                    :cy="point.y * stageHeight"
-                    :r="dotRadius"
-                    :fill="STATE_COLORS[point.state].dot"
-                    fill-opacity="0.95"
-                />
-
-                <circle
-                    v-if="firstPoint"
-                    :cx="firstPoint.x * stageWidth"
-                    :cy="firstPoint.y * stageHeight"
-                    :r="markerRadius"
-                    fill="#34d399"
-                    stroke="#0b0b0b"
-                    stroke-width="1"
-                    vector-effect="non-scaling-stroke"
-                />
-
-                <circle
-                    v-if="lastPoint && lastPoint !== firstPoint"
-                    :cx="lastPoint.x * stageWidth"
-                    :cy="lastPoint.y * stageHeight"
-                    :r="markerRadius"
-                    fill="#f87171"
-                    stroke="#0b0b0b"
-                    stroke-width="1"
-                    vector-effect="non-scaling-stroke"
-                />
-
-                <g class="pointer-events-auto">
-                    <g
-                        v-for="point in eventPoints"
-                        :key="`event-${point.sequence}`"
-                        class="cursor-pointer"
-                        @pointerdown.stop
-                        @click.stop="selectEvent(point)"
+                <div
+                    class="absolute top-0 left-0 origin-top-left"
+                    :style="{ transform }"
+                >
+                    <div
+                        ref="stage"
+                        class="relative"
+                        :style="{ width: `${viewportWidth}px` }"
                     >
-                        <circle
-                            v-if="selectedSequence === point.sequence"
-                            :cx="point.x * stageWidth"
-                            :cy="point.y * stageHeight"
-                            :r="selectionRadius"
+                        <img
+                            :src="image"
+                            alt=""
+                            draggable="false"
+                            class="block w-full select-none"
+                        />
+                    </div>
+                </div>
+
+                <svg
+                    v-if="stageWidth > 0 && viewportHeight > 0"
+                    class="pointer-events-none absolute inset-0 h-full w-full"
+                    :viewBox="`0 0 ${viewportWidth} ${viewportHeight}`"
+                >
+                    <g
+                        :transform="`translate(${translateX} ${translateY}) scale(${scale})`"
+                    >
+                        <polyline
+                            v-for="(segment, index) in segments"
+                            :key="index"
+                            :points="segment.points"
                             fill="none"
-                            :stroke="EVENT_COLORS[point.event!]"
-                            stroke-width="1.5"
+                            :stroke="STATE_COLORS[segment.state].line"
+                            stroke-width="2"
+                            stroke-linejoin="round"
+                            stroke-linecap="round"
                             stroke-opacity="0.9"
                             vector-effect="non-scaling-stroke"
                         />
+
                         <circle
+                            v-for="point in points"
+                            :key="point.sequence"
                             :cx="point.x * stageWidth"
                             :cy="point.y * stageHeight"
-                            :r="eventRadius"
-                            :fill="EVENT_COLORS[point.event!]"
-                            :stroke="EVENT_OUTLINE"
-                            stroke-width="1.5"
+                            :r="dotRadius"
+                            :fill="STATE_COLORS[point.state].dot"
+                            fill-opacity="0.95"
+                        />
+
+                        <circle
+                            v-if="firstPoint"
+                            :cx="firstPoint.x * stageWidth"
+                            :cy="firstPoint.y * stageHeight"
+                            :r="markerRadius"
+                            fill="#34d399"
+                            stroke="#0b0b0b"
+                            stroke-width="1"
                             vector-effect="non-scaling-stroke"
                         />
-                        <circle
-                            :cx="point.x * stageWidth"
-                            :cy="point.y * stageHeight"
-                            :r="hitRadius"
-                            fill="transparent"
-                        />
-                    </g>
-                </g>
-            </g>
-        </svg>
 
-        <div class="pointer-events-none absolute inset-0 overflow-hidden">
-            <div
-                v-if="popupPlacement"
-                class="pointer-events-auto absolute -translate-x-1/2"
-                :class="popupPlacement.below ? '' : '-translate-y-full'"
-                :style="popupPlacement.style"
-                @pointerdown.stop
-                @wheel.stop
-            >
-                <EventPopup
-                    :event="eventData"
-                    :loading="loading"
-                    :error="error"
-                    @close="closePopup"
-                />
+                        <circle
+                            v-if="lastPoint && lastPoint !== firstPoint"
+                            :cx="lastPoint.x * stageWidth"
+                            :cy="lastPoint.y * stageHeight"
+                            :r="markerRadius"
+                            fill="#f87171"
+                            stroke="#0b0b0b"
+                            stroke-width="1"
+                            vector-effect="non-scaling-stroke"
+                        />
+
+                        <g class="pointer-events-auto">
+                            <g
+                                v-for="point in eventPoints"
+                                :key="`event-${point.sequence}`"
+                                class="cursor-pointer"
+                                @pointerdown.stop
+                                @click.stop="selectEvent(point)"
+                            >
+                                <circle
+                                    v-if="selectedSequence === point.sequence"
+                                    :cx="point.x * stageWidth"
+                                    :cy="point.y * stageHeight"
+                                    :r="selectionRadius"
+                                    fill="none"
+                                    :stroke="EVENT_COLORS[point.event!]"
+                                    stroke-width="1.5"
+                                    stroke-opacity="0.9"
+                                    vector-effect="non-scaling-stroke"
+                                />
+                                <circle
+                                    :cx="point.x * stageWidth"
+                                    :cy="point.y * stageHeight"
+                                    :r="eventRadius"
+                                    :fill="EVENT_COLORS[point.event!]"
+                                    :stroke="EVENT_OUTLINE"
+                                    stroke-width="1.5"
+                                    vector-effect="non-scaling-stroke"
+                                />
+                                <circle
+                                    :cx="point.x * stageWidth"
+                                    :cy="point.y * stageHeight"
+                                    :r="hitRadius"
+                                    fill="transparent"
+                                />
+                            </g>
+                        </g>
+                    </g>
+                </svg>
+
+                <div
+                    class="pointer-events-none absolute inset-0 overflow-hidden"
+                >
+                    <div
+                        v-if="popupPlacement"
+                        class="pointer-events-auto absolute -translate-x-1/2"
+                        :class="popupPlacement.below ? '' : '-translate-y-full'"
+                        :style="popupPlacement.style"
+                        @pointerdown.stop
+                        @wheel.stop
+                    >
+                        <EventPopup
+                            :event="eventData"
+                            :loading="loading"
+                            :error="error"
+                            @close="closePopup"
+                        />
+                    </div>
+
+                    <div
+                        class="pointer-events-auto absolute top-5 right-5 flex flex-col gap-1"
+                    >
+                        <button
+                            type="button"
+                            class="wow-frame text-gold flex size-8 items-center justify-center bg-sidebar"
+                            title="Zoom in"
+                            @pointerdown.stop
+                            @click="zoomButton(1.3)"
+                        >
+                            <Plus class="size-4" />
+                        </button>
+                        <button
+                            type="button"
+                            class="wow-frame text-gold flex size-8 items-center justify-center bg-sidebar"
+                            title="Zoom out"
+                            @pointerdown.stop
+                            @click="zoomButton(1 / 1.3)"
+                        >
+                            <Minus class="size-4" />
+                        </button>
+                        <button
+                            type="button"
+                            class="wow-frame text-gold flex size-8 items-center justify-center bg-sidebar"
+                            title="Reset view"
+                            @pointerdown.stop
+                            @click="reset"
+                        >
+                            <RotateCcw class="size-4" />
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="absolute top-3 right-3 flex flex-col gap-1">
-            <button
-                type="button"
-                class="wow-frame text-gold flex size-8 items-center justify-center bg-sidebar"
-                title="Zoom in"
-                @click="zoomButton(1.3)"
-            >
-                <Plus class="size-4" />
-            </button>
-            <button
-                type="button"
-                class="wow-frame text-gold flex size-8 items-center justify-center bg-sidebar"
-                title="Zoom out"
-                @click="zoomButton(1 / 1.3)"
-            >
-                <Minus class="size-4" />
-            </button>
-            <button
-                type="button"
-                class="wow-frame text-gold flex size-8 items-center justify-center bg-sidebar"
-                title="Reset view"
-                @click="reset"
-            >
-                <RotateCcw class="size-4" />
-            </button>
-        </div>
-
         <div
-            class="wow-frame absolute bottom-3 left-3 flex flex-col gap-1 bg-sidebar/90 px-3 py-2 text-xs text-muted-foreground"
+            class="wow-panel flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 text-xs text-muted-foreground"
         >
             <span
                 v-for="item in LEGEND"
@@ -437,11 +464,12 @@ function reset(): void {
             </span>
 
             <template v-if="eventLegend.length">
-                <span
-                    class="mt-1 border-t border-border pt-1.5 text-[10px] tracking-wide uppercase"
-                >
+                <span class="h-4 w-px bg-border" />
+
+                <span class="text-[10px] tracking-wide uppercase">
                     Events — click for details
                 </span>
+
                 <span
                     v-for="slug in eventLegend"
                     :key="slug"
