@@ -68,6 +68,14 @@ make test          # поднять тестовую БД и прогнать ph
 make down / build / restart
 ```
 
+Сборка zip аддона в `public/downloads/` (каталог `addon/` вне тома контейнера, поэтому
+одноразовый контейнер с ro-монтированием и явным `--source`):
+
+```bash
+docker compose run --rm -v /home/aleksey/home/whereivebeen/addon:/addon:ro \
+    app php artisan addon:package --source=/addon
+```
+
 Внутри контейнера / локально:
 
 ```bash

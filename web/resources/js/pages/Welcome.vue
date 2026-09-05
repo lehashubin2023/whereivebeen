@@ -1,40 +1,45 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Compass, Footprints, Map, ScrollText } from '@lucide/vue';
+import AddonDownloadButton from '@/components/AddonDownloadButton.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { login, register } from '@/routes';
-import { sessions } from '@/routes/game-session';
+import type { AddonDownload } from '@/types';
+
+type Props = {
+    addon: AddonDownload;
+};
+
+defineProps<Props>();
 
 const page = usePage();
 const appName = page.props.name;
 
-const features = [
+const steps = [
     {
-        icon: Footprints,
-        title: 'Track every step',
-        text: 'The in-game addon records your route, combat and events as you roam the world.',
+        title: 'Install the addon',
+        text: 'Unpack the archive into Interface/AddOns. The folder must be named WhereIveBeen.',
     },
     {
-        icon: ScrollText,
-        title: 'Import your log',
-        text: 'Paste the exported session and let it be parsed into your personal chronicle.',
+        title: 'Play as usual',
+        text: 'The addon records your position and in-game events while you play. Nothing to configure.',
     },
     {
-        icon: Map,
-        title: 'Relive the journey',
-        text: 'Watch your path unfold across the authentic maps of Azeroth and Outland.',
+        title: 'Import the log',
+        text: 'Export a session from the addon window and paste it on the Imports page.',
     },
 ];
+
+const clients = ['Vanilla', 'TBC', 'Wrath', 'Cataclysm', 'Mists', 'Retail'];
 </script>
 
 <template>
     <Head title="Welcome" />
 
-    <div class="relative flex min-h-svh flex-col px-6 py-6 lg:px-10">
+    <div class="flex min-h-svh flex-col bg-background px-6 py-6 lg:px-10">
         <header
-            class="mx-auto flex w-full max-w-6xl items-center justify-between"
+            class="mx-auto flex w-full max-w-5xl items-center justify-between"
         >
-            <Link :href="sessions()" class="flex items-center gap-3">
+            <div class="flex items-center gap-3">
                 <div
                     class="wow-frame flex size-11 items-center justify-center bg-sidebar"
                 >
@@ -43,113 +48,60 @@ const features = [
                 <span class="text-gold font-display text-lg tracking-[0.22em]">
                     {{ appName }}
                 </span>
-            </Link>
+            </div>
 
             <nav class="flex items-center gap-3">
-                <Link
-                    v-if="page.props.auth.user"
-                    :href="sessions()"
-                    class="wow-btn"
-                >
-                    Enter
-                </Link>
-                <template v-else>
-                    <Link :href="login()" class="wow-btn-ghost">Log in</Link>
-                    <Link :href="register()" class="wow-btn">Enlist</Link>
-                </template>
+                <Link :href="login()" class="wow-btn-ghost">Log in</Link>
+                <Link :href="register()" class="wow-btn">Sign up</Link>
             </nav>
         </header>
 
         <main
-            class="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center py-14"
+            class="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center py-14"
         >
-            <div class="grid items-center gap-12 lg:grid-cols-2">
-                <div class="flex flex-col">
-                    <span
-                        class="mb-4 font-display text-xs tracking-[0.4em] text-fel/90 uppercase"
-                    >
-                        Chronicle of the Journey
-                    </span>
-                    <h1
-                        class="wow-title text-5xl leading-[1.05] font-black sm:text-6xl lg:text-7xl"
-                    >
-                        {{ appName }}
-                    </h1>
-                    <hr class="wow-divider-ornate my-7 max-w-md" />
-                    <p
-                        class="max-w-lg font-serif text-lg leading-relaxed text-foreground/90"
-                    >
-                        Every step you take across the world, remembered. Record
-                        your travels in-game, import your log, and watch your
-                        path be drawn across the maps of Azeroth and Outland.
-                    </p>
+            <h1 class="wow-title text-4xl font-black sm:text-5xl">
+                {{ appName }}
+            </h1>
 
-                    <div class="mt-9 flex flex-wrap items-center gap-4">
-                        <Link
-                            v-if="page.props.auth.user"
-                            :href="sessions()"
-                            class="wow-btn text-sm"
-                        >
-                            <Compass class="size-4" />
-                            Open your atlas
-                        </Link>
-                        <template v-else>
-                            <Link :href="register()" class="wow-btn text-sm">
-                                <Compass class="size-4" />
-                                Begin your journey
-                            </Link>
-                            <Link :href="login()" class="wow-btn-ghost text-sm">
-                                Return to the road
-                            </Link>
-                        </template>
-                    </div>
-                </div>
+            <hr class="wow-divider-ornate my-7 max-w-md" />
 
-                <div class="relative">
-                    <div class="wow-map-frame">
-                        <img
-                            src="/maps/Nagrand.png"
-                            alt="Map of Nagrand, Outland"
-                            loading="eager"
-                        />
-                    </div>
-                    <div
-                        class="wow-panel absolute -bottom-5 left-6 flex items-center gap-2 px-4 py-2"
-                    >
-                        <Compass class="text-gold size-4" />
-                        <span
-                            class="text-gold font-display text-xs tracking-[0.18em] uppercase"
-                        >
-                            Nagrand · Outland
-                        </span>
-                    </div>
-                </div>
+            <p class="max-w-2xl text-base leading-relaxed text-foreground/90">
+                A route tracker for World of Warcraft. An addon records where
+                your character goes and what happens along the way — mounts,
+                flight paths, deaths, levels, loot, quests. You export the
+                session, import it here, and the route is drawn on the zone map
+                with every event marked on it.
+            </p>
+
+            <div class="mt-8">
+                <AddonDownloadButton :addon="addon" />
             </div>
 
-            <div class="mt-24 grid gap-5 md:grid-cols-3">
+            <div class="mt-14 grid gap-4 md:grid-cols-3">
                 <div
-                    v-for="feature in features"
-                    :key="feature.title"
-                    class="wow-panel flex flex-col gap-3 p-6"
+                    v-for="(step, index) in steps"
+                    :key="step.title"
+                    class="wow-panel flex flex-col gap-2 p-5"
                 >
-                    <div
-                        class="wow-frame flex size-11 items-center justify-center bg-sidebar"
+                    <span
+                        class="text-xs tracking-[0.3em] text-muted-foreground uppercase"
                     >
-                        <component
-                            :is="feature.icon"
-                            class="text-gold size-5"
-                        />
-                    </div>
-                    <h3
-                        class="text-gold font-display text-lg font-semibold tracking-wide"
-                    >
-                        {{ feature.title }}
-                    </h3>
-                    <p class="text-sm leading-relaxed text-muted-foreground">
-                        {{ feature.text }}
-                    </p>
+                        Step {{ index + 1 }}
+                    </span>
+                    <h2 class="text-gold font-display tracking-wide">
+                        {{ step.title }}
+                    </h2>
+                    <p class="text-sm text-muted-foreground">{{ step.text }}</p>
                 </div>
             </div>
         </main>
+
+        <footer
+            class="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground"
+        >
+            <span class="tracking-wide uppercase">Supported clients</span>
+            <span class="h-3 w-px bg-border" />
+            <span v-for="client in clients" :key="client">{{ client }}</span>
+        </footer>
     </div>
 </template>

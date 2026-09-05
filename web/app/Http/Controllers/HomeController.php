@@ -2,16 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Addon\ResolveAddonDownload;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Get;
-use Spatie\RouteAttributes\Attributes\Middleware;
 
-#[Middleware('auth')]
 class HomeController extends Controller
 {
     #[Get('', name: 'home')]
-    public function index(): RedirectResponse
+    public function index(ResolveAddonDownload $resolveAddonDownload): Response|RedirectResponse
     {
-        return auth()->check() ? to_route('game-session.sessions') : to_route('login');
+        if (auth()->check()) {
+            return to_route('game-session.sessions');
+        }
+
+        return Inertia::render('Welcome', [
+            'addon' => $resolveAddonDownload->exec(),
+        ]);
     }
 }
