@@ -58,11 +58,7 @@ function formatDate(value: string | null): string {
     <Head title="Imports" />
 
     <div class="flex flex-1 flex-col p-4 md:p-8">
-        <h1
-            class="text-gold font-display mb-6 text-2xl font-semibold tracking-wide"
-        >
-            Imports
-        </h1>
+        <h1 class="sr-only">Imports</h1>
 
         <div class="wow-panel mb-6 p-6">
             <h2 class="text-gold font-display text-lg tracking-wide">

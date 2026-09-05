@@ -52,38 +52,32 @@ function formatDate(value: string | null): string {
     <Head :title="title" />
 
     <div class="flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <h1 class="sr-only">{{ title }}</h1>
+
         <div class="flex flex-wrap items-end justify-between gap-3">
-            <div>
-                <h1
-                    class="text-gold font-display text-2xl font-semibold tracking-wide"
-                >
+            <p class="text-sm text-muted-foreground">
+                <span class="text-gold font-display tracking-wide">
                     {{ title }}
-                </h1>
-                <p class="mt-1 text-sm text-muted-foreground">
-                    <span v-if="session.realm">{{ session.realm }} · </span>
-                    <span v-if="selectedZone">{{ selectedZone.name }} · </span>
-                    <span v-if="selectedZone"
-                        >{{ selectedZone.points_count }} points ·
-                    </span>
-                    {{
-                        formatDate(
-                            selectedZone
-                                ? selectedZone.time
-                                : session.session_start_at,
-                        )
-                    }}
-                </p>
-            </div>
+                </span>
+                <span v-if="session.realm"> · {{ session.realm }}</span>
+                <span v-if="selectedZone"> · {{ selectedZone.name }}</span>
+                <span v-if="selectedZone">
+                    · {{ selectedZone.points_count }} points</span
+                >
+                ·
+                {{
+                    formatDate(
+                        selectedZone
+                            ? selectedZone.time
+                            : session.session_start_at,
+                    )
+                }}
+            </p>
         </div>
 
         <div v-if="selectedZone" class="flex flex-1 flex-col gap-4 lg:flex-row">
             <aside class="shrink-0 lg:w-56">
                 <div class="wow-panel flex flex-col gap-1 p-2">
-                    <p
-                        class="px-2 pt-1 pb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase"
-                    >
-                        Zones
-                    </p>
                     <button
                         v-for="zone in zones"
                         :key="zone.id"
@@ -97,16 +91,8 @@ function formatDate(value: string | null): string {
                         @click="selectedZoneId = zone.id"
                     >
                         <MapPin class="size-4 shrink-0" />
-                        <span class="flex min-w-0 flex-1 flex-col">
-                            <span class="truncate">{{ zone.name }}</span>
-                            <span
-                                class="truncate text-xs text-muted-foreground"
-                            >
-                                {{ formatDate(zone.time) }}
-                            </span>
-                        </span>
-                        <span class="text-xs text-muted-foreground">
-                            {{ zone.points_count }}
+                        <span class="min-w-0 flex-1 truncate">
+                            {{ zone.name }}
                         </span>
                     </button>
                 </div>

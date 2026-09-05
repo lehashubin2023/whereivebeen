@@ -34,12 +34,9 @@ function formatDate(value: string | null): string {
     <Head title="Sessions" />
 
     <div class="flex flex-1 flex-col p-4 md:p-8">
-        <div class="mb-6 flex items-center justify-between">
-            <h1
-                class="text-gold font-display text-2xl font-semibold tracking-wide"
-            >
-                Sessions
-            </h1>
+        <h1 class="sr-only">Sessions</h1>
+
+        <div class="mb-6 flex items-center justify-end">
             <Link
                 href="/game-session/imports"
                 class="text-gold text-sm underline-offset-4 hover:underline"

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Profile\PasswordUpdateRequest;
 use App\Http\Requests\Profile\ProfileDeleteRequest;
 use App\Http\Requests\Profile\ProfileUpdateRequest;
-use App\Http\Requests\Profile\TwoFactorAuthenticationRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,6 +29,7 @@ class ProfileController extends Controller
         return Inertia::render('profile/Profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]);
     }
 
@@ -62,14 +62,6 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
-    }
-
-    #[Get(uri: 'security', name: 'security', middleware: 'verified')]
-    public function security(TwoFactorAuthenticationRequest $request): Response
-    {
-        return Inertia::render('profile/Security', [
-            'passwordRules' => Password::defaults()->toPasswordRulesString(),
-        ]);
     }
 
     #[Put(uri: 'password', name: 'password.update', middleware: ['verified', 'throttle:6,1'])]

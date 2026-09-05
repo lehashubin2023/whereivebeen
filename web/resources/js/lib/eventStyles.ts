@@ -30,9 +30,9 @@ export const EVENT_COLORS: Record<EventSlug, string> = {
     loot: '#fb923c',
     death: '#ef4444',
     resurrect: '#e8eaed',
-    group: '#38bdf8',
+    group: '#d8b48a',
     visit: '#9ca3af',
-    mount: '#d8b48a',
+    mount: '#38bdf8',
     taxi: '#f472b6',
 };
 

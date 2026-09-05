@@ -18,8 +18,14 @@ type Point = RoutePoint;
 
 const STATE_COLORS: Record<State, { line: string; dot: string }> = {
     ground: { line: '#f5c542', dot: '#f7cf5a' },
-    mounted: { line: '#3b82f6', dot: '#60a5fa' },
-    flying: { line: '#a855f7', dot: '#c084fc' },
+    mounted: { line: EVENT_COLORS.mount, dot: EVENT_COLORS.mount },
+    flying: { line: EVENT_COLORS.taxi, dot: EVENT_COLORS.taxi },
+};
+
+const TERMINAL_COLORS = {
+    start: '#34d399',
+    end: '#f87171',
+    outline: '#0b0b0b',
 };
 
 const LEGEND: { state: State; label: string }[] = [
@@ -338,8 +344,8 @@ function reset(): void {
                             :cx="firstPoint.x * stageWidth"
                             :cy="firstPoint.y * stageHeight"
                             :r="markerRadius"
-                            fill="#34d399"
-                            stroke="#0b0b0b"
+                            :fill="TERMINAL_COLORS.start"
+                            :stroke="TERMINAL_COLORS.outline"
                             stroke-width="1"
                             vector-effect="non-scaling-stroke"
                         />
@@ -349,8 +355,8 @@ function reset(): void {
                             :cx="lastPoint.x * stageWidth"
                             :cy="lastPoint.y * stageHeight"
                             :r="markerRadius"
-                            fill="#f87171"
-                            stroke="#0b0b0b"
+                            :fill="TERMINAL_COLORS.end"
+                            :stroke="TERMINAL_COLORS.outline"
                             stroke-width="1"
                             vector-effect="non-scaling-stroke"
                         />
@@ -449,47 +455,74 @@ function reset(): void {
         </div>
 
         <div
-            class="wow-panel flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 text-xs text-muted-foreground"
+            class="wow-panel flex flex-col gap-2 px-4 py-3 text-xs text-muted-foreground"
         >
-            <span
-                v-for="item in LEGEND"
-                :key="item.state"
-                class="flex items-center gap-2"
-            >
-                <span
-                    class="inline-block size-2.5 rounded-full"
-                    :style="{ backgroundColor: STATE_COLORS[item.state].dot }"
-                />
-                {{ item.label }}
-            </span>
-
-            <template v-if="eventLegend.length">
-                <span class="h-4 w-px bg-border" />
-
-                <span class="text-[10px] tracking-wide uppercase">
-                    Events — click for details
+            <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+                <span v-if="firstPoint" class="flex items-center gap-2">
+                    <span
+                        class="inline-block size-2.5 rounded-full"
+                        :style="{
+                            backgroundColor: TERMINAL_COLORS.start,
+                            boxShadow: `0 0 0 1px ${TERMINAL_COLORS.outline}`,
+                        }"
+                    />
+                    Start
                 </span>
 
                 <span
-                    v-for="slug in eventLegend"
-                    :key="slug"
+                    v-if="lastPoint && lastPoint !== firstPoint"
                     class="flex items-center gap-2"
                 >
                     <span
-                        class="inline-flex size-3.5 shrink-0 items-center justify-center rounded-full"
+                        class="inline-block size-2.5 rounded-full"
                         :style="{
-                            backgroundColor: EVENT_COLORS[slug],
-                            boxShadow: `0 0 0 1px ${EVENT_OUTLINE}`,
+                            backgroundColor: TERMINAL_COLORS.end,
+                            boxShadow: `0 0 0 1px ${TERMINAL_COLORS.outline}`,
                         }"
-                    >
-                        <component
-                            :is="EVENT_ICONS[slug]"
-                            class="size-2.5"
-                            :style="{ color: EVENT_OUTLINE }"
-                        />
-                    </span>
-                    {{ EVENT_LABELS[slug] }}
+                    />
+                    End
                 </span>
+
+                <span
+                    v-for="item in LEGEND"
+                    :key="item.state"
+                    class="flex items-center gap-2"
+                >
+                    <span
+                        class="inline-block size-2.5 rounded-full"
+                        :style="{
+                            backgroundColor: STATE_COLORS[item.state].dot,
+                        }"
+                    />
+                    {{ item.label }}
+                </span>
+            </div>
+
+            <template v-if="eventLegend.length">
+                <hr class="wow-divider" />
+
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+                    <span
+                        v-for="slug in eventLegend"
+                        :key="slug"
+                        class="flex items-center gap-2"
+                    >
+                        <span
+                            class="inline-flex size-3.5 shrink-0 items-center justify-center rounded-full"
+                            :style="{
+                                backgroundColor: EVENT_COLORS[slug],
+                                boxShadow: `0 0 0 1px ${EVENT_OUTLINE}`,
+                            }"
+                        >
+                            <component
+                                :is="EVENT_ICONS[slug]"
+                                class="size-2.5"
+                                :style="{ color: EVENT_OUTLINE }"
+                            />
+                        </span>
+                        {{ EVENT_LABELS[slug] }}
+                    </span>
+                </div>
             </template>
         </div>
     </div>
