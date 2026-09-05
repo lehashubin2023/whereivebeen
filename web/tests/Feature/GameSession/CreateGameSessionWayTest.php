@@ -23,17 +23,19 @@ class CreateGameSessionWayTest extends TestCase
 
     public function test_way_session_created_correctly()
     {
-        $mock = $this->partialMock(CreateWay::class, fn($mock) => $mock->shouldReceive('getChunkSize')->andReturn(2));
+        $mock = $this->partialMock(CreateWay::class, fn ($mock) => $mock->shouldReceive('getChunkSize')->andReturn(2));
         $session = GameSession::factory()->create();
-        $wayPointTable = (new WayPoint())->getTable();
-        $eventTable = (new Event())->getTable();
+        $wayPointTable = (new WayPoint)->getTable();
+        $eventTable = (new Event)->getTable();
 
         $mock->exec($session, [
-            ['x' => 10, 'y' => 20, 'mapId' => null, 't' => 0],
-            ['x' => 11, 'y' => 21, 'mapId' => null, 'event' => 'combat', 'inCombat' => true, 't' => 0],
-            ['x' => 12, 'y' => 22, 'mapId' => null, 'event' => 'loot', 'itemId' => 999, 'itemName' => 'Sword', 'count' => 2, 't' => 0],
-            ['x' => 13, 'y' => 23, 'mapId' => null, 'event' => 'unknown', 't' => 0],  
+            ['x' => 0.10, 'y' => 0.20, 'mapId' => null, 't' => 0],
+            ['x' => 0.11, 'y' => 0.21, 'mapId' => null, 'event' => 'combat', 'inCombat' => true, 't' => 0],
+            ['x' => 0.12, 'y' => 0.22, 'mapId' => null, 'event' => 'loot', 'itemId' => 999, 'itemName' => 'Sword', 'count' => 2, 't' => 0],
+            ['x' => 0.13, 'y' => 0.23, 'mapId' => null, 'event' => 'unknown', 't' => 0],
         ]);
+
+        $scale = WayPoint::COODS_FIELD_LENGTH;
 
         $this->assertDatabaseCount($wayPointTable, 4);
         $this->assertDatabaseCount($eventTable, 2);
@@ -41,14 +43,14 @@ class CreateGameSessionWayTest extends TestCase
         $this->assertDatabaseHas($wayPointTable, [
             'game_session_id' => $session->id,
             'sequence' => 2,
-            'x' => 11, 
-            'y' => 21
+            'x' => (int) (0.11 * $scale),
+            'y' => (int) (0.21 * $scale),
         ]);
         $this->assertDatabaseHas($wayPointTable, [
             'game_session_id' => $session->id,
             'sequence' => 4,
-            'x' => 13, 
-            'y' => 23
+            'x' => (int) (0.13 * $scale),
+            'y' => (int) (0.23 * $scale),
         ]);
 
         $this->assertDatabaseHas($eventTable, [
@@ -61,7 +63,7 @@ class CreateGameSessionWayTest extends TestCase
             'game_session_id' => $session->id,
             'sequence' => 4,
             'event_type_id' => null,
-            'payload' => json_encode([])
+            'payload' => json_encode([]),
         ]);
     }
 }

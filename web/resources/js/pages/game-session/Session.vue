@@ -9,7 +9,6 @@ interface Point {
     x: number;
     y: number;
     state: 'ground' | 'mounted' | 'flying';
-    event: number | null;
     gap: boolean;
 }
 
@@ -18,6 +17,7 @@ interface Zone {
     name: string;
     image_path: string;
     points_count: number;
+    time: string;
     points: Point[];
 }
 
@@ -32,7 +32,6 @@ interface SessionInfo {
 const props = defineProps<{
     session: SessionInfo;
     zones: Zone[];
-    eventTypes: Record<string, number>;
 }>();
 
 defineOptions({
@@ -66,13 +65,6 @@ const selectedZone = computed(
         null,
 );
 
-const mapPoints = computed<Point[]>(() =>
-    (selectedZone.value?.points ?? []).map((point) => ({
-        ...point,
-        gap: point.gap || point.event === props.eventTypes.gap,
-    })),
-);
-
 function formatDate(value: string | null): string {
     return value ? new Date(value).toLocaleString() : '—';
 }
@@ -95,7 +87,13 @@ function formatDate(value: string | null): string {
                     <span v-if="selectedZone"
                         >{{ selectedZone.points_count }} points ·
                     </span>
-                    {{ formatDate(session.session_start_at) }}
+                    {{
+                        formatDate(
+                            selectedZone
+                                ? selectedZone.time
+                                : session.session_start_at,
+                        )
+                    }}
                 </p>
             </div>
         </div>
@@ -121,7 +119,14 @@ function formatDate(value: string | null): string {
                         @click="selectedZoneId = zone.id"
                     >
                         <MapPin class="size-4 shrink-0" />
-                        <span class="flex-1 truncate">{{ zone.name }}</span>
+                        <span class="flex min-w-0 flex-1 flex-col">
+                            <span class="truncate">{{ zone.name }}</span>
+                            <span
+                                class="truncate text-xs text-muted-foreground"
+                            >
+                                {{ formatDate(zone.time) }}
+                            </span>
+                        </span>
                         <span class="text-xs text-muted-foreground">
                             {{ zone.points_count }}
                         </span>
@@ -133,7 +138,7 @@ function formatDate(value: string | null): string {
                 <RouteMap
                     :key="selectedZone.id"
                     :image="selectedZone.image_path"
-                    :points="mapPoints"
+                    :points="selectedZone.points"
                 />
             </div>
         </div>

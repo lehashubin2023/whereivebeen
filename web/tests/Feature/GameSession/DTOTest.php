@@ -45,7 +45,7 @@ class DTOTest extends TestCase
     public function test_create_way_point_dto_maps_addon_point_keys()
     {
         // Форма точки — как её пишет аддон (addon/Methods.lua: x, y, mapId, t)
-        $point = ['x' => 1, 'y' => 2, 'mapId' => 1422, 't' => 63];
+        $point = ['x' => 0.5, 'y' => 0.25, 'mapId' => 1422, 't' => 63];
 
         $dto = CreateWayPointDTO::fromPoint($point, gameSessionId: 7, sequence: 3)->toArray();
 
@@ -53,8 +53,8 @@ class DTOTest extends TestCase
         $this->assertSame(1422, $dto['map_id']);   // mapId → map_id
         $this->assertSame(63, $dto['time']);        // t → time
         $this->assertSame(3, $dto['sequence']);
-        $this->assertSame(1, $dto['x']);
-        $this->assertSame(2, $dto['y']);
+        $this->assertSame(0.5, $dto['x']);
+        $this->assertSame(0.25, $dto['y']);
     }
 
     public function test_create_event_dto_maps_addon_event_keys()
@@ -62,19 +62,19 @@ class DTOTest extends TestCase
         // Все событийные ключи, которые реально эмитит аддон (addon/Methods.lua, addon/Core.lua)
         $point = [
             'x' => 1, 'y' => 2, 'mapId' => 10, 't' => 5,
-            'event'    => 'loot',
-            'level'    => 60,
-            'action'   => 'join',
-            'title'    => 'A Quest',
-            'place'    => 'Inn',
-            'member'   => 'Thrall',
+            'event' => 'loot',
+            'level' => 60,
+            'action' => 'join',
+            'title' => 'A Quest',
+            'place' => 'Inn',
+            'member' => 'Thrall',
             'inCombat' => true,
-            'mounted'  => true,
-            'onTaxi'   => false,
-            'questId'  => 123,
-            'itemId'   => 999,
+            'mounted' => true,
+            'onTaxi' => false,
+            'questId' => 123,
+            'itemId' => 999,
             'itemName' => 'Sword',
-            'count'    => 2,
+            'count' => 2,
         ];
 
         $dto = CreateEventDTO::fromPoint($point, gameSessionId: 1, sequence: 5, eventTypeId: EventTypeEnum::LOOT->value)->toArray();
@@ -138,9 +138,9 @@ class DTOTest extends TestCase
 
         $mapped = CreateImportLogDTO::fromArray([
             'game_session_id' => 5,
-            'status'          => 'completed',
-            'execution_time'  => 3,
-            'error_message'   => 'oops',
+            'status' => 'completed',
+            'execution_time' => 3,
+            'error_message' => 'oops',
         ])->toArray();
 
         $this->assertSame(5, $mapped['game_session_id']);

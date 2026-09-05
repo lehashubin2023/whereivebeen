@@ -21,13 +21,16 @@ class CreateWay
     public function exec(
         GameSession $gameSession,
         array $waypoints,
-        ImportGameSessionProgressContract $progress = new NullImportGameSessionProgress()
+        ImportGameSessionProgressContract $progress = new NullImportGameSessionProgress
     ): void {
         foreach (array_chunk($waypoints, $this->getChunkSize()) as $chunk) {
             [$wayPointData, $eventData] = $this->prepareWayData($chunk, $gameSession->id);
 
             DB::transaction(function () use ($wayPointData, $eventData) {
-                WayPoint::insert($wayPointData);
+                WayPoint::insert(array_map(
+                    fn (array $row) => (new WayPoint($row))->getAttributes(),
+                    $wayPointData
+                ));
                 Event::insert($eventData);
             });
 
@@ -43,7 +46,7 @@ class CreateWay
         foreach ($chunk as $waypoint) {
             $wayPointData[] = CreateWayPointDTO::fromPoint($waypoint, $gameSessionId, $this->sequence)->toArray();
 
-            if (!empty($waypoint['event'])) {
+            if (! empty($waypoint['event'])) {
                 $eventType = EventTypeEnum::fromSlug($waypoint['event']);
 
                 if ($eventType !== null) {

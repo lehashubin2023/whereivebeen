@@ -11,6 +11,12 @@ use Illuminate\Database\Query\JoinClause;
 
 class BuildSessionZones
 {
+    private bool $mounted = false;
+
+    private bool $flying = false;
+
+    private ?int $prevMapId = null;
+
     /**
      * @return array<int, array<string, mixed>>
      */
@@ -33,26 +39,32 @@ class BuildSessionZones
             ->get([
                 'way_points.sequence',
                 'way_points.map_id',
+                'way_points.time',
                 'way_points.x',
                 'way_points.y',
                 'events.event_type_id',
                 'events.payload',
             ]);
 
+        $this->mounted = false;
+        $this->flying = false;
+        $this->prevMapId = null;
+
         $points->transform(function ($point) {
             $point->state = $this->defineState($point);
             $point->gap = $this->defineGap($point);
+
             return $point;
         });
 
-        return $this->buildZones($points);
+        return $this->buildZones($points, $gameSession);
     }
 
     /**
      * @param  Collection<int, array<string, mixed>>  $points
      * @return array<int, array<string, mixed>>
      */
-    private function buildZones(Collection $points): array
+    private function buildZones(Collection $points, GameSession $gameSession): array
     {
         $groups = $points->groupBy('map_id');
         $maps = Map::query()
@@ -79,51 +91,50 @@ class BuildSessionZones
                 'name' => $map->name,
                 'image_path' => $imagePath,
                 'points_count' => count($zonePoints),
+                'time' => $gameSession->session_start_at
+                    ->copy()
+                    ->addSeconds((int) $zonePoints->min('time'))
+                    ->toIso8601String(),
                 'points' => $zonePoints,
             ];
         }
 
         return collect($zones)
-            ->sortByDesc('points_count')
+            ->sortBy(fn (array $zone) => $zone['points']->min('sequence'))
             ->values()
             ->all();
     }
 
     private function defineState(WayPoint &$point): string
     {
-        static $mounted = false;
-        static $flying = false;
-
         $eventTypeId = $point->getAttribute('event_type_id');
 
         if ($eventTypeId === EventTypeEnum::MOUNT->value || $eventTypeId === EventTypeEnum::TAXI->value) {
             $payload = (array) $point->getAttribute('payload');
 
             if ($eventTypeId === EventTypeEnum::MOUNT->value) {
-                $mounted = (bool) ($payload['mounted'] ?? false);
+                $this->mounted = (bool) ($payload['mounted'] ?? false);
 
-                if ($mounted) {
-                    $flying = false;
+                if ($this->mounted) {
+                    $this->flying = false;
                 }
             } else {
-                $flying = (bool) ($payload['on_taxi'] ?? false);
+                $this->flying = (bool) ($payload['on_taxi'] ?? false);
 
-                if ($flying) {
-                    $mounted = false;
+                if ($this->flying) {
+                    $this->mounted = false;
                 }
             }
         }
 
-        return $mounted ? 'mounted' : ($flying ? 'flying' : 'ground') ;
+        return $this->mounted ? 'mounted' : ($this->flying ? 'flying' : 'ground');
     }
 
     private function defineGap(WayPoint &$point): bool
     {
-        static $prevMapId = null;
+        $isGap = $point['event_type_id'] === EventTypeEnum::GAP->value || $this->prevMapId !== $point['map_id'];
 
-        $isGap = $point['event_type_id'] === EventTypeEnum::GAP->value || $prevMapId !== $point['map_id'];
-
-        $prevMapId = $point['map_id'];
+        $this->prevMapId = $point['map_id'];
 
         return $isGap;
     }

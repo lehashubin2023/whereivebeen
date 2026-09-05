@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Actions\GameSession\BuildSessionZones;
-use App\Enums\GameSession\EventTypeEnum;
 use App\Http\Requests\GameSession\ImportGameSessionRequest;
 use App\Jobs\ImportGameSessionJob;
 use App\Models\GameSession;
@@ -97,7 +96,6 @@ class GameSessionController extends Controller
                 'session_start_at' => $gameSession->session_start_at->toIso8601String(),
             ],
             'zones' => $this->buildSessionZones->exec($gameSession), // todo: add resource
-            'eventTypes' => EventTypeEnum::map(),
         ]);
     }
 }

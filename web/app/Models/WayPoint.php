@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\{WithoutTimestamps, Fillable};
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -31,7 +32,7 @@ class WayPoint extends Model
     {
         return Attribute::make(
             get: fn (string $value) => (float) $value / self::COODS_FIELD_LENGTH,
-            set: fn (string $value) => (int) $value * self::COODS_FIELD_LENGTH,
+            set: fn (float $value) => (int) ($value * self::COODS_FIELD_LENGTH),
         );
     }
 
@@ -39,7 +40,7 @@ class WayPoint extends Model
     {
         return Attribute::make(
             get: fn (string $value) => (float) $value / self::COODS_FIELD_LENGTH,
-            set: fn (string $value) => (int) $value * self::COODS_FIELD_LENGTH,
+            set: fn (float $value) => (int) ($value * self::COODS_FIELD_LENGTH),
         );
     }
 }

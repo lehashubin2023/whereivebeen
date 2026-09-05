@@ -3,7 +3,6 @@
 namespace App\DTOs\GameSession;
 
 use App\DTOs\DTOContract;
-use App\Enums\GameSession\ImportStatusEnum;
 use Illuminate\Http\Request;
 
 class CreateWayPointDTO implements DTOContract
@@ -11,19 +10,18 @@ class CreateWayPointDTO implements DTOContract
     public function __construct(
         private readonly int $game_session_id,
         private readonly ?int $map_id,
-        private readonly int $time,     
-        private readonly int $sequence, 
-        private readonly int $x,
-        private readonly int $y,
-    )
-    {}
+        private readonly int $time,
+        private readonly int $sequence,
+        private readonly float $x,
+        private readonly float $y,
+    ) {}
 
     public static function fromPoint(array $point, int $gameSessionId, int $sequence): self
     {
         return new self(
             game_session_id: $gameSessionId,
             map_id: $point['mapId'] ?? null,
-            time: $point['t'] ?? 0,
+            time: (int) ($point['t'] ?? 0),
             sequence: $sequence,
             x: $point['x'] ?? 0,
             y: $point['y'] ?? 0,
