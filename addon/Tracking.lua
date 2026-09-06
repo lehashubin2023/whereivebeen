@@ -106,6 +106,7 @@ function WIVBN.PushLoot(entry)
 end
 
 function WIVBN.OnCombatLog()
+    if not WIVBN.IsSessionActive() then return end
     if not CombatLogGetCurrentEventInfo then return end
 
     local _, subEvent, _, sourceGuid, sourceName, _, _, destGuid = CombatLogGetCurrentEventInfo()
