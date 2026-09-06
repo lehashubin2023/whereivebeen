@@ -221,6 +221,7 @@ function WIVBN.StartSession(continuesFrom)
 
     WIVBN.SetActiveSessionId(id)
     WIVBN.sessionId = id
+    WIVBN.SetCombatLogEnabled(true)
     WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
     print(WIVBN.PREFIX .. ("Recording started — session %d"):format(id))
@@ -242,6 +243,7 @@ function WIVBN.ResumeSession(id)
     session.clock = GetTime()
     session.ended = nil
 
+    WIVBN.SetCombatLogEnabled(true)
     WIVBN.sessionId = id
     WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
@@ -293,6 +295,7 @@ function WIVBN.EndSession()
 
     WIVBN.sessionId = nil
     WIVBN.SetActiveSessionId(nil)
+    WIVBN.SetCombatLogEnabled(false)
 
     print(WIVBN.PREFIX .. "Session successfully ended")
 end

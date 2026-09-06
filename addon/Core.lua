@@ -315,11 +315,19 @@ local events = {
     "ZONE_CHANGED",
     "ZONE_CHANGED_NEW_AREA",
     "ZONE_CHANGED_INDOORS",
-    "COMBAT_LOG_EVENT_UNFILTERED",
 }
 
 for _, event in ipairs(events) do
     WIVBN.SafeRegister(frame, event)
+end
+
+function WIVBN.SetCombatLogEnabled(enabled)
+    if enabled then
+        WIVBN.SafeRegister(frame, "COMBAT_LOG_EVENT_UNFILTERED")
+        return
+    end
+
+    pcall(frame.UnregisterEvent, frame, "COMBAT_LOG_EVENT_UNFILTERED")
 end
 
 frame:RegisterUnitEvent("UNIT_AURA", "player")
