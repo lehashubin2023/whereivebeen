@@ -4,9 +4,51 @@ SLASH_WHEREIVEBEEN1 = "/whereivebeen"
 SLASH_WHEREIVEBEEN2 = "/wivebeen"
 SLASH_WHEREIVEBEEN3 = "/wrivbn"
 
-SlashCmdList.WHEREIVEBEEN = function(command)
-    command = command:lower():trim()
-    if command == "start" then
+local HELP = {
+    "start - start a new session",
+    "end - close the current session and stop recording",
+    "status - show session state and stored point count",
+    "clear - drop the points of the current session",
+    "clear_all - drop every stored session",
+    "delete <id> - delete one session by id",
+    "log - print the last 20 recorded points",
+    "get_sessions - open the sessions window and export a session",
+    "raw - toggle raw JSON export instead of the compressed one",
+    "help - show this list",
+}
+
+local function ShowHelp()
+    print(WIVBN.PREFIX .. "commands:")
+    for _, line in ipairs(HELP) do
+        print("  |cffffd100/wivebeen|r " .. line)
+    end
+end
+
+local function ToggleRaw()
+    WIVBN.rawExport = not WIVBN.rawExport
+    print(WIVBN.PREFIX .. "Raw JSON export " .. (WIVBN.rawExport and "enabled" or "disabled"))
+end
+
+local function DeleteById(argument)
+    local id = tonumber(argument)
+    if not id then
+        print(WIVBN.PREFIX .. "Usage: /wivebeen delete <id>")
+        return
+    end
+
+    if WIVBN.DeleteSession(id) then
+        print(WIVBN.PREFIX .. ("Session %d deleted"):format(id))
+    else
+        print(WIVBN.PREFIX .. ("Session %d not found"):format(id))
+    end
+end
+
+SlashCmdList.WHEREIVEBEEN = function(input)
+    local command, argument = (input or ""):lower():trim():match("^(%S*)%s*(.-)$")
+
+    if command == "" or command == "help" then
+        ShowHelp()
+    elseif command == "start" then
         WIVBN.StartSession()
     elseif command == "end" then
         WIVBN.EndSession()
@@ -16,11 +58,15 @@ SlashCmdList.WHEREIVEBEEN = function(command)
         WIVBN.ClearSession()
     elseif command == "clear_all" then
         WIVBN.ClearAllSessions()
+    elseif command == "delete" then
+        DeleteById(argument)
     elseif command == "log" then
         WIVBN.ShowLog()
     elseif command == "get_sessions" then
         WIVBN.ShowSessionsWindow()
+    elseif command == "raw" then
+        ToggleRaw()
     else
-        print(WIVBN.PREFIX.."Unknown command. Available commands are: \n- start - create new session, \n- end - close current session and disable working of saving pathes, \n- status - check status of session, \n- clear - clear pathes of current session, \n- log - print last 20 log entries, \n- get_sessions - open the sessions window and export a session as JSON")
+        print(WIVBN.PREFIX .. ("Unknown command: %s. Type /wivebeen help"):format(command))
     end
 end

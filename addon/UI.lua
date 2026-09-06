@@ -41,8 +41,10 @@ end
 local function CollectSessionIds()
     local ids = {}
     local sessions = WhereIveBeenDB and WhereIveBeenDB.sessions or {}
-    for id in pairs(sessions) do
-        ids[#ids + 1] = id
+    for id, session in pairs(sessions) do
+        if session.points and #session.points > 0 then
+            ids[#ids + 1] = id
+        end
     end
     table.sort(ids, function(a, b) return a > b end)
     return ids
@@ -50,11 +52,30 @@ end
 
 local function SessionRowLabel(id)
     local s    = WhereIveBeenDB.sessions[id]
-    local when = date("%Y-%m-%d %H:%M", s.started or id)
+    local when = date("%Y-%m-%d %H:%M", s.started or 0)
     local who  = (s.char or "?") .. "-" .. (s.realm or "?")
     local n    = s.points and #s.points or 0
-    return ("%s  |cffffd100%s|r  |cffaaaaaa(%d pts)|r"):format(when, who, n)
+
+    local marks = ""
+    if s.continuesFrom then marks = marks .. " |cff88bbffcont|r" end
+    if s.exportedAt then marks = marks .. " |cff88ff88exported|r" end
+
+    return ("%s  |cffffd100%s|r  |cffaaaaaa(%d pts)|r%s"):format(when, who, n, marks)
 end
+
+StaticPopupDialogs["WHEREIVEBEEN_DELETE_SESSION"] = {
+    text = "Delete this session?\n%s",
+    button1 = YES,
+    button2 = NO,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
+    OnAccept = function(self, id)
+        WIVBN.DeleteSession(id)
+        WIVBN.ShowSessionsWindow()
+    end,
+}
 
 local function UpdateList()
     local scroll = listFrame.scroll
@@ -106,8 +127,16 @@ local function CreateListFrame()
         fs:SetJustifyH("LEFT")
         row.text = fs
 
-        row:SetScript("OnClick", function(self)
-            if self.id then WIVBN.ShowExportWindow(self.id) end
+        row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+        row:SetScript("OnClick", function(self, button)
+            if not self.id then return end
+
+            if button == "RightButton" then
+                StaticPopup_Show("WHEREIVEBEEN_DELETE_SESSION", SessionRowLabel(self.id), nil, self.id)
+                return
+            end
+
+            WIVBN.ShowExportWindow(self.id)
         end)
 
         f.rows[i] = row
@@ -119,6 +148,7 @@ end
 function WIVBN.ShowSessionsWindow()
     sessionIds = CollectSessionIds()
     if #sessionIds == 0 then
+        if listFrame then listFrame:Hide() end
         print(WIVBN.PREFIX .. "No sessions to show")
         return
     end
@@ -148,6 +178,7 @@ local function CreateExportFrame()
     local hint = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     hint:SetPoint("BOTTOM", 0, 18)
     hint:SetText("Ctrl+C to copy, Esc to close")
+    f.hint = hint
 
     local scroll = CreateFrame("ScrollFrame", "$parentScroll", f, "UIPanelScrollFrameTemplate")
     scroll:SetPoint("TOPLEFT", 16, -48)
@@ -188,6 +219,8 @@ function WIVBN.ShowExportWindow(id)
     end
 
     SetExportText(exportFrame.edit, data)
+    exportFrame.hint:SetText(("%s, %d chars  |cffaaaaaa Ctrl+C to copy, Esc to close|r")
+        :format(WIVBN.rawExport and "raw JSON" or "compressed", #data))
     exportFrame:Show()
     exportFrame:Raise()
     exportFrame.edit:SetCursorPosition(0)
