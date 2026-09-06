@@ -18,10 +18,14 @@ function WIVBN.SortedSessionIds()
     return ids
 end
 
+function WIVBN.PointCount(session)
+    return (session and session.points) and #session.points or 0
+end
+
 function WIVBN.TotalPoints()
     local total = 0
     for _, session in pairs(WhereIveBeenDB.sessions) do
-        total = total + #session.points
+        total = total + WIVBN.PointCount(session)
     end
 
     return total
@@ -29,7 +33,7 @@ end
 
 function WIVBN.PurgeEmptySessions()
     for id, session in pairs(WhereIveBeenDB.sessions) do
-        if #session.points == 0 and id ~= WhereIveBeenDB.activeSessionId then
+        if WIVBN.PointCount(session) == 0 and id ~= WhereIveBeenDB.activeSessionId then
             WhereIveBeenDB.sessions[id] = nil
         end
     end
@@ -56,7 +60,7 @@ function WIVBN.EnforceBudget()
 
         local session = db.sessions[id]
         if session and session.exportedAt and id ~= db.activeSessionId then
-            total = total - #session.points
+            total = total - WIVBN.PointCount(session)
             count = count - 1
             db.sessions[id] = nil
             freed = freed + 1
@@ -83,7 +87,7 @@ function WIVBN.PruneSessions(minPoints)
     local removed, kept = 0, 0
 
     for id, session in pairs(WhereIveBeenDB.sessions) do
-        if id ~= WhereIveBeenDB.activeSessionId and #session.points < minPoints then
+        if id ~= WhereIveBeenDB.activeSessionId and WIVBN.PointCount(session) < minPoints then
             WhereIveBeenDB.sessions[id] = nil
             removed = removed + 1
         else
@@ -161,7 +165,7 @@ function WIVBN.ResumeSession(id)
     local session = WhereIveBeenDB.sessions[id]
     if not session then return nil end
 
-    local last    = session.points[#session.points]
+    local last    = session.points and session.points[#session.points]
     local lastT   = last and last.t or session.tBase or 0
     local offline = math.max(0, (time() - session.started) - lastT)
 

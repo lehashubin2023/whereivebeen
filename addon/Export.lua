@@ -17,7 +17,7 @@ function WIVBN.BuildSessionExport(id)
         return nil, "session not found"
     end
 
-    if #session.points == 0 then
+    if WIVBN.PointCount(session) == 0 then
         return nil, "session has no points"
     end
 
