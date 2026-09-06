@@ -11,6 +11,20 @@ local DAMAGE_EVENTS = {
 
 local lastZone, lastZoneMap
 
+function WIVBN.SpellName(spellId)
+    if C_Spell and C_Spell.GetSpellInfo then
+        local info = C_Spell.GetSpellInfo(spellId)
+
+        return info and info.name or nil
+    end
+
+    if GetSpellInfo then
+        return (GetSpellInfo(spellId))
+    end
+
+    return nil
+end
+
 function WIVBN.ResetTracking()
     WIVBN.playerGuid = UnitGUID("player")
     WIVBN.lastHit    = nil
@@ -43,7 +57,7 @@ function WIVBN.OnSpellSucceeded(unit, castGuid, spellId)
 
     WIVBN.lastCast = {
         id   = spellId,
-        name = GetSpellInfo and GetSpellInfo(spellId) or nil,
+        name = WIVBN.SpellName(spellId),
         at   = GetTime(),
     }
 end
