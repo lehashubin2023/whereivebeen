@@ -345,6 +345,13 @@ local function DescribeDeath(p)
     return "|cffff0000death|r"
 end
 
+local function DescribeGather(p)
+    local node = p.node and (p.node.name or (p.node.objectId and ("object " .. p.node.objectId))) or "node"
+    local items = DescribeItems(p)
+
+    return "|cff34d399gather:|r " .. node .. (items and (" — " .. items) or "")
+end
+
 function WIVBN.DescribePoint(p)
     local e = p.event
 
@@ -354,6 +361,8 @@ function WIVBN.DescribePoint(p)
     if e == "resurrect" then return "|cff00ff00resurrect|r" end
     if e == "levelup"   then return "level "..tostring(p.level) end
     if e == "loot"      then return "loot: "..(DescribeItems(p) or "?") end
+    if e == "gather"    then return DescribeGather(p) end
+    if e == "zone"      then return "|cffa78bfazone:|r "..tostring(p.zone)..(p.subZone and (" — "..p.subZone) or "") end
     if e == "visit"     then return "visit: "..(p.places and table.concat(p.places, ", ") or tostring(p.place)) end
     if e == "group"     then return "group: "..DescribeGroup(p) end
     if e == "quest"     then return ("quest: %s %s"):format(tostring(p.action), p.title or tostring(p.questId)) end
