@@ -1,5 +1,9 @@
+local ADDON_NAME = ...
+
 WhereIveBeen = WhereIveBeen or {}
 local WIVBN = WhereIveBeen
+
+WIVBN.ADDON_NAME = (type(ADDON_NAME) == "string" and ADDON_NAME ~= "") and ADDON_NAME or "WhereIveBeen"
 
 WIVBN.sessionId     = nil
 WIVBN.timeElapsed   = 0
@@ -107,12 +111,13 @@ function WIVBN.SafeRegister(frame, event)
 end
 
 function eventHandlers.ADDON_LOADED(self, addonName)
-    if addonName ~= "WhereIveBeen" then return end
+    if addonName ~= WIVBN.ADDON_NAME then return end
     WIVBN.InitDB()
     self:UnregisterEvent("ADDON_LOADED")
 end
 
 function eventHandlers.PLAYER_LOGIN(self)
+    WIVBN.InitDB()
     WIVBN.ResetTracking()
     WIVBN.ResumeOrIdle()
 end

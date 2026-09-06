@@ -6,7 +6,7 @@ local function AddonVersion()
     local get = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
     if not get then return nil end
 
-    local ok, version = pcall(get, "WhereIveBeen", "Version")
+    local ok, version = pcall(get, WIVBN.ADDON_NAME, "Version")
 
     return ok and version or nil
 end
