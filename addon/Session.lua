@@ -32,11 +32,20 @@ function WIVBN.TotalPoints()
 end
 
 function WIVBN.PurgeEmptySessions()
+    local removed = 0
+
     for id, session in pairs(WhereIveBeenDB.sessions) do
         if WIVBN.PointCount(session) == 0 and id ~= WhereIveBeenDB.activeSessionId then
             WhereIveBeenDB.sessions[id] = nil
+            removed = removed + 1
         end
     end
+
+    if removed > 0 then
+        print(WIVBN.PREFIX .. ("Removed %d empty sessions"):format(removed))
+    end
+
+    return removed
 end
 
 function WIVBN.OverBudget(total, count)
