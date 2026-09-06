@@ -10,6 +10,7 @@ function WIVBN.InitDB()
         session.id     = session.id or id
         session.points = session.points or {}
         session.tBase  = session.tBase or 0
+        session.schema = session.schema or 1
     end
 
     WhereIveBeenDB.schema = WIVBN.SCHEMA

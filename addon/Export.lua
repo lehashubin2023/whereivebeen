@@ -28,7 +28,7 @@ function WIVBN.BuildSessionExport(id)
     local gameVersion, build, _, tocVersion = GetBuildInfo()
 
     return {
-        schema        = WIVBN.SCHEMA,
+        schema        = session.schema or 1,
         sessionId     = id,
         continuesFrom = session.continuesFrom,
         started       = session.started,

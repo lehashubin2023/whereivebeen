@@ -149,6 +149,7 @@ function WIVBN.StartSession(continuesFrom)
 
     WhereIveBeenDB.sessions[id] = {
         id            = id,
+        schema        = WIVBN.SCHEMA,
         started       = time(),
         clock         = GetTime(),
         tBase         = 0,
