@@ -22,7 +22,7 @@ function WIVBN.BuildSessionExport(id)
     end
 
     if not session.char or not session.realm then
-        return nil, "session is missing character info"
+        return nil, "session has no character name and cannot be imported, delete it"
     end
 
     local gameVersion, build, _, tocVersion = GetBuildInfo()
