@@ -119,4 +119,108 @@ class DescribeEventTest extends TestCase
             $this->assertNotSame('', $type->label());
         }
     }
+
+    public function test_it_describes_collapsed_loot(): void
+    {
+        $this->assertSame(
+            [
+                ['label' => 'Item', 'value' => 'Linen Cloth x3'],
+                ['label' => 'Item', 'value' => 'Malachite x1'],
+            ],
+            $this->describeEvent->exec(EventTypeEnum::LOOT, [
+                'items' => [
+                    ['id' => 2589, 'name' => 'Linen Cloth', 'n' => 3],
+                    ['id' => 774, 'name' => 'Malachite', 'n' => 1],
+                ],
+            ]),
+        );
+    }
+
+    public function test_it_describes_collapsed_visit(): void
+    {
+        $this->assertSame(
+            [
+                ['label' => 'Places', 'value' => 'Merchant, Repair'],
+                ['label' => 'NPC', 'value' => 'Torv'],
+            ],
+            $this->describeEvent->exec(EventTypeEnum::VISIT, [
+                'places' => ['merchant', 'repair'],
+                'npc_name' => 'Torv',
+            ]),
+        );
+    }
+
+    public function test_it_describes_collapsed_group(): void
+    {
+        $this->assertSame(
+            [
+                ['label' => 'Joined', 'value' => 'Alpha, Beta'],
+                ['label' => 'Left', 'value' => 'Gamma'],
+            ],
+            $this->describeEvent->exec(EventTypeEnum::GROUP, [
+                'joined' => ['Alpha', 'Beta'],
+                'left' => ['Gamma'],
+            ]),
+        );
+    }
+
+    public function test_it_describes_zone(): void
+    {
+        $this->assertSame(
+            [
+                ['label' => 'Zone', 'value' => 'Westfall'],
+                ['label' => 'Subzone', 'value' => 'Sentinel Hill'],
+            ],
+            $this->describeEvent->exec(EventTypeEnum::ZONE, [
+                'zone' => 'Westfall',
+                'sub_zone' => 'Sentinel Hill',
+            ]),
+        );
+    }
+
+    public function test_it_describes_gather(): void
+    {
+        $this->assertSame(
+            [
+                ['label' => 'Node', 'value' => 'Copper Vein'],
+                ['label' => 'Item', 'value' => 'Copper Ore x2'],
+            ],
+            $this->describeEvent->exec(EventTypeEnum::GATHER, [
+                'node' => ['name' => 'Copper Vein', 'objectId' => 1731],
+                'items' => [['id' => 2770, 'name' => 'Copper Ore', 'n' => 2]],
+            ]),
+        );
+    }
+
+    public function test_it_describes_death_by_creature(): void
+    {
+        $this->assertSame(
+            [
+                ['label' => 'Killed by', 'value' => 'Kobold Miner'],
+                ['label' => 'Ability', 'value' => 'Fireball'],
+                ['label' => 'Damage', 'value' => '148'],
+            ],
+            $this->describeEvent->exec(EventTypeEnum::DEATH, [
+                'killer' => ['name' => 'Kobold Miner', 'spell' => 'Fireball', 'amount' => 148, 'pvp' => false],
+            ]),
+        );
+    }
+
+    public function test_it_describes_death_by_player(): void
+    {
+        $this->assertSame(
+            [['label' => 'Killed by player', 'value' => 'Ganker']],
+            $this->describeEvent->exec(EventTypeEnum::DEATH, [
+                'killer' => ['name' => 'Ganker', 'pvp' => true],
+            ]),
+        );
+    }
+
+    public function test_it_describes_environmental_death(): void
+    {
+        $this->assertSame(
+            [['label' => 'Cause', 'value' => 'Falling']],
+            $this->describeEvent->exec(EventTypeEnum::DEATH, ['environment' => 'FALLING']),
+        );
+    }
 }
