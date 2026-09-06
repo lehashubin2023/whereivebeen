@@ -27,19 +27,14 @@ function WIVBN.GetPlayerPosition()
     return mapId, x, y
 end
 
-function WIVBN.SavePosition(extra)
-    if not WIVBN.IsSessionActive() then return nil end
-
-    local mapId, x, y = WIVBN.GetPlayerPosition()
-    if not mapId then return nil end
-
+function WIVBN.WritePoint(mapId, x, y, extra)
     local session = WhereIveBeenDB.sessions[WIVBN.sessionId]
 
     local point = {
-        x = x,
-        y = y,
+        x     = x or 0,
+        y     = y or 0,
         mapId = mapId,
-        t = math.floor((GetTime() - session.clock) * 10) / 10,
+        t     = math.floor((GetTime() - session.clock) * 10) / 10,
     }
     if extra then
         for k, v in pairs(extra) do point[k] = v end
@@ -47,12 +42,46 @@ function WIVBN.SavePosition(extra)
 
     table.insert(session.points, point)
 
-    WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = mapId, x, y
+    if mapId then
+        WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = mapId, x, y
+    end
+
+    return point
+end
+
+function WIVBN.SavePosition(extra)
+    if not WIVBN.IsSessionActive() then return nil end
+
+    local mapId, x, y = WIVBN.GetPlayerPosition()
+    if not mapId then return nil end
+
+    return WIVBN.WritePoint(mapId, x, y, extra)
 end
 
 function WIVBN.SaveEvent(extra)
-    WIVBN.SavePosition(extra)
+    if not WIVBN.IsSessionActive() then return nil end
+
+    local mapId, x, y = WIVBN.GetPlayerPosition()
+    if not mapId then
+        mapId, x, y = WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY
+    end
+
+    local point = WIVBN.WritePoint(mapId, x, y, extra)
     WIVBN.ClearInterval()
+
+    return point
+end
+
+function WIVBN.RefinePoint(point)
+    if not point or point.mapId then return end
+
+    C_Timer.After(WIVBN.REFINE_DELAY, function()
+        local mapId, x, y = WIVBN.GetPlayerPosition()
+        if not mapId then return end
+
+        point.mapId, point.x, point.y = mapId, x, y
+        WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = mapId, x, y
+    end)
 end
 
 function WIVBN.SaveTimedPosition()
@@ -87,15 +116,36 @@ function WIVBN.SaveTaxiState()
     end
 end
 
+local function UnitKey(unit)
+    local name, realm = UnitName(unit)
+    if not name then return nil end
+
+    if realm and realm ~= "" then
+        return name .. "-" .. realm
+    end
+
+    return name
+end
+
 function WIVBN.GetGroupRoster()
     local roster = {}
-    if IsInGroup() then
-        roster[UnitName("player")] = true
+    if not IsInGroup() then return roster end
+
+    if IsInRaid() then
+        for i = 1, GetNumGroupMembers() do
+            local unit = "raid" .. i
+            if not UnitIsUnit(unit, "player") then
+                local key = UnitKey(unit)
+                if key then roster[key] = true end
+            end
+        end
+    else
         for i = 1, GetNumSubgroupMembers() do
-            local name = UnitName("party"..i)
-            if name then roster[name] = true end
+            local key = UnitKey("party" .. i)
+            if key then roster[key] = true end
         end
     end
+
     return roster
 end
 

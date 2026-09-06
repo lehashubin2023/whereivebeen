@@ -3,6 +3,7 @@ local WIVBN = WhereIveBeen
 
 WIVBN.sessionId     = nil
 WIVBN.timeElapsed   = 0
+WIVBN.stateElapsed  = 0
 WIVBN.wasMounted    = false
 WIVBN.wasDead       = false
 WIVBN.groupRoster   = {}
@@ -13,11 +14,47 @@ WIVBN.lastY         = nil
 WIVBN.wasOnTaxi     = false
 
 WIVBN.WRITING_INTERVAL = 20
+WIVBN.STATE_INTERVAL   = 0.5
+WIVBN.REFINE_DELAY     = 0.5
 WIVBN.MIN_MOVE         = 0.005
 
 WIVBN.PREFIX = "|cffff0000WhereIveBeen|r: "
 
 local eventHandlers = WIVBN.eventHandlers
+
+local function BuildPattern(format)
+    if type(format) ~= "string" then return nil end
+
+    local pattern = format:gsub("%%s", "\1"):gsub("%%d", "\2")
+    pattern = pattern:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1")
+    pattern = pattern:gsub("\1", "(.+)"):gsub("\2", "(%%d+)")
+
+    return "^" .. pattern
+end
+
+local lootPatterns = {
+    { pattern = BuildPattern(LOOT_ITEM_SELF_MULTIPLE),        multiple = true },
+    { pattern = BuildPattern(LOOT_ITEM_PUSHED_SELF_MULTIPLE), multiple = true },
+    { pattern = BuildPattern(LOOT_ITEM_SELF),                 multiple = false },
+    { pattern = BuildPattern(LOOT_ITEM_PUSHED_SELF),          multiple = false },
+}
+
+local function ParseLootMessage(text)
+    for _, entry in ipairs(lootPatterns) do
+        if entry.pattern then
+            local link, count = text:match(entry.pattern)
+            if link then
+                return link, entry.multiple and tonumber(count) or 1
+            end
+        end
+    end
+
+    return nil
+end
+
+function WIVBN.SafeRegister(frame, event)
+    return pcall(frame.RegisterEvent, frame, event)
+end
 
 function eventHandlers.ADDON_LOADED(self, addonName)
     if addonName ~= "WhereIveBeen" then return end
@@ -50,13 +87,14 @@ function eventHandlers.PLAYER_ALIVE(self)
 end
 
 function eventHandlers.PLAYER_ENTERING_WORLD(self, isInitialLogin, isReload)
-    WIVBN.wasDead    = UnitIsDeadOrGhost("player") and true or false
-    WIVBN.wasMounted = IsMounted() and true or false
-    WIVBN.wasOnTaxi  = UnitOnTaxi("player") and true or false
+    WIVBN.wasDead     = UnitIsDeadOrGhost("player") and true or false
+    WIVBN.wasMounted  = IsMounted() and true or false
+    WIVBN.wasOnTaxi   = UnitOnTaxi("player") and true or false
+    WIVBN.groupRoster = WIVBN.GetGroupRoster()
 
-    if not isInitialLogin and not isReload then
-        WIVBN.SaveEvent({ event = "gap" })
-    end
+    if isInitialLogin or isReload then return end
+
+    WIVBN.RefinePoint(WIVBN.SaveEvent({ event = "gap" }))
 end
 
 function eventHandlers.PLAYER_LEVEL_UP(self, level)
@@ -64,17 +102,16 @@ function eventHandlers.PLAYER_LEVEL_UP(self, level)
 end
 
 function eventHandlers.CHAT_MSG_LOOT(self, text)
-    if not text:find("You receive") then return end
+    local link, count = ParseLootMessage(text)
+    if not link then return end
 
-    local itemId   = tonumber(text:match("|Hitem:(%d+):"))
-    local itemName = text:match("|h%[(.-)%]|h")
-    local count    = tonumber(text:match("|hx(%d+)")) or 1
+    local itemId = tonumber(link:match("|Hitem:(%d+):"))
     if not itemId then return end
 
     WIVBN.SaveEvent({
         event    = "loot",
         itemId   = itemId,
-        itemName = itemName,
+        itemName = link:match("|h%[(.-)%]|h"),
         count    = count,
     })
 end
@@ -108,33 +145,30 @@ function eventHandlers.QUEST_TURNED_IN(self, questId)
     WIVBN.SaveEvent({ event = "quest", action = "turnin", questId = questId, title = WIVBN.QuestTitle(questId) })
 end
 
-function eventHandlers.PLAYER_CONTROL_LOST(self)
-    WIVBN.SaveTaxiState()
-end
-
-function eventHandlers.PLAYER_CONTROL_GAINED(self)
-    WIVBN.SaveTaxiState()
-end
-
 local frame = CreateFrame("Frame")
 
-frame:RegisterEvent("ADDON_LOADED")
-frame:RegisterEvent("GROUP_ROSTER_UPDATE")
-frame:RegisterEvent("PLAYER_DEAD")
-frame:RegisterEvent("PLAYER_ALIVE")
-frame:RegisterEvent("PLAYER_UNGHOST")
-frame:RegisterEvent("PLAYER_REGEN_DISABLED")
-frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-frame:RegisterEvent("MERCHANT_SHOW")
-frame:RegisterEvent("BANKFRAME_OPENED")
-frame:RegisterEvent("AUCTION_HOUSE_SHOW")
-frame:RegisterEvent("CHAT_MSG_LOOT")
-frame:RegisterEvent("PLAYER_LEVEL_UP")
-frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-frame:RegisterEvent("QUEST_ACCEPTED")
-frame:RegisterEvent("QUEST_TURNED_IN")
-frame:RegisterEvent("PLAYER_CONTROL_LOST")
-frame:RegisterEvent("PLAYER_CONTROL_GAINED")
+local events = {
+    "ADDON_LOADED",
+    "GROUP_ROSTER_UPDATE",
+    "PLAYER_DEAD",
+    "PLAYER_ALIVE",
+    "PLAYER_UNGHOST",
+    "PLAYER_REGEN_DISABLED",
+    "PLAYER_REGEN_ENABLED",
+    "MERCHANT_SHOW",
+    "BANKFRAME_OPENED",
+    "AUCTION_HOUSE_SHOW",
+    "CHAT_MSG_LOOT",
+    "PLAYER_LEVEL_UP",
+    "PLAYER_ENTERING_WORLD",
+    "QUEST_ACCEPTED",
+    "QUEST_TURNED_IN",
+}
+
+for _, event in ipairs(events) do
+    WIVBN.SafeRegister(frame, event)
+end
+
 frame:RegisterUnitEvent("UNIT_AURA", "player")
 
 frame:SetScript("OnEvent", function(self, event, ...)
@@ -143,6 +177,12 @@ frame:SetScript("OnEvent", function(self, event, ...)
 end)
 
 frame:SetScript("OnUpdate", function(self, elapsed)
+    WIVBN.stateElapsed = WIVBN.stateElapsed + elapsed
+    if WIVBN.stateElapsed >= WIVBN.STATE_INTERVAL then
+        WIVBN.stateElapsed = 0
+        WIVBN.SaveTaxiState()
+    end
+
     if WIVBN.AccumulateInterval(elapsed) >= WIVBN.WRITING_INTERVAL then
         WIVBN.ClearInterval()
         WIVBN.SaveTimedPosition()
