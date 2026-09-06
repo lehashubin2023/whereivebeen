@@ -17,16 +17,28 @@ class CreateGameSessionTest extends TestCase
 
     public function test_limit_games_sessions_are_exceeded()
     {
+        if (User::GAME_SESSIONS_LIMIT <= 0) {
+            $this->markTestSkipped('Game session limit is disabled');
+        }
+
         $this->expectException(LimitGameSessionsExceededException::class);
 
         $user = User::factory()->create();
-        GameSession::factory(10)->forUser($user)->create();
+        GameSession::factory(User::GAME_SESSIONS_LIMIT)->forUser($user)->create();
         $session = GameSession::factory()->create();
 
         app()->make(CreateGameSession::class)->exec(
             CreateGameSessionDTO::fromModel($session),
             $user
         );
+    }
+
+    public function test_sessions_are_not_limited_by_default()
+    {
+        $user = User::factory()->create();
+        GameSession::factory(25)->forUser($user)->create();
+
+        $this->assertFalse($user->canCreateGameSession());
     }
 
     public function test_game_session_already_exists()

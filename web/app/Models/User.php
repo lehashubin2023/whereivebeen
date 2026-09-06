@@ -49,10 +49,16 @@ class User extends Authenticatable
         return $this->hasMany(GameSession::class);
     }
 
+    public const GAME_SESSIONS_LIMIT = 0;
+
     public function canCreateGameSession(): bool
     {
         // TODO: Going to add payment logic and move limits
-        return $this->gameSessions()->count() >= 10;
+        if (self::GAME_SESSIONS_LIMIT <= 0) {
+            return false;
+        }
+
+        return $this->gameSessions()->count() >= self::GAME_SESSIONS_LIMIT;
     }
 
     public function doesGameSessionAlreadyExist(int $sessionId): bool
