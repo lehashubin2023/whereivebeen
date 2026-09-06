@@ -8,6 +8,7 @@ Libs\dkjson.lua
 Core.lua
 Session.lua
 Methods.lua
+Aggregate.lua
 Export.lua
 UI.lua
 Commands.lua

@@ -21,6 +21,7 @@ WIVBN.STATE_INTERVAL   = 0.5
 WIVBN.REFINE_DELAY     = 0.5
 WIVBN.MIN_MOVE         = 0.005
 WIVBN.RESUME_GAP_MIN   = 60
+WIVBN.AGGREGATE_WINDOW = 1.0
 
 WIVBN.MAX_POINTS_SESSION = 10000
 WIVBN.MAX_POINTS_TOTAL   = 40000
@@ -123,12 +124,15 @@ function eventHandlers.CHAT_MSG_LOOT(self, text)
     local itemId = tonumber(link:match("|Hitem:(%d+):"))
     if not itemId then return end
 
-    WIVBN.SaveEvent({
-        event    = "loot",
-        itemId   = itemId,
-        itemName = link:match("|h%[(.-)%]|h"),
-        count    = count,
+    WIVBN.PushAggregated("loot", {
+        id   = itemId,
+        name = link:match("|h%[(.-)%]|h"),
+        n    = count,
     })
+end
+
+function eventHandlers.LOOT_CLOSED(self)
+    WIVBN.FlushKind("loot")
 end
 
 function eventHandlers.PLAYER_REGEN_DISABLED(self)
@@ -139,16 +143,24 @@ function eventHandlers.PLAYER_REGEN_ENABLED(self)
     WIVBN.SaveEvent({ event = "combat", inCombat = false })
 end
 
+function WIVBN.SaveVisit(place)
+    local npcId, npcName = WIVBN.NpcInfo()
+    WIVBN.PushAggregated("visit", { place = place, npcId = npcId, npcName = npcName })
+end
+
 function eventHandlers.MERCHANT_SHOW(self)
-    WIVBN.SaveEvent({ event = "visit", place = "merchant" })
+    WIVBN.SaveVisit("merchant")
+    if CanMerchantRepair and CanMerchantRepair() then
+        WIVBN.SaveVisit("repair")
+    end
 end
 
 function eventHandlers.BANKFRAME_OPENED(self)
-    WIVBN.SaveEvent({ event = "visit", place = "bank" })
+    WIVBN.SaveVisit("bank")
 end
 
 function eventHandlers.AUCTION_HOUSE_SHOW(self)
-    WIVBN.SaveEvent({ event = "visit", place = "auction" })
+    WIVBN.SaveVisit("auction")
 end
 
 function eventHandlers.QUEST_ACCEPTED(self, arg1, arg2)
@@ -176,6 +188,7 @@ local events = {
     "BANKFRAME_OPENED",
     "AUCTION_HOUSE_SHOW",
     "CHAT_MSG_LOOT",
+    "LOOT_CLOSED",
     "PLAYER_LEVEL_UP",
     "PLAYER_ENTERING_WORLD",
     "QUEST_ACCEPTED",
@@ -198,6 +211,7 @@ frame:SetScript("OnUpdate", function(self, elapsed)
     if WIVBN.stateElapsed >= WIVBN.STATE_INTERVAL then
         WIVBN.stateElapsed = 0
         WIVBN.SaveTaxiState()
+        WIVBN.CheckPendingPosition()
     end
 
     if WIVBN.AccumulateInterval(elapsed) >= WIVBN.WRITING_INTERVAL then

@@ -15,7 +15,32 @@ function WIVBN.InitDB()
     WhereIveBeenDB.schema = WIVBN.SCHEMA
 end
 
-function WIVBN.FlushPending()
+function WIVBN.SessionTime(session)
+    if not session then return 0 end
+
+    return math.floor(((session.tBase or 0) + (GetTime() - session.clock)) * 10) / 10
+end
+
+function WIVBN.GuidId(guid)
+    if not guid then return nil end
+
+    local parts = {}
+    for part in guid:gmatch("[^%-]+") do
+        parts[#parts + 1] = part
+    end
+
+    if parts[1] == "Creature" or parts[1] == "Vehicle" or parts[1] == "GameObject" then
+        return tonumber(parts[6])
+    end
+
+    return nil
+end
+
+function WIVBN.NpcInfo()
+    local unit = UnitExists("npc") and "npc" or "target"
+    if not UnitExists(unit) then return nil end
+
+    return WIVBN.GuidId(UnitGUID(unit)), UnitName(unit)
 end
 
 function WIVBN.AccumulateInterval(elapsed)
@@ -47,7 +72,7 @@ function WIVBN.WritePoint(mapId, x, y, extra)
         x     = x or 0,
         y     = y or 0,
         mapId = mapId,
-        t     = math.floor(((session.tBase or 0) + (GetTime() - session.clock)) * 10) / 10,
+        t     = WIVBN.SessionTime(session),
     }
     if extra then
         for k, v in pairs(extra) do point[k] = v end
@@ -77,6 +102,8 @@ end
 
 function WIVBN.SaveEvent(extra)
     if not WIVBN.IsSessionActive() then return nil end
+
+    WIVBN.FlushPending()
 
     local mapId, x, y = WIVBN.GetPlayerPosition()
     if not mapId then
@@ -171,12 +198,12 @@ function WIVBN.SaveGroupState()
 
     for name in pairs(current) do
         if not WIVBN.groupRoster[name] then
-            WIVBN.SaveEvent({ event = "group", action = "join", member = name })
+            WIVBN.PushAggregated("group", { action = "join", member = name })
         end
     end
     for name in pairs(WIVBN.groupRoster) do
         if not current[name] then
-            WIVBN.SaveEvent({ event = "group", action = "leave", member = name })
+            WIVBN.PushAggregated("group", { action = "leave", member = name })
         end
     end
 
