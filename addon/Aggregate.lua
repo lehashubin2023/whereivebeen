@@ -114,6 +114,10 @@ function WIVBN.PushAggregated(kind, entry)
         WIVBN.FlushPending()
     end
 
+    if WIVBN.pending and (GetTime() - (WIVBN.pending.at or 0)) >= WIVBN.AGGREGATE_MAX then
+        WIVBN.FlushPending()
+    end
+
     if not WIVBN.pending then
         WIVBN.pending = { kind = kind, anchor = Anchor(), data = aggregator.init(), at = GetTime() }
     end
