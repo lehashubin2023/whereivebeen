@@ -62,14 +62,13 @@ function WIVBN.EnforceBudget()
         print(WIVBN.PREFIX .. ("|cffff8800Point budget: %d of %d used. Export and delete old sessions|r")
             :format(total, WIVBN.MAX_POINTS_TOTAL))
     end
-end
 
-function WIVBN.ShowSessionStatus()
-    local session = WIVBN.CurrentSession()
-    if not session then
-        print(WIVBN.PREFIX .. "Session is unactive")
-        return
+    if count > WIVBN.MAX_SESSIONS then
+        print(WIVBN.PREFIX .. ("|cffff8800Session count: %d of %d, only %d points stored.|r")
+            :format(count, WIVBN.MAX_SESSIONS, total))
+        print(WIVBN.PREFIX .. "Recording continues. Use |cffffd100/wivebeen prune 10|r to drop tiny leftover sessions")
     end
+end
 
 function WIVBN.PruneSessions(minPoints)
     local removed, kept = 0, 0
@@ -86,8 +85,18 @@ function WIVBN.PruneSessions(minPoints)
     return removed, kept
 end
 
-    print(WIVBN.PREFIX .. ("Session is active: %d points, %d stored total")
-        :format(#session.points, WIVBN.TotalPoints()))
+function WIVBN.ShowSessionStatus()
+    local session = WIVBN.CurrentSession()
+
+    if session then
+        print(WIVBN.PREFIX .. ("Session is active: %d points"):format(#session.points))
+    else
+        print(WIVBN.PREFIX .. "Session is unactive")
+    end
+
+    print(WIVBN.PREFIX .. ("Stored: %d of %d sessions, %d of %d points")
+        :format(#WIVBN.SortedSessionIds(), WIVBN.MAX_SESSIONS,
+            WIVBN.TotalPoints(), WIVBN.MAX_POINTS_TOTAL))
 end
 
 local function NextSessionId()
