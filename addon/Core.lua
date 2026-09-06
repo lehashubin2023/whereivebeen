@@ -13,6 +13,7 @@ WIVBN.lastX         = nil
 WIVBN.lastY         = nil
 WIVBN.wasOnTaxi     = false
 WIVBN.rotating      = false
+WIVBN.rawExport     = false
 
 WIVBN.SCHEMA = 2
 

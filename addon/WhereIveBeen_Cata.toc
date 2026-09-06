@@ -1,10 +1,15 @@
 ## Interface: 40402
 ## Title: WhereIveBeen
 ## Notes: Write your path
-## Version: 1.0
+## Version: 2.0.0
+## Author: Aleksey
+## IconTexture: Interface\Icons\INV_Misc_Map_01
+## Category-enUS: Maps
 ## SavedVariables: WhereIveBeenDB
 
 Libs\dkjson.lua
+Libs\base64.lua
+Libs\LibDeflate.lua
 Core.lua
 Session.lua
 Methods.lua
