@@ -232,11 +232,11 @@ function WIVBN.ResumeSession(id)
     print(WIVBN.PREFIX .. ("Recording resumed — session %d, %d points"):format(id, #session.points))
 
     if offline >= WIVBN.RESUME_GAP_MIN then
-        WIVBN.RefinePoint(WIVBN.SaveEvent({
+        WIVBN.SaveEvent({
             event   = "gap",
             reason  = "login",
             seconds = math.floor(offline),
-        }))
+        })
     end
 
     WIVBN.SaveSessionBaseline()

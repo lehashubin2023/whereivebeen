@@ -50,15 +50,11 @@ function WIVBN.SaveZoneState()
 
     lastZone, lastZoneMap = zone, mapId
 
-    local point = WIVBN.SaveEvent({
+    return WIVBN.SaveEvent({
         event   = "zone",
         zone    = zone,
         subZone = (subZone and subZone ~= "" and subZone ~= zone) and subZone or nil,
     })
-
-    WIVBN.RefinePoint(point)
-
-    return point
 end
 
 function WIVBN.OnSpellSucceeded(unit, castGuid, spellId)

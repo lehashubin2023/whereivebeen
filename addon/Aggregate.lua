@@ -86,9 +86,6 @@ WIVBN.aggregators = aggregators
 
 local function Anchor()
     local mapId, x, y = WIVBN.GetPlayerPosition()
-    if not mapId then
-        mapId, x, y = WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY
-    end
 
     return {
         mapId = mapId,

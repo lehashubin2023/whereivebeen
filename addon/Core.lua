@@ -20,6 +20,7 @@ WIVBN.SCHEMA = 2
 WIVBN.WRITING_INTERVAL = 20
 WIVBN.STATE_INTERVAL   = 0.5
 WIVBN.REFINE_DELAY     = 0.5
+WIVBN.REFINE_ATTEMPTS  = 6
 WIVBN.MIN_MOVE         = 0.005
 WIVBN.RESUME_GAP_MIN   = 60
 WIVBN.AGGREGATE_WINDOW = 1.0
@@ -97,11 +98,11 @@ function eventHandlers.PLAYER_DEAD(self)
 
     local killer, environment = WIVBN.KillerPayload()
 
-    WIVBN.RefinePoint(WIVBN.SaveEvent({
+    WIVBN.SaveEvent({
         event       = "death",
         killer      = killer,
         environment = environment,
-    }))
+    })
 end
 
 function eventHandlers.COMBAT_LOG_EVENT_UNFILTERED(self)
@@ -140,12 +141,12 @@ function eventHandlers.PLAYER_ENTERING_WORLD(self, isInitialLogin, isReload)
 
     local reason, spellId, spellName = WIVBN.GapReason()
 
-    WIVBN.RefinePoint(WIVBN.SaveEvent({
+    WIVBN.SaveEvent({
         event     = "gap",
         reason    = reason,
         spellId   = spellId,
         spellName = spellName,
-    }))
+    })
 
     WIVBN.SaveZoneState()
 end

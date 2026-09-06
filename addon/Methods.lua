@@ -122,22 +122,28 @@ function WIVBN.SaveEvent(extra)
     WIVBN.FlushPending()
 
     local mapId, x, y = WIVBN.GetPlayerPosition()
-    if not mapId then
-        mapId, x, y = WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY
-    end
 
     local point = WIVBN.WritePoint(mapId, x, y, extra)
     WIVBN.ClearInterval()
+    WIVBN.RefinePoint(point)
 
     return point
 end
 
-function WIVBN.RefinePoint(point)
+function WIVBN.RefinePoint(point, attempt)
     if not point or point.mapId then return end
 
+    attempt = attempt or 1
+    if attempt > WIVBN.REFINE_ATTEMPTS then return end
+
     C_Timer.After(WIVBN.REFINE_DELAY, function()
+        if point.mapId then return end
+
         local mapId, x, y = WIVBN.GetPlayerPosition()
-        if not mapId then return end
+        if not mapId then
+            WIVBN.RefinePoint(point, attempt + 1)
+            return
+        end
 
         point.mapId, point.x, point.y = mapId, x, y
         WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = mapId, x, y
@@ -203,8 +209,8 @@ function WIVBN.SaveSessionBaseline()
         WIVBN.SaveEvent({ event = "combat", inCombat = true })
     end
 
-    if not WIVBN.SaveZoneState() then
-        WIVBN.RefinePoint(WIVBN.SavePosition() or WIVBN.SaveEvent({}))
+    if not WIVBN.SaveZoneState() and not WIVBN.SavePosition() then
+        WIVBN.SaveEvent({})
     end
 end
 
