@@ -22,6 +22,9 @@ WIVBN.REFINE_DELAY     = 0.5
 WIVBN.MIN_MOVE         = 0.005
 WIVBN.RESUME_GAP_MIN   = 60
 WIVBN.AGGREGATE_WINDOW = 1.0
+WIVBN.GATHER_WINDOW    = 3.0
+WIVBN.TELEPORT_WINDOW  = 20
+WIVBN.KILLER_WINDOW    = 10
 
 WIVBN.MAX_POINTS_SESSION = 10000
 WIVBN.MAX_POINTS_TOTAL   = 40000
@@ -72,6 +75,7 @@ function eventHandlers.ADDON_LOADED(self, addonName)
 end
 
 function eventHandlers.PLAYER_LOGIN(self)
+    WIVBN.ResetTracking()
     WIVBN.ResumeOrIdle()
 end
 
@@ -89,8 +93,30 @@ end
 
 function eventHandlers.PLAYER_DEAD(self)
     WIVBN.wasDead = true
-    WIVBN.SaveEvent({ event = "death" })
+
+    local killer, environment = WIVBN.KillerPayload()
+
+    WIVBN.RefinePoint(WIVBN.SaveEvent({
+        event       = "death",
+        killer      = killer,
+        environment = environment,
+    }))
 end
+
+function eventHandlers.COMBAT_LOG_EVENT_UNFILTERED(self)
+    WIVBN.OnCombatLog()
+end
+
+function eventHandlers.UNIT_SPELLCAST_SUCCEEDED(self, unit, castGuid, spellId)
+    WIVBN.OnSpellSucceeded(unit, castGuid, spellId)
+end
+
+function eventHandlers.ZONE_CHANGED(self)
+    WIVBN.SaveZoneState()
+end
+
+eventHandlers.ZONE_CHANGED_NEW_AREA = eventHandlers.ZONE_CHANGED
+eventHandlers.ZONE_CHANGED_INDOORS  = eventHandlers.ZONE_CHANGED
 
 function eventHandlers.PLAYER_UNGHOST(self)
     WIVBN.OnResurrect()
@@ -108,9 +134,23 @@ function eventHandlers.PLAYER_ENTERING_WORLD(self, isInitialLogin, isReload)
     WIVBN.wasOnTaxi   = UnitOnTaxi("player") and true or false
     WIVBN.groupRoster = WIVBN.GetGroupRoster()
 
-    if isInitialLogin or isReload then return end
+    WIVBN.playerGuid = UnitGUID("player")
 
-    WIVBN.RefinePoint(WIVBN.SaveEvent({ event = "gap" }))
+    if isInitialLogin or isReload then
+        WIVBN.SaveZoneState()
+        return
+    end
+
+    local reason, spellId, spellName = WIVBN.GapReason()
+
+    WIVBN.RefinePoint(WIVBN.SaveEvent({
+        event     = "gap",
+        reason    = reason,
+        spellId   = spellId,
+        spellName = spellName,
+    }))
+
+    WIVBN.SaveZoneState()
 end
 
 function eventHandlers.PLAYER_LEVEL_UP(self, level)
@@ -124,15 +164,21 @@ function eventHandlers.CHAT_MSG_LOOT(self, text)
     local itemId = tonumber(link:match("|Hitem:(%d+):"))
     if not itemId then return end
 
-    WIVBN.PushAggregated("loot", {
+    WIVBN.PushLoot({
         id   = itemId,
         name = link:match("|h%[(.-)%]|h"),
         n    = count,
     })
 end
 
+function eventHandlers.LOOT_OPENED(self)
+    WIVBN.OnLootOpened()
+end
+
 function eventHandlers.LOOT_CLOSED(self)
     WIVBN.FlushKind("loot")
+    WIVBN.FlushKind("gather")
+    WIVBN.gatherNode = nil
 end
 
 function eventHandlers.PLAYER_REGEN_DISABLED(self)
@@ -163,6 +209,34 @@ function eventHandlers.AUCTION_HOUSE_SHOW(self)
     WIVBN.SaveVisit("auction")
 end
 
+function eventHandlers.MAIL_SHOW(self)
+    WIVBN.SaveVisit("mail")
+end
+
+function eventHandlers.TRAINER_SHOW(self)
+    WIVBN.SaveVisit("trainer")
+end
+
+function eventHandlers.TAXIMAP_OPENED(self)
+    WIVBN.SaveVisit("flightmaster")
+end
+
+function eventHandlers.GUILDBANKFRAME_OPENED(self)
+    WIVBN.SaveVisit("guildbank")
+end
+
+function eventHandlers.PET_STABLE_SHOW(self)
+    WIVBN.SaveVisit("stable")
+end
+
+function eventHandlers.BARBER_SHOP_OPEN(self)
+    WIVBN.SaveVisit("barber")
+end
+
+function eventHandlers.TRADE_SHOW(self)
+    WIVBN.SaveVisit("trade")
+end
+
 function eventHandlers.QUEST_ACCEPTED(self, arg1, arg2)
     local questId = arg2 or arg1
     WIVBN.SaveEvent({ event = "quest", action = "accept", questId = questId, title = WIVBN.QuestTitle(questId) })
@@ -188,11 +262,23 @@ local events = {
     "BANKFRAME_OPENED",
     "AUCTION_HOUSE_SHOW",
     "CHAT_MSG_LOOT",
+    "LOOT_OPENED",
     "LOOT_CLOSED",
     "PLAYER_LEVEL_UP",
     "PLAYER_ENTERING_WORLD",
     "QUEST_ACCEPTED",
     "QUEST_TURNED_IN",
+    "MAIL_SHOW",
+    "TRAINER_SHOW",
+    "TAXIMAP_OPENED",
+    "GUILDBANKFRAME_OPENED",
+    "PET_STABLE_SHOW",
+    "BARBER_SHOP_OPEN",
+    "TRADE_SHOW",
+    "ZONE_CHANGED",
+    "ZONE_CHANGED_NEW_AREA",
+    "ZONE_CHANGED_INDOORS",
+    "COMBAT_LOG_EVENT_UNFILTERED",
 }
 
 for _, event in ipairs(events) do
@@ -200,6 +286,7 @@ for _, event in ipairs(events) do
 end
 
 frame:RegisterUnitEvent("UNIT_AURA", "player")
+pcall(frame.RegisterUnitEvent, frame, "UNIT_SPELLCAST_SUCCEEDED", "player")
 
 frame:SetScript("OnEvent", function(self, event, ...)
     local h = eventHandlers[event]

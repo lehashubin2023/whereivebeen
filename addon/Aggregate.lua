@@ -22,6 +22,28 @@ aggregators.loot = {
     end,
 }
 
+aggregators.gather = {
+    window = WIVBN.GATHER_WINDOW,
+    init   = function() return { items = {} } end,
+    add    = function(data, entry)
+        data.node = data.node or entry.node
+
+        if not entry.id then return end
+
+        for _, item in ipairs(data.items) do
+            if item.id == entry.id then
+                item.n = item.n + (entry.n or 1)
+                return
+            end
+        end
+
+        data.items[#data.items + 1] = { id = entry.id, name = entry.name, n = entry.n or 1 }
+    end,
+    build  = function(data)
+        return { event = "gather", node = data.node, items = data.items }
+    end,
+}
+
 aggregators.group = {
     window = WIVBN.AGGREGATE_WINDOW,
     init   = function() return { joined = {}, left = {} } end,

@@ -9,6 +9,7 @@ Core.lua
 Session.lua
 Methods.lua
 Aggregate.lua
+Tracking.lua
 Export.lua
 UI.lua
 Commands.lua
