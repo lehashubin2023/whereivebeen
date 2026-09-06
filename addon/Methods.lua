@@ -1,8 +1,24 @@
 local WIVBN = WhereIveBeen
 
+local function MigrateActiveSession()
+    local db = WhereIveBeenDB
+    if not db.activeSessionId then return end
+
+    local session = db.sessions[db.activeSessionId]
+
+    if session and session.char then
+        db.activeSessions[session.char .. "-" .. (session.realm or "?")] = db.activeSessionId
+    end
+
+    db.activeSessionId = nil
+end
+
 function WIVBN.InitDB()
     WhereIveBeenDB = WhereIveBeenDB or {}
     WhereIveBeenDB.sessions = WhereIveBeenDB.sessions or {}
+    WhereIveBeenDB.activeSessions = WhereIveBeenDB.activeSessions or {}
+
+    MigrateActiveSession()
 
     if WhereIveBeenDB.schema == WIVBN.SCHEMA then return end
 

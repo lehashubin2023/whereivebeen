@@ -4,6 +4,47 @@ function WIVBN.IsSessionActive()
     return WIVBN.sessionId ~= nil
 end
 
+function WIVBN.CharacterKey()
+    return (UnitName("player") or "?") .. "-" .. (GetRealmName() or "?")
+end
+
+function WIVBN.BelongsToCurrentCharacter(session)
+    return session ~= nil
+        and session.char == UnitName("player")
+        and session.realm == GetRealmName()
+end
+
+function WIVBN.ActiveSessionId()
+    local active = WhereIveBeenDB.activeSessions
+
+    return active and active[WIVBN.CharacterKey()] or nil
+end
+
+function WIVBN.SetActiveSessionId(id)
+    WhereIveBeenDB.activeSessions = WhereIveBeenDB.activeSessions or {}
+    WhereIveBeenDB.activeSessions[WIVBN.CharacterKey()] = id
+end
+
+function WIVBN.IsActiveSession(id)
+    local active = WhereIveBeenDB.activeSessions
+    if not active then return false end
+
+    for _, activeId in pairs(active) do
+        if activeId == id then return true end
+    end
+
+    return false
+end
+
+function WIVBN.ForgetActiveSession(id)
+    local active = WhereIveBeenDB.activeSessions
+    if not active then return end
+
+    for key, activeId in pairs(active) do
+        if activeId == id then active[key] = nil end
+    end
+end
+
 function WIVBN.CurrentSession()
     return WIVBN.sessionId and WhereIveBeenDB.sessions[WIVBN.sessionId] or nil
 end
@@ -35,7 +76,7 @@ function WIVBN.PurgeEmptySessions()
     local removed = 0
 
     for id, session in pairs(WhereIveBeenDB.sessions) do
-        if WIVBN.PointCount(session) == 0 and id ~= WhereIveBeenDB.activeSessionId then
+        if WIVBN.PointCount(session) == 0 and not WIVBN.IsActiveSession(id) then
             WhereIveBeenDB.sessions[id] = nil
             removed = removed + 1
         end
@@ -68,7 +109,7 @@ function WIVBN.EnforceBudget()
         if not WIVBN.OverBudget(total, count) then break end
 
         local session = db.sessions[id]
-        if session and session.exportedAt and id ~= db.activeSessionId then
+        if session and session.exportedAt and not WIVBN.IsActiveSession(id) then
             total = total - WIVBN.PointCount(session)
             count = count - 1
             db.sessions[id] = nil
@@ -96,7 +137,7 @@ function WIVBN.PruneSessions(minPoints)
     local removed, kept = 0, 0
 
     for id, session in pairs(WhereIveBeenDB.sessions) do
-        if id ~= WhereIveBeenDB.activeSessionId and WIVBN.PointCount(session) < minPoints then
+        if not WIVBN.IsActiveSession(id) and WIVBN.PointCount(session) < minPoints then
             WhereIveBeenDB.sessions[id] = nil
             removed = removed + 1
         else
@@ -162,7 +203,7 @@ function WIVBN.StartSession(continuesFrom)
         points        = {},
     }
 
-    WhereIveBeenDB.activeSessionId = id
+    WIVBN.SetActiveSessionId(id)
     WIVBN.sessionId = id
     WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
@@ -208,13 +249,16 @@ function WIVBN.ResumeOrIdle()
 
     WIVBN.PurgeEmptySessions()
 
-    if db.activeSessionId and db.sessions[db.activeSessionId] then
-        WIVBN.ResumeSession(db.activeSessionId)
+    local activeId = WIVBN.ActiveSessionId()
+    local session  = activeId and db.sessions[activeId] or nil
+
+    if WIVBN.BelongsToCurrentCharacter(session) then
+        WIVBN.ResumeSession(activeId)
         WIVBN.EnforceBudget()
         return
     end
 
-    db.activeSessionId = nil
+    WIVBN.SetActiveSessionId(nil)
 
     WIVBN.StartSession()
 end
@@ -231,7 +275,7 @@ function WIVBN.EndSession()
     session.ended = time()
 
     WIVBN.sessionId = nil
-    WhereIveBeenDB.activeSessionId = nil
+    WIVBN.SetActiveSessionId(nil)
 
     print(WIVBN.PREFIX .. "Session successfully ended")
 end
@@ -286,9 +330,9 @@ function WIVBN.DeleteSession(id)
     if wasActive then
         WIVBN.FlushPending()
         WIVBN.sessionId = nil
-        WhereIveBeenDB.activeSessionId = nil
     end
 
+    WIVBN.ForgetActiveSession(id)
     WhereIveBeenDB.sessions[id] = nil
 
     if wasActive then
@@ -303,7 +347,7 @@ function WIVBN.ClearAllSessions()
 
     WIVBN.sessionId = nil
     WhereIveBeenDB.sessions = {}
-    WhereIveBeenDB.activeSessionId = nil
+    WhereIveBeenDB.activeSessions = {}
 
     print(WIVBN.PREFIX .. "Sessions successfully clean")
 
