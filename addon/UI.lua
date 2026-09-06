@@ -173,7 +173,7 @@ end
 
 local function CreateExportFrame()
     local f = CreateWindow("WhereIveBeenExportFrame", 560, 420,
-        "WhereIveBeen — Export (JSON)")
+        "WhereIveBeen — Export")
 
     local hint = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     hint:SetPoint("BOTTOM", 0, 18)
@@ -208,7 +208,7 @@ local function CreateExportFrame()
 end
 
 function WIVBN.ShowExportWindow(id)
-    local data, err = WIVBN.ExportSession(id)
+    local data, err, note = WIVBN.ExportSession(id)
     if not data then
         print(WIVBN.PREFIX .. "Export failed: " .. tostring(err))
         return
@@ -220,7 +220,12 @@ function WIVBN.ShowExportWindow(id)
 
     SetExportText(exportFrame.edit, data)
     exportFrame.hint:SetText(("%s, %d chars  |cffaaaaaa Ctrl+C to copy, Esc to close|r")
-        :format(WIVBN.rawExport and "raw JSON" or "compressed", #data))
+        :format(note or "compressed", #data))
+
+    if note and note ~= "raw JSON" then
+        print(WIVBN.PREFIX .. "|cffff8800" .. note .. "|r")
+    end
+
     exportFrame:Show()
     exportFrame:Raise()
     exportFrame.edit:SetCursorPosition(0)

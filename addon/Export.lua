@@ -47,25 +47,48 @@ function WIVBN.BuildSessionExport(id)
     }
 end
 
+function WIVBN.Deflate()
+    if WIVBN.deflate then return WIVBN.deflate end
+
+    if LibStub then
+        local ok, lib = pcall(LibStub.GetLibrary, LibStub, "LibDeflate", true)
+        if ok and type(lib) == "table" and lib.CompressDeflate then
+            WIVBN.deflate = lib
+        end
+    end
+
+    return WIVBN.deflate
+end
+
 function WIVBN.EncodeExport(export)
     local ok, json = pcall(WIVBN.json.encode, export)
     if not ok or type(json) ~= "string" then
         return nil, "json encode failed: " .. tostring(json)
     end
 
-    if WIVBN.rawExport or not WIVBN.deflate or not WIVBN.base64 then
-        return json
+    if WIVBN.rawExport then
+        return json, nil, "raw JSON"
     end
 
-    local compressed = WIVBN.deflate:CompressDeflate(json, { level = 9 })
-    if type(compressed) ~= "string" then
-        return json
+    local deflate = WIVBN.Deflate()
+    if not deflate then
+        return json, nil, "uncompressed: LibDeflate not available"
+    end
+
+    if not WIVBN.base64 then
+        return json, nil, "uncompressed: base64 not available"
+    end
+
+    local compressed
+    ok, compressed = pcall(deflate.CompressDeflate, deflate, json, { level = 9 })
+    if not ok or type(compressed) ~= "string" then
+        return json, nil, "uncompressed: deflate failed"
     end
 
     local encoded
     ok, encoded = pcall(WIVBN.base64.encode, compressed)
     if not ok or type(encoded) ~= "string" then
-        return json
+        return json, nil, "uncompressed: base64 failed"
     end
 
     return WIVBN.EXPORT_PREFIX .. encoded
@@ -77,12 +100,12 @@ function WIVBN.ExportSession(id)
         return nil, buildError
     end
 
-    local data, encodeError = WIVBN.EncodeExport(export)
+    local data, encodeError, note = WIVBN.EncodeExport(export)
     if not data then
         return nil, encodeError
     end
 
     WhereIveBeenDB.sessions[id].exportedAt = time()
 
-    return data
+    return data, nil, note
 end
