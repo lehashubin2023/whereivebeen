@@ -298,17 +298,64 @@ function WIVBN.GetCurrentOrLastSession()
     return lastId and WhereIveBeenDB.sessions[lastId] or nil
 end
 
+local MAX_LISTED = 3
+
+local function DescribeItems(p)
+    if type(p.items) ~= "table" or #p.items == 0 then
+        if not p.itemId and not p.itemName then return nil end
+
+        return ("%s x%s"):format(p.itemName or tostring(p.itemId), tostring(p.count or 1))
+    end
+
+    local parts = {}
+    for i = 1, math.min(#p.items, MAX_LISTED) do
+        local item = p.items[i]
+        parts[#parts + 1] = ("%s x%s"):format(item.name or tostring(item.id), tostring(item.n or 1))
+    end
+
+    if #p.items > MAX_LISTED then
+        parts[#parts + 1] = ("+%d more"):format(#p.items - MAX_LISTED)
+    end
+
+    return table.concat(parts, ", ")
+end
+
+local function DescribeGroup(p)
+    local parts = {}
+
+    if p.joined and #p.joined > 0 then parts[#parts + 1] = "+" .. table.concat(p.joined, ", ") end
+    if p.left and #p.left > 0 then parts[#parts + 1] = "-" .. table.concat(p.left, ", ") end
+
+    if #parts == 0 and p.member then
+        parts[#parts + 1] = ("%s %s"):format(tostring(p.action), tostring(p.member))
+    end
+
+    return table.concat(parts, " ")
+end
+
+local function DescribeDeath(p)
+    if p.environment then
+        return "|cffff0000death|r (" .. tostring(p.environment):lower() .. ")"
+    end
+
+    if p.killer and p.killer.name then
+        return "|cffff0000death|r by " .. tostring(p.killer.name)
+    end
+
+    return "|cffff0000death|r"
+end
+
 function WIVBN.DescribePoint(p)
     local e = p.event
 
     if e == "mount"     then return p.mounted and "mounted" or "dismounted" end
     if e == "combat"    then return p.inCombat and "|cffff5555combat started|r" or "combat ended" end
-    if e == "death"     then return "|cffff0000death|r" end
+    if e == "death"     then return DescribeDeath(p) end
     if e == "resurrect" then return "|cff00ff00resurrect|r" end
     if e == "levelup"   then return "level "..tostring(p.level) end
-    if e == "loot"      then return ("loot: %s x%s"):format(p.itemName or tostring(p.itemId), tostring(p.count or 1)) end
-    if e == "visit"     then return "visit: "..tostring(p.place) end
-    if e == "group"     then return ("group: %s %s"):format(tostring(p.action), tostring(p.member)) end
+    if e == "loot"      then return "loot: "..(DescribeItems(p) or "?") end
+    if e == "visit"     then return "visit: "..(p.places and table.concat(p.places, ", ") or tostring(p.place)) end
+    if e == "group"     then return "group: "..DescribeGroup(p) end
     if e == "quest"     then return ("quest: %s %s"):format(tostring(p.action), p.title or tostring(p.questId)) end
     if e == "taxi"      then return p.onTaxi and "takeoff (taxi)" or "landing (taxi)" end
     if e == "gap"       then return "|cffff8800route gap|r"..(p.reason and (" ("..p.reason..")") or "") end
