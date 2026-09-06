@@ -40,7 +40,7 @@ function WIVBN.EnforceBudget()
     local ids     = WIVBN.SortedSessionIds()
     local total   = WIVBN.TotalPoints()
     local count   = #ids
-    local freed   = false
+    local freed   = 0
 
     for _, id in ipairs(ids) do
         if total <= WIVBN.MAX_POINTS_TOTAL and count <= WIVBN.MAX_SESSIONS then break end
@@ -50,16 +50,17 @@ function WIVBN.EnforceBudget()
             total = total - #session.points
             count = count - 1
             db.sessions[id] = nil
-            freed = true
+            freed = freed + 1
         end
     end
 
-    if freed then
-        print(WIVBN.PREFIX .. "Old exported sessions removed to free storage")
+    if freed > 0 then
+        print(WIVBN.PREFIX .. ("Removed %d exported sessions to free storage"):format(freed))
     end
 
-    if total > WIVBN.MAX_POINTS_TOTAL or count > WIVBN.MAX_SESSIONS then
-        print(WIVBN.PREFIX .. "|cffff8800Storage budget exceeded. Export and delete old sessions|r")
+    if total > WIVBN.MAX_POINTS_TOTAL then
+        print(WIVBN.PREFIX .. ("|cffff8800Point budget: %d of %d used. Export and delete old sessions|r")
+            :format(total, WIVBN.MAX_POINTS_TOTAL))
     end
 end
 
