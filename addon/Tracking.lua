@@ -30,6 +30,7 @@ function WIVBN.ResetTracking()
     WIVBN.lastHit    = nil
     WIVBN.lastCast   = nil
     WIVBN.gatherNode = nil
+    WIVBN.gatherAt   = nil
     lastZone, lastZoneMap = nil, nil
 end
 
@@ -80,6 +81,7 @@ function WIVBN.OnLootOpened()
 
     if not fishing and not isNode then
         WIVBN.gatherNode = nil
+        WIVBN.gatherAt = nil
         return
     end
 
@@ -93,10 +95,24 @@ function WIVBN.OnLootOpened()
         spellId   = cast and cast.id or nil,
         spellName = cast and cast.name or nil,
     }
+    WIVBN.gatherAt = GetTime()
+end
+
+function WIVBN.OnLootClosed()
+    WIVBN.FlushKind("loot")
+
+    local pending = WIVBN.pending
+    if pending and pending.kind == "gather" and #pending.data.items > 0 then
+        WIVBN.FlushPending()
+    end
 end
 
 function WIVBN.PushLoot(entry)
-    if WIVBN.gatherNode then
+    local fresh = WIVBN.gatherNode
+        and WIVBN.gatherAt
+        and (GetTime() - WIVBN.gatherAt) <= WIVBN.GATHER_WINDOW
+
+    if fresh then
         entry.node = WIVBN.gatherNode
         WIVBN.PushAggregated("gather", entry)
         return

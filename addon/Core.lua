@@ -177,9 +177,7 @@ function eventHandlers.LOOT_OPENED(self)
 end
 
 function eventHandlers.LOOT_CLOSED(self)
-    WIVBN.FlushKind("loot")
-    WIVBN.FlushKind("gather")
-    WIVBN.gatherNode = nil
+    WIVBN.OnLootClosed()
 end
 
 function eventHandlers.PLAYER_REGEN_DISABLED(self)
