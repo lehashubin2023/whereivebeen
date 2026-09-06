@@ -4,76 +4,264 @@ function WIVBN.IsSessionActive()
     return WIVBN.sessionId ~= nil
 end
 
-function WIVBN.ShowSessionStatus()
-    local status = "unactive"
-    if WIVBN.IsSessionActive() then
-        status = "active"
-    end
-    print(WIVBN.PREFIX.."Session is "..status)
+function WIVBN.CurrentSession()
+    return WIVBN.sessionId and WhereIveBeenDB.sessions[WIVBN.sessionId] or nil
 end
 
-function WIVBN.StartSession()
+function WIVBN.SortedSessionIds()
+    local ids = {}
+    for id in pairs(WhereIveBeenDB.sessions) do
+        ids[#ids + 1] = id
+    end
+    table.sort(ids)
+
+    return ids
+end
+
+function WIVBN.TotalPoints()
+    local total = 0
+    for _, session in pairs(WhereIveBeenDB.sessions) do
+        total = total + #session.points
+    end
+
+    return total
+end
+
+function WIVBN.PurgeEmptySessions()
+    for id, session in pairs(WhereIveBeenDB.sessions) do
+        if #session.points == 0 and id ~= WhereIveBeenDB.activeSessionId then
+            WhereIveBeenDB.sessions[id] = nil
+        end
+    end
+end
+
+function WIVBN.EnforceBudget()
+    local db      = WhereIveBeenDB
+    local ids     = WIVBN.SortedSessionIds()
+    local total   = WIVBN.TotalPoints()
+    local count   = #ids
+    local freed   = false
+
+    for _, id in ipairs(ids) do
+        if total <= WIVBN.MAX_POINTS_TOTAL and count <= WIVBN.MAX_SESSIONS then break end
+
+        local session = db.sessions[id]
+        if session and session.exportedAt and id ~= db.activeSessionId then
+            total = total - #session.points
+            count = count - 1
+            db.sessions[id] = nil
+            freed = true
+        end
+    end
+
+    if freed then
+        print(WIVBN.PREFIX .. "Old exported sessions removed to free storage")
+    end
+
+    if total > WIVBN.MAX_POINTS_TOTAL or count > WIVBN.MAX_SESSIONS then
+        print(WIVBN.PREFIX .. "|cffff8800Storage budget exceeded. Export and delete old sessions|r")
+    end
+end
+
+function WIVBN.ShowSessionStatus()
+    local session = WIVBN.CurrentSession()
+    if not session then
+        print(WIVBN.PREFIX .. "Session is unactive")
+        return
+    end
+
+    print(WIVBN.PREFIX .. ("Session is active: %d points, %d stored total")
+        :format(#session.points, WIVBN.TotalPoints()))
+end
+
+local function NextSessionId()
+    local base = math.max(time() * 1000, (WhereIveBeenDB.lastSessionId or 0) + 1)
+
+    for offset = 0, 999 do
+        local id = base + offset
+        if not WhereIveBeenDB.sessions[id] then
+            WhereIveBeenDB.lastSessionId = id
+            return id
+        end
+    end
+
+    WhereIveBeenDB.lastSessionId = base + 999
+
+    return base + 999
+end
+
+function WIVBN.StartSession(continuesFrom)
     if WIVBN.IsSessionActive() then
-        print(WIVBN.PREFIX.."Current session already started. End or clear current session before")
+        print(WIVBN.PREFIX .. "Current session already started. End or clear current session before")
         return nil
     end
 
-    local id = time()
-    while WhereIveBeenDB.sessions[id] do
-        id = id + 1
-    end
-    WIVBN.sessionId = id
+    WIVBN.PurgeEmptySessions()
+    WIVBN.EnforceBudget()
+
+    local id = NextSessionId()
+
     WhereIveBeenDB.sessions[id] = {
-        started = time(),
-        clock   = GetTime(),
-        char    = UnitName("player"),
-        realm   = GetRealmName(),
-        points  = {},
+        id            = id,
+        started       = time(),
+        clock         = GetTime(),
+        tBase         = 0,
+        char          = UnitName("player"),
+        realm         = GetRealmName(),
+        faction       = UnitFactionGroup("player"),
+        class         = select(2, UnitClass("player")),
+        level         = UnitLevel("player"),
+        continuesFrom = continuesFrom,
+        points        = {},
     }
 
+    WhereIveBeenDB.activeSessionId = id
+    WIVBN.sessionId = id
     WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
-    print(WIVBN.PREFIX.."Session successfully started")
+    print(WIVBN.PREFIX .. "Session successfully started")
+
+    return id
+end
+
+function WIVBN.ResumeSession(id)
+    local session = WhereIveBeenDB.sessions[id]
+    if not session then return nil end
+
+    local last    = session.points[#session.points]
+    local lastT   = last and last.t or session.tBase or 0
+    local offline = math.max(0, (time() - session.started) - lastT)
+
+    session.tBase = time() - session.started
+    session.clock = GetTime()
+    session.ended = nil
+
+    WIVBN.sessionId = id
+    WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
+
+    print(WIVBN.PREFIX .. ("Session resumed: %d points"):format(#session.points))
+
+    if offline >= WIVBN.RESUME_GAP_MIN then
+        WIVBN.RefinePoint(WIVBN.SaveEvent({
+            event   = "gap",
+            reason  = "login",
+            seconds = math.floor(offline),
+        }))
+    end
+
+    return id
+end
+
+function WIVBN.ResumeOrIdle()
+    local db = WhereIveBeenDB
+
+    WIVBN.PurgeEmptySessions()
+
+    if db.activeSessionId and db.sessions[db.activeSessionId] then
+        WIVBN.ResumeSession(db.activeSessionId)
+        WIVBN.EnforceBudget()
+        return
+    end
+
+    db.activeSessionId = nil
+
+    if not db.initialized then
+        db.initialized = true
+        WIVBN.StartSession()
+        return
+    end
+
+    print(WIVBN.PREFIX .. "No active session. Type /wivbn start to begin")
 end
 
 function WIVBN.EndSession()
-    if not WIVBN.IsSessionActive() then
-        print(WIVBN.PREFIX.."Session wasn`t created")
+    local session = WIVBN.CurrentSession()
+    if not session then
+        print(WIVBN.PREFIX .. "Session wasn`t created")
         return nil
     end
 
-    WIVBN.sessionId = nil
+    WIVBN.FlushPending()
 
-    print(WIVBN.PREFIX.."Session successfully ended")
+    session.ended = time()
+
+    WIVBN.sessionId = nil
+    WhereIveBeenDB.activeSessionId = nil
+
+    print(WIVBN.PREFIX .. "Session successfully ended")
+end
+
+function WIVBN.RotateSession()
+    if WIVBN.rotating then return nil end
+
+    local previous = WIVBN.sessionId
+    if not previous then return nil end
+
+    WIVBN.rotating = true
+
+    WIVBN.EndSession()
+    local id = WIVBN.StartSession(previous)
+
+    WIVBN.rotating = false
+
+    if id then
+        print(WIVBN.PREFIX .. "Point limit reached, tracking continues in a new session")
+    end
+
+    return id
 end
 
 function WIVBN.ClearSession()
-    if not WIVBN.IsSessionActive() then
-        print(WIVBN.PREFIX.."Session wasn`t created")
+    local session = WIVBN.CurrentSession()
+    if not session then
+        print(WIVBN.PREFIX .. "Session wasn`t created")
         return nil
     end
 
-    WhereIveBeenDB.sessions[WIVBN.sessionId].points = {}
+    WIVBN.FlushPending()
 
-    print(WIVBN.PREFIX.."Session successfully clean")
+    session.points  = {}
+    session.started = time()
+    session.clock   = GetTime()
+    session.tBase   = 0
+    session.ended   = nil
+
+    WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
+
+    print(WIVBN.PREFIX .. "Session successfully clean")
+end
+
+function WIVBN.DeleteSession(id)
+    if not WhereIveBeenDB.sessions[id] then return false end
+
+    if WIVBN.sessionId == id then
+        WIVBN.FlushPending()
+        WIVBN.sessionId = nil
+        WhereIveBeenDB.activeSessionId = nil
+    end
+
+    WhereIveBeenDB.sessions[id] = nil
+
+    return true
 end
 
 function WIVBN.ClearAllSessions()
+    WIVBN.FlushPending()
+
     WIVBN.sessionId = nil
     WhereIveBeenDB.sessions = {}
+    WhereIveBeenDB.activeSessionId = nil
 
-    print(WIVBN.PREFIX.."Sessions successfully clean")
+    print(WIVBN.PREFIX .. "Sessions successfully clean")
 end
 
 function WIVBN.GetCurrentOrLastSession()
-    if WIVBN.sessionId and WhereIveBeenDB.sessions[WIVBN.sessionId] then
-        return WhereIveBeenDB.sessions[WIVBN.sessionId]
-    end
+    local session = WIVBN.CurrentSession()
+    if session then return session end
 
-    local lastId
-    for id in pairs(WhereIveBeenDB.sessions) do
-        if not lastId or id > lastId then lastId = id end
-    end
+    local ids = WIVBN.SortedSessionIds()
+    local lastId = ids[#ids]
+
     return lastId and WhereIveBeenDB.sessions[lastId] or nil
 end
 
@@ -90,13 +278,13 @@ function WIVBN.DescribePoint(p)
     if e == "group"     then return ("group: %s %s"):format(tostring(p.action), tostring(p.member)) end
     if e == "quest"     then return ("quest: %s %s"):format(tostring(p.action), p.title or tostring(p.questId)) end
     if e == "taxi"      then return p.onTaxi and "takeoff (taxi)" or "landing (taxi)" end
-    if e == "gap"       then return "|cffff8800route gap|r" end
+    if e == "gap"       then return "|cffff8800route gap|r"..(p.reason and (" ("..p.reason..")") or "") end
 
     return "path"
 end
 
 function WIVBN.FormatPoint(p)
-    local info = C_Map.GetMapInfo(p.mapId)
+    local info = p.mapId and C_Map.GetMapInfo(p.mapId)
     local zone = (info and info.name) or ("map "..tostring(p.mapId))
     local t    = p.t and ("%.1f"):format(p.t) or "--"
 

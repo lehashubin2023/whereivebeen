@@ -12,11 +12,19 @@ WIVBN.lastMapId     = nil
 WIVBN.lastX         = nil
 WIVBN.lastY         = nil
 WIVBN.wasOnTaxi     = false
+WIVBN.rotating      = false
+
+WIVBN.SCHEMA = 2
 
 WIVBN.WRITING_INTERVAL = 20
 WIVBN.STATE_INTERVAL   = 0.5
 WIVBN.REFINE_DELAY     = 0.5
 WIVBN.MIN_MOVE         = 0.005
+WIVBN.RESUME_GAP_MIN   = 60
+
+WIVBN.MAX_POINTS_SESSION = 10000
+WIVBN.MAX_POINTS_TOTAL   = 40000
+WIVBN.MAX_SESSIONS       = 50
 
 WIVBN.PREFIX = "|cffff0000WhereIveBeen|r: "
 
@@ -59,8 +67,15 @@ end
 function eventHandlers.ADDON_LOADED(self, addonName)
     if addonName ~= "WhereIveBeen" then return end
     WIVBN.InitDB()
-    WIVBN.StartSession()
     self:UnregisterEvent("ADDON_LOADED")
+end
+
+function eventHandlers.PLAYER_LOGIN(self)
+    WIVBN.ResumeOrIdle()
+end
+
+function eventHandlers.PLAYER_LOGOUT(self)
+    WIVBN.FlushPending()
 end
 
 function eventHandlers.UNIT_AURA(self)
@@ -149,6 +164,8 @@ local frame = CreateFrame("Frame")
 
 local events = {
     "ADDON_LOADED",
+    "PLAYER_LOGIN",
+    "PLAYER_LOGOUT",
     "GROUP_ROSTER_UPDATE",
     "PLAYER_DEAD",
     "PLAYER_ALIVE",

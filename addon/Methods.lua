@@ -3,6 +3,19 @@ local WIVBN = WhereIveBeen
 function WIVBN.InitDB()
     WhereIveBeenDB = WhereIveBeenDB or {}
     WhereIveBeenDB.sessions = WhereIveBeenDB.sessions or {}
+
+    if WhereIveBeenDB.schema == WIVBN.SCHEMA then return end
+
+    for id, session in pairs(WhereIveBeenDB.sessions) do
+        session.id     = session.id or id
+        session.points = session.points or {}
+        session.tBase  = session.tBase or 0
+    end
+
+    WhereIveBeenDB.schema = WIVBN.SCHEMA
+end
+
+function WIVBN.FlushPending()
 end
 
 function WIVBN.AccumulateInterval(elapsed)
@@ -34,7 +47,7 @@ function WIVBN.WritePoint(mapId, x, y, extra)
         x     = x or 0,
         y     = y or 0,
         mapId = mapId,
-        t     = math.floor((GetTime() - session.clock) * 10) / 10,
+        t     = math.floor(((session.tBase or 0) + (GetTime() - session.clock)) * 10) / 10,
     }
     if extra then
         for k, v in pairs(extra) do point[k] = v end
@@ -44,6 +57,10 @@ function WIVBN.WritePoint(mapId, x, y, extra)
 
     if mapId then
         WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = mapId, x, y
+    end
+
+    if #session.points >= WIVBN.MAX_POINTS_SESSION then
+        WIVBN.RotateSession()
     end
 
     return point
