@@ -70,6 +70,21 @@ function WIVBN.ShowSessionStatus()
         return
     end
 
+function WIVBN.PruneSessions(minPoints)
+    local removed, kept = 0, 0
+
+    for id, session in pairs(WhereIveBeenDB.sessions) do
+        if id ~= WhereIveBeenDB.activeSessionId and #session.points < minPoints then
+            WhereIveBeenDB.sessions[id] = nil
+            removed = removed + 1
+        else
+            kept = kept + 1
+        end
+    end
+
+    return removed, kept
+end
+
     print(WIVBN.PREFIX .. ("Session is active: %d points, %d stored total")
         :format(#session.points, WIVBN.TotalPoints()))
 end
