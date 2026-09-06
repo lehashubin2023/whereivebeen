@@ -130,12 +130,8 @@ function eventHandlers.PLAYER_ALIVE(self)
 end
 
 function eventHandlers.PLAYER_ENTERING_WORLD(self, isInitialLogin, isReload)
-    WIVBN.wasDead     = UnitIsDeadOrGhost("player") and true or false
-    WIVBN.wasMounted  = IsMounted() and true or false
-    WIVBN.wasOnTaxi   = UnitOnTaxi("player") and true or false
-    WIVBN.groupRoster = WIVBN.GetGroupRoster()
-
     WIVBN.playerGuid = UnitGUID("player")
+    WIVBN.SyncStateFlags()
 
     if isInitialLogin or isReload then
         WIVBN.SaveZoneState()

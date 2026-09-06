@@ -168,6 +168,8 @@ function WIVBN.StartSession(continuesFrom)
 
     print(WIVBN.PREFIX .. ("Recording started — session %d"):format(id))
 
+    WIVBN.SaveSessionBaseline()
+
     return id
 end
 
@@ -195,6 +197,8 @@ function WIVBN.ResumeSession(id)
             seconds = math.floor(offline),
         }))
     end
+
+    WIVBN.SaveSessionBaseline()
 
     return id
 end
@@ -270,6 +274,8 @@ function WIVBN.ClearSession()
     WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
     print(WIVBN.PREFIX .. "Session successfully clean")
+
+    WIVBN.SaveSessionBaseline()
 end
 
 function WIVBN.DeleteSession(id)

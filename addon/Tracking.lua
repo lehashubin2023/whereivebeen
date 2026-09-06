@@ -25,32 +25,40 @@ function WIVBN.SpellName(spellId)
     return nil
 end
 
+function WIVBN.ResetZoneState()
+    lastZone, lastZoneMap = nil, nil
+end
+
 function WIVBN.ResetTracking()
     WIVBN.playerGuid = UnitGUID("player")
     WIVBN.lastHit    = nil
     WIVBN.lastCast   = nil
     WIVBN.gatherNode = nil
     WIVBN.gatherAt   = nil
-    lastZone, lastZoneMap = nil, nil
+    WIVBN.ResetZoneState()
 end
 
 function WIVBN.SaveZoneState()
-    if not WIVBN.IsSessionActive() then return end
+    if not WIVBN.IsSessionActive() then return nil end
 
     local zone    = GetZoneText()
     local subZone = GetSubZoneText()
     local mapId   = C_Map.GetBestMapForUnit("player")
 
-    if not zone or zone == "" then return end
-    if zone == lastZone and mapId == lastZoneMap then return end
+    if not zone or zone == "" then return nil end
+    if zone == lastZone and mapId == lastZoneMap then return nil end
 
     lastZone, lastZoneMap = zone, mapId
 
-    WIVBN.RefinePoint(WIVBN.SaveEvent({
+    local point = WIVBN.SaveEvent({
         event   = "zone",
         zone    = zone,
         subZone = (subZone and subZone ~= "" and subZone ~= zone) and subZone or nil,
-    }))
+    })
+
+    WIVBN.RefinePoint(point)
+
+    return point
 end
 
 function WIVBN.OnSpellSucceeded(unit, castGuid, spellId)

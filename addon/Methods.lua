@@ -145,7 +145,9 @@ function WIVBN.SaveTimedPosition()
 end
 
 function WIVBN.SaveIsMountedState()
-    local isMounted = IsMounted()
+    if not WIVBN.IsSessionActive() then return end
+
+    local isMounted = IsMounted() and true or false
     if isMounted ~= WIVBN.wasMounted then
         WIVBN.wasMounted = isMounted
         WIVBN.SaveEvent({ event = "mount", mounted = isMounted })
@@ -153,10 +155,40 @@ function WIVBN.SaveIsMountedState()
 end
 
 function WIVBN.SaveTaxiState()
+    if not WIVBN.IsSessionActive() then return end
+
     local onTaxi = UnitOnTaxi("player") and true or false
     if onTaxi ~= WIVBN.wasOnTaxi then
         WIVBN.wasOnTaxi = onTaxi
         WIVBN.SaveEvent({ event = "taxi", onTaxi = onTaxi })
+    end
+end
+
+function WIVBN.SyncStateFlags()
+    WIVBN.wasMounted = IsMounted() and true or false
+    WIVBN.wasOnTaxi  = UnitOnTaxi("player") and true or false
+    WIVBN.wasDead    = UnitIsDeadOrGhost("player") and true or false
+    WIVBN.groupRoster = WIVBN.GetGroupRoster()
+end
+
+function WIVBN.SaveSessionBaseline()
+    if not WIVBN.IsSessionActive() then return end
+
+    WIVBN.SyncStateFlags()
+    WIVBN.ResetZoneState()
+
+    if WIVBN.wasOnTaxi then
+        WIVBN.SaveEvent({ event = "taxi", onTaxi = true })
+    elseif WIVBN.wasMounted then
+        WIVBN.SaveEvent({ event = "mount", mounted = true })
+    end
+
+    if UnitAffectingCombat("player") then
+        WIVBN.SaveEvent({ event = "combat", inCombat = true })
+    end
+
+    if not WIVBN.SaveZoneState() then
+        WIVBN.RefinePoint(WIVBN.SavePosition() or WIVBN.SaveEvent({}))
     end
 end
 
