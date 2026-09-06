@@ -39,26 +39,55 @@ local eventHandlers = WIVBN.eventHandlers
 local function BuildPattern(format)
     if type(format) ~= "string" then return nil end
 
-    local pattern = format:gsub("%%s", "\1"):gsub("%%d", "\2")
+    local order, seen = {}, 0
+
+    local pattern = format:gsub("%%(%d*)%$?([sd])", function(position, kind)
+        seen = seen + 1
+        order[seen] = tonumber(position) or seen
+
+        return kind == "s" and "\1" or "\2"
+    end)
+
+    if seen == 0 then return nil end
+
     pattern = pattern:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1")
     pattern = pattern:gsub("\1", "(.+)"):gsub("\2", "(%%d+)")
 
-    return "^" .. pattern
+    return "^" .. pattern, order
+end
+
+local function LootPattern(format, multiple)
+    local pattern, order = BuildPattern(format)
+
+    return { pattern = pattern, order = order, multiple = multiple }
 end
 
 local lootPatterns = {
-    { pattern = BuildPattern(LOOT_ITEM_SELF_MULTIPLE),        multiple = true },
-    { pattern = BuildPattern(LOOT_ITEM_PUSHED_SELF_MULTIPLE), multiple = true },
-    { pattern = BuildPattern(LOOT_ITEM_SELF),                 multiple = false },
-    { pattern = BuildPattern(LOOT_ITEM_PUSHED_SELF),          multiple = false },
+    LootPattern(LOOT_ITEM_SELF_MULTIPLE,        true),
+    LootPattern(LOOT_ITEM_PUSHED_SELF_MULTIPLE, true),
+    LootPattern(LOOT_ITEM_SELF,                 false),
+    LootPattern(LOOT_ITEM_PUSHED_SELF,          false),
 }
 
 local function ParseLootMessage(text)
     for _, entry in ipairs(lootPatterns) do
         if entry.pattern then
-            local link, count = text:match(entry.pattern)
-            if link then
-                return link, entry.multiple and tonumber(count) or 1
+            local captures = { text:match(entry.pattern) }
+
+            if captures[1] then
+                local link, count
+
+                for capture, position in ipairs(entry.order) do
+                    if position == 1 then
+                        link = captures[capture]
+                    elseif position == 2 then
+                        count = captures[capture]
+                    end
+                end
+
+                if link then
+                    return link, entry.multiple and (tonumber(count) or 1) or 1
+                end
             end
         end
     end
