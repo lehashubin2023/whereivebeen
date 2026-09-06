@@ -81,12 +81,18 @@ function WIVBN.GetPlayerPosition()
     return mapId, x, y
 end
 
+function WIVBN.RoundCoord(value)
+    if not value then return 0 end
+
+    return math.floor(value * WIVBN.COORD_PRECISION + 0.5) / WIVBN.COORD_PRECISION
+end
+
 function WIVBN.WritePoint(mapId, x, y, extra)
     local session = WhereIveBeenDB.sessions[WIVBN.sessionId]
 
     local point = {
-        x     = x or 0,
-        y     = y or 0,
+        x     = WIVBN.RoundCoord(x),
+        y     = WIVBN.RoundCoord(y),
         mapId = mapId,
         t     = WIVBN.SessionTime(session),
     }
@@ -149,7 +155,8 @@ function WIVBN.RefinePoint(point, attempt)
             return
         end
 
-        point.mapId, point.x, point.y = mapId, x, y
+        point.mapId = mapId
+        point.x, point.y = WIVBN.RoundCoord(x), WIVBN.RoundCoord(y)
         WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = mapId, x, y
     end)
 end
