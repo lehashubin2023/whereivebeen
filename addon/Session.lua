@@ -35,7 +35,16 @@ function WIVBN.PurgeEmptySessions()
     end
 end
 
+function WIVBN.OverBudget(total, count)
+    if WIVBN.MAX_POINTS_TOTAL > 0 and total > WIVBN.MAX_POINTS_TOTAL then return true end
+    if WIVBN.MAX_SESSIONS > 0 and count > WIVBN.MAX_SESSIONS then return true end
+
+    return false
+end
+
 function WIVBN.EnforceBudget()
+    if WIVBN.MAX_POINTS_TOTAL <= 0 and WIVBN.MAX_SESSIONS <= 0 then return end
+
     local db      = WhereIveBeenDB
     local ids     = WIVBN.SortedSessionIds()
     local total   = WIVBN.TotalPoints()
@@ -43,7 +52,7 @@ function WIVBN.EnforceBudget()
     local freed   = 0
 
     for _, id in ipairs(ids) do
-        if total <= WIVBN.MAX_POINTS_TOTAL and count <= WIVBN.MAX_SESSIONS then break end
+        if not WIVBN.OverBudget(total, count) then break end
 
         local session = db.sessions[id]
         if session and session.exportedAt and id ~= db.activeSessionId then
@@ -58,12 +67,12 @@ function WIVBN.EnforceBudget()
         print(WIVBN.PREFIX .. ("Removed %d exported sessions to free storage"):format(freed))
     end
 
-    if total > WIVBN.MAX_POINTS_TOTAL then
+    if WIVBN.MAX_POINTS_TOTAL > 0 and total > WIVBN.MAX_POINTS_TOTAL then
         print(WIVBN.PREFIX .. ("|cffff8800Point budget: %d of %d used. Export and delete old sessions|r")
             :format(total, WIVBN.MAX_POINTS_TOTAL))
     end
 
-    if count > WIVBN.MAX_SESSIONS then
+    if WIVBN.MAX_SESSIONS > 0 and count > WIVBN.MAX_SESSIONS then
         print(WIVBN.PREFIX .. ("|cffff8800Session count: %d of %d, only %d points stored.|r")
             :format(count, WIVBN.MAX_SESSIONS, total))
         print(WIVBN.PREFIX .. "Recording continues. Use |cffffd100/wivebeen prune 10|r to drop tiny leftover sessions")
@@ -94,9 +103,8 @@ function WIVBN.ShowSessionStatus()
         print(WIVBN.PREFIX .. "Session is unactive")
     end
 
-    print(WIVBN.PREFIX .. ("Stored: %d of %d sessions, %d of %d points")
-        :format(#WIVBN.SortedSessionIds(), WIVBN.MAX_SESSIONS,
-            WIVBN.TotalPoints(), WIVBN.MAX_POINTS_TOTAL))
+    print(WIVBN.PREFIX .. ("Stored: %d sessions, %d points")
+        :format(#WIVBN.SortedSessionIds(), WIVBN.TotalPoints()))
 end
 
 local function NextSessionId()

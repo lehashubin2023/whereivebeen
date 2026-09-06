@@ -84,7 +84,7 @@ function WIVBN.WritePoint(mapId, x, y, extra)
         WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = mapId, x, y
     end
 
-    if #session.points >= WIVBN.MAX_POINTS_SESSION then
+    if WIVBN.MAX_POINTS_SESSION > 0 and #session.points >= WIVBN.MAX_POINTS_SESSION then
         WIVBN.RotateSession()
     end
 
