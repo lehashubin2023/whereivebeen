@@ -2,7 +2,8 @@ local WIVBN = WhereIveBeen
 
 SLASH_WHEREIVEBEEN1 = "/whereivebeen"
 SLASH_WHEREIVEBEEN2 = "/wivebeen"
-SLASH_WHEREIVEBEEN3 = "/wrivbn"
+SLASH_WHEREIVEBEEN3 = "/wivbn"
+SLASH_WHEREIVEBEEN4 = "/wivb"
 
 local HELP = {
     "start - start a new session",
@@ -19,7 +20,7 @@ local HELP = {
 }
 
 local function ShowHelp()
-    print(WIVBN.PREFIX .. "commands:")
+    print(WIVBN.PREFIX .. "commands (aliases: |cffffd100/whereivebeen /wivebeen /wivbn /wivb|r):")
     for _, line in ipairs(HELP) do
         print("  |cffffd100/wivebeen|r " .. line)
     end
