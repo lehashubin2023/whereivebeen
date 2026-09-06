@@ -167,6 +167,7 @@ function WIVBN.OnCombatLog()
 
     local hit = {
         name  = sourceName,
+        guid  = sourceGuid,
         npcId = WIVBN.GuidId(sourceGuid),
         pvp   = (sourceGuid and sourceGuid:sub(1, 6) == "Player") or false,
         at    = GetTime(),
@@ -183,18 +184,49 @@ function WIVBN.OnCombatLog()
     WIVBN.lastHit = hit
 end
 
+local KILLER_UNITS = {
+    "target", "mouseover", "focus",
+    "boss1", "boss2", "boss3", "boss4", "boss5",
+}
+
+function WIVBN.KillerClass(guid, pvp)
+    if not guid then return nil, nil end
+
+    if pvp then
+        if not GetPlayerInfoByGUID then return nil, nil end
+
+        local ok, _, englishClass = pcall(GetPlayerInfoByGUID, guid)
+
+        return (ok and englishClass ~= "" and englishClass) or nil, nil
+    end
+
+    if not UnitCreatureType then return nil, nil end
+
+    for _, unit in ipairs(KILLER_UNITS) do
+        if UnitGUID(unit) == guid then
+            return nil, UnitCreatureType(unit)
+        end
+    end
+
+    return nil, nil
+end
+
 function WIVBN.KillerPayload()
     local hit = WIVBN.lastHit
     if not hit or (GetTime() - hit.at) > WIVBN.KILLER_WINDOW then return nil end
 
     if hit.environment then return nil, hit.environment end
 
+    local class, creatureType = WIVBN.KillerClass(hit.guid, hit.pvp)
+
     return {
-        name   = hit.name,
-        npcId  = hit.npcId,
-        spell  = hit.spell,
-        amount = hit.amount,
-        pvp    = hit.pvp,
+        name         = hit.name,
+        npcId        = hit.npcId,
+        spell        = hit.spell,
+        amount       = hit.amount,
+        pvp          = hit.pvp,
+        class        = class,
+        creatureType = creatureType,
     }
 end
 

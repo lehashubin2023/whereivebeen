@@ -81,6 +81,8 @@ class GameSessionJsonValidator
             'points.*.killer.spell' => 'sometimes|nullable|string',
             'points.*.killer.amount' => 'sometimes|nullable|numeric',
             'points.*.killer.pvp' => 'sometimes|boolean',
+            'points.*.killer.class' => 'sometimes|nullable|string|max:24',
+            'points.*.killer.creatureType' => 'sometimes|nullable|string|max:32',
             'points.*.environment' => 'sometimes|string',
 
             'points.*.reason' => 'sometimes|string',

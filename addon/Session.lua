@@ -424,8 +424,12 @@ local function DescribeDeath(p)
         return "|cffff0000death|r (" .. tostring(p.environment):lower() .. ")"
     end
 
-    if p.killer and p.killer.name then
-        return "|cffff0000death|r by " .. tostring(p.killer.name)
+    local killer = p.killer
+    if killer and killer.name then
+        local kind = killer.class or killer.creatureType
+
+        return "|cffff0000death|r by " .. tostring(killer.name)
+            .. (kind and (" (" .. tostring(kind):lower() .. ")") or "")
     end
 
     return "|cffff0000death|r"

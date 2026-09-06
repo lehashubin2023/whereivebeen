@@ -91,6 +91,12 @@ class DescribeEvent
             );
         }
 
+        if (isset($killer['class'])) {
+            $rows[] = $this->row('Class', ucfirst(strtolower((string) $killer['class'])));
+        } elseif (isset($killer['creatureType'])) {
+            $rows[] = $this->row('Creature type', (string) $killer['creatureType']);
+        }
+
         if (isset($killer['spell'])) {
             $rows[] = $this->row('Ability', (string) $killer['spell']);
         }
