@@ -100,8 +100,12 @@ function WIVBN.WritePoint(mapId, x, y, extra)
         WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = mapId, x, y
     end
 
-    if WIVBN.MAX_POINTS_SESSION > 0 and #session.points >= WIVBN.MAX_POINTS_SESSION then
+    local count = #session.points
+
+    if WIVBN.MAX_POINTS_SESSION > 0 and count >= WIVBN.MAX_POINTS_SESSION then
         WIVBN.RotateSession()
+    elseif count % WIVBN.WARN_EVERY_POINTS == 0 then
+        WIVBN.WarnStorage()
     end
 
     return point

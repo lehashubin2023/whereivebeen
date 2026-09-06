@@ -133,6 +133,20 @@ function WIVBN.EnforceBudget()
     end
 end
 
+function WIVBN.WarnStorage()
+    if WIVBN.WARN_POINTS_TOTAL <= 0 or WIVBN.storageWarned then return end
+
+    local total = WIVBN.TotalPoints()
+    if total < WIVBN.WARN_POINTS_TOTAL then return end
+
+    WIVBN.storageWarned = true
+
+    print(WIVBN.PREFIX .. ("|cffff8800Stored %d points across %d sessions.|r")
+        :format(total, #WIVBN.SortedSessionIds()))
+    print(WIVBN.PREFIX .. "Recording continues. Export and drop old sessions with "
+        .. "|cffffd100/wivebeen get_sessions|r or |cffffd100/wivebeen prune 10|r")
+end
+
 function WIVBN.PruneSessions(minPoints)
     local removed, kept = 0, 0
 
@@ -159,6 +173,8 @@ function WIVBN.ShowSessionStatus()
 
     print(WIVBN.PREFIX .. ("Stored: %d sessions, %d points")
         :format(#WIVBN.SortedSessionIds(), WIVBN.TotalPoints()))
+
+    WIVBN.WarnStorage()
 end
 
 local function NextSessionId()
@@ -248,6 +264,7 @@ function WIVBN.ResumeOrIdle()
     local db = WhereIveBeenDB
 
     WIVBN.PurgeEmptySessions()
+    WIVBN.WarnStorage()
 
     local activeId = WIVBN.ActiveSessionId()
     local session  = activeId and db.sessions[activeId] or nil
