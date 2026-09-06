@@ -71,7 +71,7 @@ class ShowSessionEvent
             'label' => $type->label(),
             'time' => $time === null
                 ? null
-                : $gameSession->session_start_at->copy()->addSeconds((int) $time)->toIso8601String(),
+                : $gameSession->session_start_at->copy()->addMilliseconds((int) $time * 100)->toIso8601String(),
             'details' => $this->describeEvent->exec($type, (array) $event->getAttribute('payload')),
         ])->toArray();
     }

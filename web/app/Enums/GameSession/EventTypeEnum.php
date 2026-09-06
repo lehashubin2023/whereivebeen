@@ -15,6 +15,8 @@ enum EventTypeEnum: int
     case QUEST = 9;
     case TAXI = 10;
     case GAP = 11;
+    case ZONE = 12;
+    case GATHER = 13;
 
     /**
      * Значение поля `event` в точке, которое пишет аддон
@@ -34,6 +36,8 @@ enum EventTypeEnum: int
             self::QUEST => 'quest',
             self::TAXI => 'taxi',
             self::GAP => 'gap',
+            self::ZONE => 'zone',
+            self::GATHER => 'gather',
         };
     }
 
@@ -51,6 +55,8 @@ enum EventTypeEnum: int
             self::QUEST => 'Quest',
             self::TAXI => 'Taxi',
             self::GAP => 'Route gap',
+            self::ZONE => 'Zone',
+            self::GATHER => 'Gather',
         };
     }
 

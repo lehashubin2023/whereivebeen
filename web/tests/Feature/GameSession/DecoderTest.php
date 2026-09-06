@@ -30,10 +30,17 @@ class DecoderTest extends TestCase
         $this->expectException(InvalidGameSessionInputException::class);
         $this->expectExceptionMessage('Invalid JSON input');
         app()->make(DecodeRawInput::class)->exec(json_encode([
-            1234123 => [
-                'points' => [
-                    'someVal' => false,
-                    'someVal2' => [],
+            'sessionId' => 1234123,
+            'points' => [
+                [
+                    'items' => [
+                        [
+                            'id' => 1,
+                            'nested' => [
+                                'tooDeep' => [],
+                            ],
+                        ],
+                    ],
                 ],
             ],
         ]));

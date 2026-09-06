@@ -51,7 +51,7 @@ class DTOTest extends TestCase
 
         $this->assertSame(7, $dto['game_session_id']);
         $this->assertSame(1422, $dto['map_id']);   // mapId → map_id
-        $this->assertSame(63, $dto['time']);        // t → time
+        $this->assertSame(630, $dto['time']);       // t → time, децисекунды
         $this->assertSame(3, $dto['sequence']);
         $this->assertSame(0.5, $dto['x']);
         $this->assertSame(0.25, $dto['y']);

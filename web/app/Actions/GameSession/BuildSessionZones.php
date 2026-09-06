@@ -90,7 +90,7 @@ class BuildSessionZones
                 'points_count' => count($zonePoints),
                 'time' => $gameSession->session_start_at
                     ->copy()
-                    ->addSeconds((int) $zonePoints->min('time'))
+                    ->addMilliseconds((int) $zonePoints->min('time') * 100)
                     ->toIso8601String(),
                 'first_sequence' => (int) $zonePoints->min('sequence'),
                 'points' => $this->serializePoints($zonePoints),

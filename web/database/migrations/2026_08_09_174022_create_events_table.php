@@ -16,7 +16,7 @@ return new class extends Migration
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->smallInteger('sequence')
+            $table->mediumInteger('sequence')
                 ->unsigned();
 
             $table->unsignedTinyInteger('event_type_id')

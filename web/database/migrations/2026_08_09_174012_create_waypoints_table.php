@@ -16,14 +16,13 @@ return new class extends Migration
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->smallInteger('sequence')
+            $table->mediumInteger('sequence')
                 ->unsigned();
 
             $table->smallInteger('map_id')
                 ->unsigned()
                 ->nullable();
-            $table->mediumInteger('time')
-                ->unsigned();
+            $table->unsignedInteger('time');
             $table->smallInteger('x')
                 ->unsigned();
             $table->smallInteger('y')

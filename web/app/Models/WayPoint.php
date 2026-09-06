@@ -6,18 +6,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['game_session_id', 'map_id', 'sequence', 'time', 'x', 'y'])]
 #[WithoutTimestamps]
 class WayPoint extends Model
 {
     public const COODS_FIELD_LENGTH = 65535;
-
-    public function event(): HasOne
-    {
-        return $this->hasOne(Event::class, 'sequence', 'sequence');
-    }
 
     protected function casts(): array
     {

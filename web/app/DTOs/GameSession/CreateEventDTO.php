@@ -29,6 +29,21 @@ class CreateEventDTO implements DTOContract
             'item_id' => 'itemId',
             'item_name' => 'itemName',
             'count' => 'count',
+            'items' => 'items',
+            'joined' => 'joined',
+            'left' => 'left',
+            'places' => 'places',
+            'node' => 'node',
+            'killer' => 'killer',
+            'npc_id' => 'npcId',
+            'npc_name' => 'npcName',
+            'zone' => 'zone',
+            'sub_zone' => 'subZone',
+            'environment' => 'environment',
+            'reason' => 'reason',
+            'spell_id' => 'spellId',
+            'spell_name' => 'spellName',
+            'seconds' => 'seconds',
         ];
 
         $payload = [];

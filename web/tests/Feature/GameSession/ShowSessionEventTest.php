@@ -31,7 +31,7 @@ class ShowSessionEventTest extends TestCase
             'game_session_id' => $session->id,
             'sequence' => $sequence,
             'map_id' => null,
-            'time' => 60,
+            'time' => 600,
             'x' => 0.5,
             'y' => 0.5,
         ]);

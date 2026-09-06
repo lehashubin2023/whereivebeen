@@ -18,11 +18,28 @@ return new class extends Migration
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->integer('game_session_id')
-                ->unsigned();
+            $table->unsignedBigInteger('game_session_id');
+            $table->unsignedBigInteger('continues_from')
+                ->nullable();
             $table->dateTime('session_start_at');
+            $table->dateTime('session_end_at')
+                ->nullable();
             $table->mediumInteger('version')
                 ->unsigned();
+            $table->string('game_version', 16)
+                ->nullable();
+            $table->string('addon_version', 16)
+                ->nullable();
+            $table->unsignedTinyInteger('schema_version')
+                ->default(1);
+            $table->string('locale', 8)
+                ->nullable();
+            $table->string('faction', 16)
+                ->nullable();
+            $table->string('class', 16)
+                ->nullable();
+            $table->unsignedTinyInteger('level')
+                ->nullable();
             $table->string('realm');
             $table->string('character');
             $table->timestamps();
