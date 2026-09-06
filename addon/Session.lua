@@ -166,7 +166,7 @@ function WIVBN.StartSession(continuesFrom)
     WIVBN.sessionId = id
     WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
-    print(WIVBN.PREFIX .. "Session successfully started")
+    print(WIVBN.PREFIX .. ("Recording started — session %d"):format(id))
 
     return id
 end
@@ -186,7 +186,7 @@ function WIVBN.ResumeSession(id)
     WIVBN.sessionId = id
     WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
-    print(WIVBN.PREFIX .. ("Session resumed: %d points"):format(#session.points))
+    print(WIVBN.PREFIX .. ("Recording resumed — session %d, %d points"):format(id, #session.points))
 
     if offline >= WIVBN.RESUME_GAP_MIN then
         WIVBN.RefinePoint(WIVBN.SaveEvent({
@@ -212,13 +212,7 @@ function WIVBN.ResumeOrIdle()
 
     db.activeSessionId = nil
 
-    if not db.initialized then
-        db.initialized = true
-        WIVBN.StartSession()
-        return
-    end
-
-    print(WIVBN.PREFIX .. "No active session. Type /wivbn start to begin")
+    WIVBN.StartSession()
 end
 
 function WIVBN.EndSession()
