@@ -2,6 +2,8 @@ import {
     ArrowUp,
     Coins,
     Feather,
+    MapPin,
+    Pickaxe,
     HeartPulse,
     Rabbit,
     ScrollText,
@@ -22,6 +24,8 @@ export const EVENT_ORDER: EventSlug[] = [
     'visit',
     'mount',
     'taxi',
+    'gather',
+    'zone',
 ];
 
 export const EVENT_COLORS: Record<EventSlug, string> = {
@@ -34,6 +38,8 @@ export const EVENT_COLORS: Record<EventSlug, string> = {
     visit: '#9ca3af',
     mount: '#38bdf8',
     taxi: '#f472b6',
+    gather: '#34d399',
+    zone: '#a78bfa',
 };
 
 export const EVENT_LABELS: Record<EventSlug, string> = {
@@ -46,6 +52,8 @@ export const EVENT_LABELS: Record<EventSlug, string> = {
     visit: 'Visit',
     mount: 'Mount',
     taxi: 'Taxi',
+    gather: 'Gather',
+    zone: 'Zone',
 };
 
 export const EVENT_ICONS: Record<EventSlug, Component> = {
@@ -58,6 +66,8 @@ export const EVENT_ICONS: Record<EventSlug, Component> = {
     visit: Store,
     mount: Rabbit,
     taxi: Feather,
+    gather: Pickaxe,
+    zone: MapPin,
 };
 
 export const EVENT_OUTLINE = '#1a1207';

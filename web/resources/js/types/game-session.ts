@@ -9,7 +9,9 @@ export type EventSlug =
     | 'visit'
     | 'group'
     | 'quest'
-    | 'taxi';
+    | 'taxi'
+    | 'zone'
+    | 'gather';
 
 export interface RoutePoint {
     sequence: number;
