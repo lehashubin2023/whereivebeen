@@ -38,10 +38,9 @@ function WIVBN.GuidId(guid)
 end
 
 function WIVBN.NpcInfo()
-    local unit = UnitExists("npc") and "npc" or "target"
-    if not UnitExists(unit) then return nil end
+    if not UnitExists("npc") then return nil end
 
-    return WIVBN.GuidId(UnitGUID(unit)), UnitName(unit)
+    return WIVBN.GuidId(UnitGUID("npc")), UnitName("npc")
 end
 
 function WIVBN.AccumulateInterval(elapsed)
