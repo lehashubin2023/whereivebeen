@@ -59,7 +59,7 @@ class BuildSessionZonesTest extends TestCase
 
         $this->addPoint($session, 1);
         $this->addPoint($session, 2, EventTypeEnum::LEVELUP, ['level' => 10]);
-        $this->addPoint($session, 3, EventTypeEnum::LOOT, ['item_name' => 'Sword']);
+        $this->addPoint($session, 3, EventTypeEnum::LOOT, ['items' => [['id' => 999, 'name' => 'Sword', 'n' => 1]]]);
         $this->addPoint($session, 4, EventTypeEnum::COMBAT, ['in_combat' => true]);
         $this->addPoint($session, 5, EventTypeEnum::GAP);
         $this->addPoint($session, 6, EventTypeEnum::QUEST, ['action' => 'accept']);
@@ -84,7 +84,7 @@ class BuildSessionZonesTest extends TestCase
     {
         $session = GameSession::factory()->create();
 
-        $this->addPoint($session, 1, EventTypeEnum::LOOT, ['item_name' => 'Sword']);
+        $this->addPoint($session, 1, EventTypeEnum::LOOT, ['items' => [['id' => 999, 'name' => 'Sword', 'n' => 1]]]);
 
         $zones = (new BuildSessionZones)->exec($session);
         $point = $zones[0]['points'][0];

@@ -31,7 +31,7 @@ class CreateGameSessionWayTest extends TestCase
         $mock->exec($session, [
             ['x' => 0.10, 'y' => 0.20, 'mapId' => null, 't' => 0],
             ['x' => 0.11, 'y' => 0.21, 'mapId' => null, 'event' => 'combat', 'inCombat' => true, 't' => 0],
-            ['x' => 0.12, 'y' => 0.22, 'mapId' => null, 'event' => 'loot', 'itemId' => 999, 'itemName' => 'Sword', 'count' => 2, 't' => 0],
+            ['x' => 0.12, 'y' => 0.22, 'mapId' => null, 'event' => 'loot', 'items' => [['id' => 999, 'name' => 'Sword', 'n' => 2]], 't' => 0],
             ['x' => 0.13, 'y' => 0.23, 'mapId' => null, 'event' => 'unknown', 't' => 0],
         ]);
 
@@ -57,7 +57,7 @@ class CreateGameSessionWayTest extends TestCase
             'game_session_id' => $session->id,
             'sequence' => 3,
             'event_type_id' => EventTypeEnum::LOOT,
-            'payload' => $this->castAsJson(['item_id' => 999, 'item_name' => 'Sword', 'count' => 2]),
+            'payload' => $this->castAsJson(['items' => [['id' => 999, 'name' => 'Sword', 'n' => 2]]]),
         ]);
         $this->assertDatabaseMissing($eventTable, [
             'game_session_id' => $session->id,

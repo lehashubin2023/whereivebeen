@@ -387,11 +387,7 @@ end
 local MAX_LISTED = 3
 
 local function DescribeItems(p)
-    if type(p.items) ~= "table" or #p.items == 0 then
-        if not p.itemId and not p.itemName then return nil end
-
-        return ("%s x%s"):format(p.itemName or tostring(p.itemId), tostring(p.count or 1))
-    end
+    if type(p.items) ~= "table" or #p.items == 0 then return nil end
 
     local parts = {}
     for i = 1, math.min(#p.items, MAX_LISTED) do
@@ -411,10 +407,6 @@ local function DescribeGroup(p)
 
     if p.joined and #p.joined > 0 then parts[#parts + 1] = "+" .. table.concat(p.joined, ", ") end
     if p.left and #p.left > 0 then parts[#parts + 1] = "-" .. table.concat(p.left, ", ") end
-
-    if #parts == 0 and p.member then
-        parts[#parts + 1] = ("%s %s"):format(tostring(p.action), tostring(p.member))
-    end
 
     return table.concat(parts, " ")
 end
@@ -453,7 +445,7 @@ function WIVBN.DescribePoint(p)
     if e == "loot"      then return "loot: "..(DescribeItems(p) or "?") end
     if e == "gather"    then return DescribeGather(p) end
     if e == "zone"      then return "|cffa78bfazone:|r "..tostring(p.zone)..(p.subZone and (" — "..p.subZone) or "") end
-    if e == "visit"     then return "visit: "..(p.places and table.concat(p.places, ", ") or tostring(p.place)) end
+    if e == "visit"     then return "visit: "..(p.places and table.concat(p.places, ", ") or "?") end
     if e == "group"     then return "group: "..DescribeGroup(p) end
     if e == "quest"     then return ("quest: %s %s"):format(tostring(p.action), p.title or tostring(p.questId)) end
     if e == "taxi"      then return p.onTaxi and "takeoff (taxi)" or "landing (taxi)" end

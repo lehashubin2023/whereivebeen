@@ -170,24 +170,7 @@ class DescribeEvent
      */
     private function loot(array $payload): array
     {
-        $collapsed = $this->items($payload);
-
-        if ($collapsed !== []) {
-            return $collapsed;
-        }
-
-        $item = $payload['item_name'] ?? $payload['item_id'] ?? null;
-        $rows = [];
-
-        if ($item !== null) {
-            $rows[] = $this->row('Item', (string) $item);
-        }
-
-        if (isset($payload['count'])) {
-            $rows[] = $this->row('Count', (string) $payload['count']);
-        }
-
-        return $rows;
+        return $this->items($payload);
     }
 
     /**
@@ -198,24 +181,20 @@ class DescribeEvent
     {
         $places = $payload['places'] ?? null;
 
-        if (is_array($places) && $places !== []) {
-            $rows = [$this->row(
-                'Places',
-                implode(', ', array_map(fn ($place) => ucfirst((string) $place), $places)),
-            )];
-
-            if (isset($payload['npc_name'])) {
-                $rows[] = $this->row('NPC', (string) $payload['npc_name']);
-            }
-
-            return $rows;
-        }
-
-        if (! isset($payload['place'])) {
+        if (! is_array($places) || $places === []) {
             return [];
         }
 
-        return [$this->row('Place', ucfirst((string) $payload['place']))];
+        $rows = [$this->row(
+            'Places',
+            implode(', ', array_map(fn ($place) => ucfirst((string) $place), $places)),
+        )];
+
+        if (isset($payload['npc_name'])) {
+            $rows[] = $this->row('NPC', (string) $payload['npc_name']);
+        }
+
+        return $rows;
     }
 
     /**
@@ -232,21 +211,6 @@ class DescribeEvent
             if (is_array($members) && $members !== []) {
                 $rows[] = $this->row($label, implode(', ', array_map('strval', $members)));
             }
-        }
-
-        if ($rows !== []) {
-            return $rows;
-        }
-
-        if (isset($payload['action'])) {
-            $rows[] = $this->row(
-                'Action',
-                $payload['action'] === 'join' ? 'Joined' : 'Left',
-            );
-        }
-
-        if (isset($payload['member'])) {
-            $rows[] = $this->row('Member', (string) $payload['member']);
         }
 
         return $rows;

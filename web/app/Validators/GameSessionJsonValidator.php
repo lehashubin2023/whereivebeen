@@ -39,13 +39,8 @@ class GameSessionJsonValidator
 
             'points.*.questId' => 'sometimes|numeric',
             'points.*.level' => 'sometimes|numeric',
-            'points.*.itemId' => 'sometimes|numeric',
-            'points.*.itemName' => 'sometimes|string',
-            'points.*.count' => 'sometimes|numeric',
             'points.*.action' => 'sometimes|string',
             'points.*.title' => 'sometimes|string',
-            'points.*.place' => 'sometimes|string',
-            'points.*.member' => 'sometimes|string',
             'points.*.inCombat' => 'sometimes|boolean',
             'points.*.mounted' => 'sometimes|boolean',
             'points.*.onTaxi' => 'sometimes|boolean',

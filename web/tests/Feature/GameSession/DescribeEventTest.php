@@ -27,14 +27,9 @@ class DescribeEventTest extends TestCase
     public function test_it_describes_loot_with_name_and_count(): void
     {
         $this->assertSame(
-            [
-                ['label' => 'Item', 'value' => 'Sword'],
-                ['label' => 'Count', 'value' => '2'],
-            ],
+            [['label' => 'Item', 'value' => 'Sword x2']],
             $this->describeEvent->exec(EventTypeEnum::LOOT, [
-                'item_id' => 999,
-                'item_name' => 'Sword',
-                'count' => 2,
+                'items' => [['id' => 999, 'name' => 'Sword', 'n' => 2]],
             ]),
         );
     }
@@ -42,8 +37,10 @@ class DescribeEventTest extends TestCase
     public function test_it_falls_back_to_item_id_when_name_is_missing(): void
     {
         $this->assertSame(
-            [['label' => 'Item', 'value' => '999']],
-            $this->describeEvent->exec(EventTypeEnum::LOOT, ['item_id' => 999]),
+            [['label' => 'Item', 'value' => '999 x1']],
+            $this->describeEvent->exec(EventTypeEnum::LOOT, [
+                'items' => [['id' => 999, 'n' => 1]],
+            ]),
         );
     }
 
@@ -65,13 +62,9 @@ class DescribeEventTest extends TestCase
     public function test_it_describes_group(): void
     {
         $this->assertSame(
-            [
-                ['label' => 'Action', 'value' => 'Joined'],
-                ['label' => 'Member', 'value' => 'Thrall'],
-            ],
+            [['label' => 'Joined', 'value' => 'Thrall']],
             $this->describeEvent->exec(EventTypeEnum::GROUP, [
-                'action' => 'join',
-                'member' => 'Thrall',
+                'joined' => ['Thrall'],
             ]),
         );
     }
@@ -97,8 +90,8 @@ class DescribeEventTest extends TestCase
     public function test_it_describes_visit(): void
     {
         $this->assertSame(
-            [['label' => 'Place', 'value' => 'Merchant']],
-            $this->describeEvent->exec(EventTypeEnum::VISIT, ['place' => 'merchant']),
+            [['label' => 'Places', 'value' => 'Merchant, Repair']],
+            $this->describeEvent->exec(EventTypeEnum::VISIT, ['places' => ['merchant', 'repair']]),
         );
     }
 

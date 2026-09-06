@@ -120,7 +120,7 @@ class ShowSessionEventTest extends TestCase
         $user = User::factory()->create();
         $session = GameSession::factory()->forUser($user)->create();
 
-        $this->makeEvent($session, 5, EventTypeEnum::VISIT, ['place' => 'bank']);
+        $this->makeEvent($session, 5, EventTypeEnum::VISIT, ['places' => ['bank']]);
 
         $this->actingAs($user)->getJson($this->url($session, 5))->assertOk();
 

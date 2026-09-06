@@ -66,15 +66,13 @@ class DTOTest extends TestCase
             'level' => 60,
             'action' => 'join',
             'title' => 'A Quest',
-            'place' => 'Inn',
-            'member' => 'Thrall',
             'inCombat' => true,
             'mounted' => true,
             'onTaxi' => false,
             'questId' => 123,
-            'itemId' => 999,
-            'itemName' => 'Sword',
-            'count' => 2,
+            'items' => [['id' => 999, 'name' => 'Sword', 'n' => 2]],
+            'places' => ['Inn'],
+            'joined' => ['Thrall'],
         ];
 
         $dto = CreateEventDTO::fromPoint($point, gameSessionId: 1, sequence: 5, eventTypeId: EventTypeEnum::LOOT->value)->toArray();
@@ -89,15 +87,13 @@ class DTOTest extends TestCase
         $this->assertSame(60, $payload['level']);
         $this->assertSame('join', $payload['action']);
         $this->assertSame('A Quest', $payload['title']);
-        $this->assertSame('Inn', $payload['place']);
-        $this->assertSame('Thrall', $payload['member']);
         $this->assertTrue($payload['in_combat']);
         $this->assertTrue($payload['mounted']);
         $this->assertFalse($payload['on_taxi']);
         $this->assertSame(123, $payload['quest_id']);
-        $this->assertSame(999, $payload['item_id']);
-        $this->assertSame('Sword', $payload['item_name']);
-        $this->assertSame(2, $payload['count']);
+        $this->assertSame([['id' => 999, 'name' => 'Sword', 'n' => 2]], $payload['items']);
+        $this->assertSame(['Inn'], $payload['places']);
+        $this->assertSame(['Thrall'], $payload['joined']);
 
         // Координаты в payload не дублируются (в схеме event берёт их по seq)
         $this->assertArrayNotHasKey('x', $payload);
