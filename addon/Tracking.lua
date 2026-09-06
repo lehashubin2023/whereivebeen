@@ -33,8 +33,7 @@ function WIVBN.ResetTracking()
     WIVBN.playerGuid = UnitGUID("player")
     WIVBN.lastHit    = nil
     WIVBN.lastCast   = nil
-    WIVBN.gatherNode = nil
-    WIVBN.gatherAt   = nil
+    WIVBN.ForgetGatherNode()
     WIVBN.ResetZoneState()
 end
 
@@ -78,14 +77,19 @@ local function LootSourceGuid()
     return nil
 end
 
+function WIVBN.ForgetGatherNode()
+    WIVBN.gatherNode     = nil
+    WIVBN.gatherAt       = nil
+    WIVBN.gatherClosedAt = nil
+end
+
 function WIVBN.OnLootOpened()
     local fishing = IsFishingLoot and IsFishingLoot()
     local guid    = LootSourceGuid()
     local isNode  = guid and guid:sub(1, 10) == "GameObject"
 
     if not fishing and not isNode then
-        WIVBN.gatherNode = nil
-        WIVBN.gatherAt = nil
+        WIVBN.ForgetGatherNode()
         return
     end
 
@@ -99,7 +103,12 @@ function WIVBN.OnLootOpened()
         spellId   = cast and cast.id or nil,
         spellName = cast and cast.name or nil,
     }
-    WIVBN.gatherAt = GetTime()
+    WIVBN.gatherAt       = GetTime()
+    WIVBN.gatherClosedAt = nil
+
+    WIVBN.ReclassifyPending("loot", "gather", function(data)
+        return { items = data.items, node = WIVBN.gatherNode }
+    end)
 end
 
 function WIVBN.OnLootClosed()
@@ -109,14 +118,28 @@ function WIVBN.OnLootClosed()
     if pending and pending.kind == "gather" and #pending.data.items > 0 then
         WIVBN.FlushPending()
     end
+
+    if WIVBN.gatherNode then
+        WIVBN.gatherClosedAt = GetTime()
+    end
+end
+
+function WIVBN.IsGatherFresh()
+    if not WIVBN.gatherNode or not WIVBN.gatherAt then return false end
+
+    local now = GetTime()
+
+    if (now - WIVBN.gatherAt) > WIVBN.GATHER_WINDOW then return false end
+
+    if WIVBN.gatherClosedAt and (now - WIVBN.gatherClosedAt) > WIVBN.GATHER_TAIL then
+        return false
+    end
+
+    return true
 end
 
 function WIVBN.PushLoot(entry)
-    local fresh = WIVBN.gatherNode
-        and WIVBN.gatherAt
-        and (GetTime() - WIVBN.gatherAt) <= WIVBN.GATHER_WINDOW
-
-    if fresh then
+    if WIVBN.IsGatherFresh() then
         entry.node = WIVBN.gatherNode
         WIVBN.PushAggregated("gather", entry)
         return

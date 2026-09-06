@@ -115,11 +115,28 @@ function WIVBN.PushAggregated(kind, entry)
     end
 
     if not WIVBN.pending then
-        WIVBN.pending = { kind = kind, anchor = Anchor(), data = aggregator.init() }
+        WIVBN.pending = { kind = kind, anchor = Anchor(), data = aggregator.init(), at = GetTime() }
     end
 
     aggregator.add(WIVBN.pending.data, entry)
     Arm(aggregator.window)
+end
+
+function WIVBN.ReclassifyPending(fromKind, toKind, transform)
+    local pending = WIVBN.pending
+    if not pending or pending.kind ~= fromKind then return false end
+
+    local aggregator = aggregators[toKind]
+    if not aggregator then return false end
+
+    if (GetTime() - (pending.at or 0)) > WIVBN.ADOPT_WINDOW then return false end
+
+    pending.kind = toKind
+    pending.data = transform(pending.data)
+
+    Arm(aggregator.window)
+
+    return true
 end
 
 function WIVBN.FlushPending()
