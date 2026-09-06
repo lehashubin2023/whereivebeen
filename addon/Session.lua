@@ -281,13 +281,19 @@ end
 function WIVBN.DeleteSession(id)
     if not WhereIveBeenDB.sessions[id] then return false end
 
-    if WIVBN.sessionId == id then
+    local wasActive = WIVBN.sessionId == id
+
+    if wasActive then
         WIVBN.FlushPending()
         WIVBN.sessionId = nil
         WhereIveBeenDB.activeSessionId = nil
     end
 
     WhereIveBeenDB.sessions[id] = nil
+
+    if wasActive then
+        WIVBN.StartSession()
+    end
 
     return true
 end
@@ -300,6 +306,8 @@ function WIVBN.ClearAllSessions()
     WhereIveBeenDB.activeSessionId = nil
 
     print(WIVBN.PREFIX .. "Sessions successfully clean")
+
+    WIVBN.StartSession()
 end
 
 function WIVBN.GetCurrentOrLastSession()
