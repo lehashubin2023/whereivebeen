@@ -18,6 +18,8 @@ class BuildSessionZonesTest extends TestCase
 
     private const MAP_ID = 331;
 
+    private const NEIGHBOUR_MAP_ID = 47;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -31,12 +33,14 @@ class BuildSessionZonesTest extends TestCase
         int $sequence,
         ?EventTypeEnum $type = null,
         array $payload = [],
+        ?int $mapId = null,
+        ?int $time = null,
     ): void {
         WayPoint::query()->create([
             'game_session_id' => $session->id,
             'sequence' => $sequence,
-            'map_id' => self::MAP_ID,
-            'time' => $sequence,
+            'map_id' => $mapId ?? self::MAP_ID,
+            'time' => $time ?? $sequence,
             'x' => 0.5,
             'y' => 0.5,
         ]);
@@ -120,5 +124,40 @@ class BuildSessionZonesTest extends TestCase
         $this->assertTrue($points[1]['gap']);
         $this->assertFalse($points[2]['gap']);
         $this->assertTrue($points[5]['gap']);
+    }
+
+    public function test_a_short_trip_to_a_neighbour_map_does_not_break_the_line(): void
+    {
+        Map::query()->insert(['id' => self::NEIGHBOUR_MAP_ID, 'name' => 'Duskwood']);
+
+        $session = GameSession::factory()->create();
+
+        // Полёт вдоль границы: карта дёргается в соседнюю на пару секунд и обратно.
+        $this->addPoint($session, 1, null, [], self::MAP_ID, 2469);
+        $this->addPoint($session, 2, null, [], self::NEIGHBOUR_MAP_ID, 2493);
+        $this->addPoint($session, 3, null, [], self::MAP_ID, 2565);
+
+        $points = collect((new BuildSessionZones)->exec($session))
+            ->firstWhere('id', self::MAP_ID)['points'];
+
+        $this->assertCount(2, $points);
+        $this->assertTrue($points[0]['gap']);
+        $this->assertFalse($points[1]['gap'], 'возврат через 9.6 с не должен рвать линию');
+    }
+
+    public function test_a_long_absence_from_a_map_breaks_the_line(): void
+    {
+        Map::query()->insert(['id' => self::NEIGHBOUR_MAP_ID, 'name' => 'Duskwood']);
+
+        $session = GameSession::factory()->create();
+
+        $this->addPoint($session, 1, null, [], self::MAP_ID, 100);
+        $this->addPoint($session, 2, null, [], self::NEIGHBOUR_MAP_ID, 200);
+        $this->addPoint($session, 3, null, [], self::MAP_ID, 1500);
+
+        $points = collect((new BuildSessionZones)->exec($session))
+            ->firstWhere('id', self::MAP_ID)['points'];
+
+        $this->assertTrue($points[1]['gap'], 'отлучка на 140 с должна рвать линию');
     }
 }

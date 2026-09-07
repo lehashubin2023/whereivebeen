@@ -12,11 +12,19 @@ use Illuminate\Support\Arr;
 
 class BuildSessionZones
 {
+    /**
+     * Пауза между соседними точками одной карты, после которой линия рвётся.
+     * Короткие отлучки — это дребезг границы зон (`GetBestMapForUnit` на границе
+     * прыгает туда-обратно за секунды), и разрывать маршрут из-за них нельзя.
+     */
+    private const GAP_SECONDS = 60;
+
     private bool $mounted = false;
 
     private bool $flying = false;
 
-    private ?int $prevMapId = null;
+    /** @var array<int, int> последнее время (децисекунды) по карте */
+    private array $lastTimeByMap = [];
 
     /**
      * @return array<int, array<string, mixed>>
@@ -44,7 +52,7 @@ class BuildSessionZones
 
         $this->mounted = false;
         $this->flying = false;
-        $this->prevMapId = null;
+        $this->lastTimeByMap = [];
 
         $points->transform(function ($point) {
             $point->state = $this->defineState($point);
@@ -153,11 +161,21 @@ class BuildSessionZones
 
     private function defineGap(WayPoint &$point): bool
     {
-        $isGap = $point['event_type_id'] === EventTypeEnum::GAP->value || $this->prevMapId !== $point['map_id'];
+        $mapId = (int) $point['map_id'];
+        $time = (int) $point['time'];
 
-        $this->prevMapId = $point['map_id'];
+        $previous = $this->lastTimeByMap[$mapId] ?? null;
+        $this->lastTimeByMap[$mapId] = $time;
 
-        return $isGap;
+        if ($point['event_type_id'] === EventTypeEnum::GAP->value) {
+            return true;
+        }
+
+        if ($previous === null) {
+            return true;
+        }
+
+        return ($time - $previous) > self::GAP_SECONDS * 10;
     }
 
     private function defineEvent(WayPoint &$point): ?string
