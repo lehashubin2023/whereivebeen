@@ -113,7 +113,7 @@ function WIVBN.WritePoint(mapId, x, y, extra)
     table.insert(session.points, point)
 
     if mapId then
-        WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = mapId, x, y
+        WIVBN.lastPointByMap[mapId] = { x = point.x, y = point.y }
     end
 
     local count = #session.points
@@ -136,10 +136,35 @@ function WIVBN.SavePosition(extra)
     return WIVBN.WritePoint(mapId, x, y, extra)
 end
 
+function WIVBN.MovedEnough(mapId, x, y)
+    local last = WIVBN.lastPointByMap[mapId]
+    if not last then return true end
+
+    local dx, dy = x - last.x, y - last.y
+
+    return (dx * dx + dy * dy) >= (WIVBN.MIN_MOVE * WIVBN.MIN_MOVE)
+end
+
+function WIVBN.TrackMapEdge()
+    if not WIVBN.IsSessionActive() then return end
+
+    local mapId, x, y = WIVBN.GetPlayerPosition()
+    if not mapId then return end
+
+    local edge = WIVBN.edge
+
+    if edge and edge.mapId ~= mapId and WIVBN.MovedEnough(edge.mapId, edge.x, edge.y) then
+        WIVBN.WritePoint(edge.mapId, edge.x, edge.y)
+    end
+
+    WIVBN.edge = { mapId = mapId, x = x, y = y }
+end
+
 function WIVBN.SaveEvent(extra)
     if not WIVBN.IsSessionActive() then return nil end
 
     WIVBN.FlushPending()
+    WIVBN.TrackMapEdge()
 
     local mapId, x, y = WIVBN.GetPlayerPosition()
 
@@ -167,7 +192,7 @@ function WIVBN.RefinePoint(point, attempt)
 
         point.mapId = mapId
         point.x, point.y = WIVBN.RoundCoord(x), WIVBN.RoundCoord(y)
-        WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = mapId, x, y
+        WIVBN.lastPointByMap[mapId] = { x = point.x, y = point.y }
     end)
 end
 
@@ -177,12 +202,7 @@ function WIVBN.SaveTimedPosition()
     local mapId, x, y = WIVBN.GetPlayerPosition()
     if not mapId then return nil end
 
-    if WIVBN.lastMapId == mapId and WIVBN.lastX then
-        local dx, dy = x - WIVBN.lastX, y - WIVBN.lastY
-        if (dx * dx + dy * dy) < (WIVBN.MIN_MOVE * WIVBN.MIN_MOVE) then
-            return nil
-        end
-    end
+    if not WIVBN.MovedEnough(mapId, x, y) then return nil end
 
     WIVBN.SavePosition()
 end
@@ -219,6 +239,8 @@ function WIVBN.SaveSessionBaseline()
 
     WIVBN.SyncStateFlags()
     WIVBN.ResetZoneState()
+    WIVBN.edge = nil
+    WIVBN.lastPointByMap = {}
 
     if WIVBN.wasOnTaxi then
         WIVBN.SaveEvent({ event = "taxi", onTaxi = true })

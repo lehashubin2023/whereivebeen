@@ -12,10 +12,8 @@ WIVBN.wasMounted    = false
 WIVBN.wasDead       = false
 WIVBN.groupRoster   = {}
 WIVBN.eventHandlers = {}
-WIVBN.lastMapId     = nil
-WIVBN.lastX         = nil
-WIVBN.lastY         = nil
 WIVBN.wasOnTaxi     = false
+WIVBN.lastPointByMap = {}
 WIVBN.rotating      = false
 WIVBN.rawExport     = false
 
@@ -344,6 +342,7 @@ frame:SetScript("OnUpdate", function(self, elapsed)
     if WIVBN.stateElapsed >= WIVBN.STATE_INTERVAL then
         WIVBN.stateElapsed = 0
         WIVBN.SaveTaxiState()
+        WIVBN.TrackMapEdge()
         WIVBN.CheckPendingPosition()
     end
 

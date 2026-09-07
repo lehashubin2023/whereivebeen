@@ -228,7 +228,6 @@ function WIVBN.StartSession(continuesFrom)
     WIVBN.SetActiveSessionId(id)
     WIVBN.sessionId = id
     WIVBN.SetCombatLogEnabled(true)
-    WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
     WIVBN.SaveSessionBaseline()
 
@@ -251,7 +250,6 @@ function WIVBN.ResumeSession(id)
 
     WIVBN.SetCombatLogEnabled(true)
     WIVBN.sessionId = id
-    WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
     if offline >= WIVBN.RESUME_GAP_MIN then
         WIVBN.SaveEvent({
@@ -341,8 +339,6 @@ function WIVBN.ClearSession()
     session.clock   = GetTime()
     session.tBase   = 0
     session.ended   = nil
-
-    WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
     print(WIVBN.PREFIX .. "Session successfully clean")
 
