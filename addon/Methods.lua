@@ -68,9 +68,19 @@ function WIVBN.ClearInterval()
     WIVBN.timeElapsed = 0
 end
 
+function WIVBN.IsRoutableMap(mapId)
+    if not mapId then return false end
+    if not C_Map.GetMapInfo then return true end
+
+    local ok, info = pcall(C_Map.GetMapInfo, mapId)
+    if not ok or type(info) ~= "table" or not info.mapType then return true end
+
+    return info.mapType >= WIVBN.MIN_MAP_TYPE
+end
+
 function WIVBN.GetPlayerPosition()
     local mapId = C_Map.GetBestMapForUnit("player")
-    if not mapId then return nil end
+    if not WIVBN.IsRoutableMap(mapId) then return nil end
 
     local position = C_Map.GetPlayerMapPosition(mapId, "player")
     if not position then return nil end

@@ -9,7 +9,7 @@ local DAMAGE_EVENTS = {
     ENVIRONMENTAL_DAMAGE  = true,
 }
 
-local lastZone, lastZoneMap
+local lastZone
 
 function WIVBN.SpellName(spellId)
     if C_Spell and C_Spell.GetSpellInfo then
@@ -26,7 +26,7 @@ function WIVBN.SpellName(spellId)
 end
 
 function WIVBN.ResetZoneState()
-    lastZone, lastZoneMap = nil, nil
+    lastZone = nil
 end
 
 function WIVBN.ResetTracking()
@@ -42,12 +42,11 @@ function WIVBN.SaveZoneState()
 
     local zone    = GetZoneText()
     local subZone = GetSubZoneText()
-    local mapId   = C_Map.GetBestMapForUnit("player")
 
     if not zone or zone == "" then return nil end
-    if zone == lastZone and mapId == lastZoneMap then return nil end
+    if zone == lastZone then return nil end
 
-    lastZone, lastZoneMap = zone, mapId
+    lastZone = zone
 
     return WIVBN.SaveEvent({
         event   = "zone",
