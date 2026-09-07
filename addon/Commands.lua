@@ -39,9 +39,9 @@ local function DeleteById(argument)
     end
 
     if WIVBN.DeleteSession(id) then
-        print(WIVBN.PREFIX .. ("Session %d deleted"):format(id))
+        print(WIVBN.PREFIX .. ("Session %s deleted"):format(WIVBN.FormatId(id)))
     else
-        print(WIVBN.PREFIX .. ("Session %d not found"):format(id))
+        print(WIVBN.PREFIX .. ("Session %s not found"):format(WIVBN.FormatId(id)))
     end
 end
 

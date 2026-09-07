@@ -4,6 +4,12 @@ function WIVBN.IsSessionActive()
     return WIVBN.sessionId ~= nil
 end
 
+function WIVBN.FormatId(id)
+    if type(id) ~= "number" then return tostring(id) end
+
+    return ("%.0f"):format(id)
+end
+
 function WIVBN.CharacterKey()
     return (UnitName("player") or "?") .. "-" .. (GetRealmName() or "?")
 end
@@ -224,9 +230,9 @@ function WIVBN.StartSession(continuesFrom)
     WIVBN.SetCombatLogEnabled(true)
     WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
-    print(WIVBN.PREFIX .. ("Recording started — session %d"):format(id))
-
     WIVBN.SaveSessionBaseline()
+
+    print(WIVBN.PREFIX .. ("Recording started — session %s"):format(WIVBN.FormatId(id)))
 
     return id
 end
@@ -247,8 +253,6 @@ function WIVBN.ResumeSession(id)
     WIVBN.sessionId = id
     WIVBN.lastMapId, WIVBN.lastX, WIVBN.lastY = nil, nil, nil
 
-    print(WIVBN.PREFIX .. ("Recording resumed — session %d, %d points"):format(id, #session.points))
-
     if offline >= WIVBN.RESUME_GAP_MIN then
         WIVBN.SaveEvent({
             event   = "gap",
@@ -258,6 +262,9 @@ function WIVBN.ResumeSession(id)
     end
 
     WIVBN.SaveSessionBaseline()
+
+    print(WIVBN.PREFIX .. ("Recording resumed — session %s, %d points")
+        :format(WIVBN.FormatId(id), #session.points))
 
     return id
 end
