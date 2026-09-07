@@ -83,7 +83,7 @@ function formatDate(value: string | null): string {
                         name="game_session"
                         required
                         rows="8"
-                        placeholder="Paste exported session JSON…"
+                        placeholder="Paste the exported session, e.g. WIVB1:…"
                         class="min-h-48 font-mono"
                     />
                     <InputError :message="errors.game_session" />

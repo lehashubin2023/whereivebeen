@@ -25,8 +25,14 @@ const commands: { command: string; description: string }[] = [
     { command: 'log', description: 'Print the last 20 recorded points' },
     {
         command: 'get_sessions',
-        description: 'Open the sessions window and export one as JSON',
+        description: 'Open the sessions window and export one',
     },
+    { command: 'delete <id>', description: 'Delete one session by id' },
+    {
+        command: 'prune <points>',
+        description: 'Delete stored sessions with fewer points',
+    },
+    { command: 'raw', description: 'Export raw JSON instead of the compressed line' },
 ];
 
 const clients: { name: string; toc: string }[] = [
@@ -49,7 +55,7 @@ const clients: { name: string; toc: string }[] = [
             <Heading
                 variant="small"
                 title="WhereIveBeen addon"
-                description="Records your route in game and exports it as JSON"
+                description="Records your route in game and exports it as one compact line"
             />
             <AddonDownloadButton :addon="addon" />
         </div>
@@ -89,12 +95,12 @@ const clients: { name: string; toc: string }[] = [
                     needed.
                 </li>
                 <li>
-                    Type <code class="text-gold">/wrivbn get_sessions</code> to
+                    Type <code class="text-gold">/wivbn get_sessions</code> to
                     open the sessions window.
                 </li>
                 <li>
                     Click a session to open the export window, then press
-                    <code class="text-gold">Ctrl+C</code> to copy the JSON.
+                    <code class="text-gold">Ctrl+C</code> to copy the exported line.
                 </li>
                 <li>
                     Paste it on the
@@ -117,7 +123,7 @@ const clients: { name: string; toc: string }[] = [
             <Heading
                 variant="small"
                 title="Slash commands"
-                description="/whereivebeen, /wivebeen and /wrivbn all work"
+                description="/whereivebeen, /wivebeen, /wivbn and /wivb all work"
             />
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -136,7 +142,7 @@ const clients: { name: string; toc: string }[] = [
                             class="border-b border-border/40 last:border-0"
                         >
                             <td class="text-gold py-2 pr-4 font-mono text-xs">
-                                /wrivbn {{ row.command }}
+                                /wivbn {{ row.command }}
                             </td>
                             <td class="py-2 text-muted-foreground">
                                 {{ row.description }}
