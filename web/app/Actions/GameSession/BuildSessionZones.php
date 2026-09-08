@@ -8,25 +8,20 @@ use App\Models\Map;
 use App\Models\WayPoint;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Collection as SupportCollection;
 
 class BuildSessionZones
 {
     /**
-     * Отлучка на другую карту, после которой линия рвётся. Короткие отлучки — это
-     * дребезг границы зон (`GetBestMapForUnit` на границе прыгает туда-обратно
-     * за секунды), и разрывать маршрут из-за них нельзя.
+     * Отлучка на другую карту, после которой посещение считается закрытым, а
+     * возвращение — новым. Короткие отлучки — это дребезг границы зон
+     * (`GetBestMapForUnit` на границе прыгает туда-обратно за секунды).
      */
     private const GAP_SECONDS = 60;
 
     private bool $mounted = false;
 
     private bool $flying = false;
-
-    /** @var array<int, int> последнее время (децисекунды) по карте */
-    private array $lastTimeByMap = [];
-
-    private ?int $previousMapId = null;
 
     /**
      * @return array<int, array<string, mixed>>
@@ -54,65 +49,120 @@ class BuildSessionZones
 
         $this->mounted = false;
         $this->flying = false;
-        $this->lastTimeByMap = [];
-        $this->previousMapId = null;
 
-        $points->transform(function ($point) {
-            $point->state = $this->defineState($point);
-            $point->gap = $this->defineGap($point);
-            $point->setAttribute('event_slug', $this->defineEvent($point));
+        $points->each(fn (WayPoint $point) => $point->setAttribute('state', $this->defineState($point)));
 
-            return $point;
-        });
+        $maps = $this->renderableMaps($points);
+        $visible = $points
+            ->filter(fn (WayPoint $point) => $maps->has((int) $point->getAttribute('map_id')))
+            ->values();
 
-        return $this->buildZones($points, $gameSession);
+        return $this->buildZones($this->splitIntoVisits($visible), $maps, $gameSession);
     }
 
     /**
+     * Карты без картинки на маршрут не попадают, поэтому их точки выбрасываются
+     * до нарезки — иначе пролёт над такой картой рвал бы посещение надвое.
+     *
      * @param  Collection<int, WayPoint>  $points
+     * @return SupportCollection<int, Map>
+     */
+    private function renderableMaps(Collection $points): SupportCollection
+    {
+        return Map::query()
+            ->whereIn('id', $points->pluck('map_id')->unique()->all())
+            ->get()
+            ->filter(fn (Map $map) => file_exists(
+                public_path(ltrim((string) $map->getAttribute('image_path'), '/')),
+            ))
+            ->keyBy('id');
+    }
+
+    /**
+     * Режет маршрут на посещения: пришёл на карту, походил, ушёл — одно посещение,
+     * вернулся позже — следующее. Возврат в пределах `GAP_SECONDS` дописывается
+     * в открытое посещение, иначе дребезг границы плодил бы обрывки. Загрузочный
+     * экран закрывает посещение всегда: игрок ушёл из мира.
+     *
+     * @param  Collection<int, WayPoint>  $points
+     * @return array<int, array{map_id: int, last_time: int, points: array<int, WayPoint>}>
+     */
+    private function splitIntoVisits(Collection $points): array
+    {
+        /** @var list<array{map_id: int, last_time: int, points: list<WayPoint>}> $visits */
+        $visits = [];
+        /** @var array<int, int> $openByMap */
+        $openByMap = [];
+        $previousMapId = null;
+        $current = 0;
+
+        foreach ($points as $point) {
+            $mapId = (int) $point->getAttribute('map_id');
+            $time = (int) $point->getAttribute('time');
+            $left = $point->getAttribute('event_type_id') === EventTypeEnum::GAP->value;
+
+            if ($left || $previousMapId !== $mapId) {
+                $open = $left ? null : ($openByMap[$mapId] ?? null);
+
+                if ($open === null || $time - $visits[$open]['last_time'] > self::GAP_SECONDS * 10) {
+                    $visits[] = ['map_id' => $mapId, 'last_time' => $time, 'points' => []];
+                    $open = array_key_last($visits);
+                    $openByMap[$mapId] = $open;
+                }
+
+                $current = $open;
+            }
+
+            $visit = $visits[$current];
+
+            $point->setAttribute('gap', $visit['points'] === []);
+            $point->setAttribute('event_slug', $this->defineEvent($point));
+
+            $visit['points'][] = $point;
+            $visit['last_time'] = $time;
+
+            $visits[$current] = $visit;
+            $previousMapId = $mapId;
+        }
+
+        return $visits;
+    }
+
+    /**
+     * @param  array<int, array{map_id: int, last_time: int, points: array<int, WayPoint>}>  $visits
+     * @param  SupportCollection<int, Map>  $maps
      * @return array<int, array<string, mixed>>
      */
-    private function buildZones(Collection $points, GameSession $gameSession): array
+    private function buildZones(array $visits, SupportCollection $maps, GameSession $gameSession): array
     {
-        $groups = $points->groupBy('map_id');
-        $maps = Map::query()
-            ->whereIn('id', $groups->keys())
-            ->get()
-            ->keyBy('id');
         $zones = [];
 
-        foreach ($groups as $mapId => $zonePoints) {
-            $map = $maps->get($mapId);
+        foreach ($visits as $visit) {
+            $map = $maps->get($visit['map_id']);
 
             if ($map === null) {
                 continue;
             }
 
             $imagePath = (string) $map->getAttribute('image_path');
-
-            if (! file_exists(public_path(ltrim($imagePath, '/')))) {
-                continue;
-            }
+            $started = (int) $visit['points'][0]->getAttribute('time');
 
             $zones[] = [
-                'id' => $mapId,
+                'key' => $visit['map_id'].'-'.(int) $visit['points'][0]->getAttribute('sequence'),
+                'id' => $visit['map_id'],
                 'name' => $map->name,
                 'image_path' => $imagePath,
-                'points_count' => count($zonePoints),
+                'points_count' => count($visit['points']),
                 'time' => $gameSession->session_start_at
                     ->copy()
-                    ->addMilliseconds((int) $zonePoints->min('time') * 100)
+                    ->addMilliseconds($started * 100)
                     ->toIso8601String(),
-                'first_sequence' => (int) $zonePoints->min('sequence'),
-                'points' => $this->serializePoints($zonePoints),
+                'duration' => (int) round(($visit['last_time'] - $started) / 10),
+                'points' => $this->serializePoints($visit['points']),
             ];
         }
 
-        return collect($zones)
-            ->sortBy(fn (array $zone) => $zone['first_sequence'])
-            ->map(fn (array $zone) => Arr::except($zone, 'first_sequence'))
-            ->values()
-            ->all();
+        return $zones;
     }
 
     /**
@@ -160,32 +210,6 @@ class BuildSessionZones
         }
 
         return $this->mounted ? 'mounted' : ($this->flying ? 'flying' : 'ground');
-    }
-
-    private function defineGap(WayPoint &$point): bool
-    {
-        $mapId = (int) $point['map_id'];
-        $time = (int) $point['time'];
-
-        $previous = $this->lastTimeByMap[$mapId] ?? null;
-        $previousMapId = $this->previousMapId;
-
-        $this->lastTimeByMap[$mapId] = $time;
-        $this->previousMapId = $mapId;
-
-        if ($point['event_type_id'] === EventTypeEnum::GAP->value) {
-            return true;
-        }
-
-        if ($previous === null) {
-            return true;
-        }
-
-        if ($previousMapId === $mapId) {
-            return false;
-        }
-
-        return ($time - $previous) > self::GAP_SECONDS * 10;
     }
 
     private function defineEvent(WayPoint &$point): ?string

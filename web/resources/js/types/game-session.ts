@@ -23,11 +23,13 @@ export interface RoutePoint {
 }
 
 export interface Zone {
+    key: string;
     id: number;
     name: string;
     image_path: string;
     points_count: number;
     time: string;
+    duration: number;
     points: RoutePoint[];
 }
 

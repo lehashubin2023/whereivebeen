@@ -65,8 +65,7 @@ class BuildSessionZonesTest extends TestCase
         $this->addPoint($session, 2, EventTypeEnum::LEVELUP, ['level' => 10]);
         $this->addPoint($session, 3, EventTypeEnum::LOOT, ['items' => [['id' => 999, 'name' => 'Sword', 'n' => 1]]]);
         $this->addPoint($session, 4, EventTypeEnum::COMBAT, ['in_combat' => true]);
-        $this->addPoint($session, 5, EventTypeEnum::GAP);
-        $this->addPoint($session, 6, EventTypeEnum::QUEST, ['action' => 'accept']);
+        $this->addPoint($session, 5, EventTypeEnum::QUEST, ['action' => 'accept']);
 
         $zones = (new BuildSessionZones)->exec($session);
 
@@ -79,8 +78,7 @@ class BuildSessionZonesTest extends TestCase
             2 => 'levelup',
             3 => 'loot',
             4 => null,
-            5 => null,
-            6 => 'quest',
+            5 => 'quest',
         ], $events);
     }
 
@@ -99,7 +97,7 @@ class BuildSessionZonesTest extends TestCase
         );
     }
 
-    public function test_it_still_tracks_state_and_gaps(): void
+    public function test_it_still_tracks_state(): void
     {
         $session = GameSession::factory()->create();
 
@@ -107,9 +105,8 @@ class BuildSessionZonesTest extends TestCase
         $this->addPoint($session, 2, EventTypeEnum::MOUNT, ['mounted' => true]);
         $this->addPoint($session, 3);
         $this->addPoint($session, 4, EventTypeEnum::TAXI, ['on_taxi' => true]);
-        $this->addPoint($session, 5, EventTypeEnum::GAP);
-        $this->addPoint($session, 6, EventTypeEnum::TAXI, ['on_taxi' => false]);
-        $this->addPoint($session, 7, EventTypeEnum::MOUNT, ['mounted' => false]);
+        $this->addPoint($session, 5, EventTypeEnum::TAXI, ['on_taxi' => false]);
+        $this->addPoint($session, 6, EventTypeEnum::MOUNT, ['mounted' => false]);
 
         $points = collect((new BuildSessionZones)->exec($session)[0]['points'])
             ->keyBy('sequence');
@@ -118,15 +115,24 @@ class BuildSessionZonesTest extends TestCase
         $this->assertSame('mounted', $points[2]['state']);
         $this->assertSame('mounted', $points[3]['state']);
         $this->assertSame('flying', $points[4]['state']);
+        $this->assertSame('ground', $points[5]['state']);
         $this->assertSame('ground', $points[6]['state']);
-        $this->assertSame('ground', $points[7]['state']);
-
-        $this->assertTrue($points[1]['gap']);
-        $this->assertFalse($points[2]['gap']);
-        $this->assertTrue($points[5]['gap']);
     }
 
-    public function test_a_short_trip_to_a_neighbour_map_does_not_break_the_line(): void
+    public function test_only_the_opening_point_of_a_visit_breaks_the_line(): void
+    {
+        $session = GameSession::factory()->create();
+
+        $this->addPoint($session, 1);
+        $this->addPoint($session, 2);
+        $this->addPoint($session, 3);
+
+        $points = (new BuildSessionZones)->exec($session)[0]['points'];
+
+        $this->assertSame([true, false, false], array_column($points, 'gap'));
+    }
+
+    public function test_a_short_trip_to_a_neighbour_map_does_not_split_the_visit(): void
     {
         Map::query()->insert(['id' => self::NEIGHBOUR_MAP_ID, 'name' => 'Duskwood']);
 
@@ -137,15 +143,18 @@ class BuildSessionZonesTest extends TestCase
         $this->addPoint($session, 2, null, [], self::NEIGHBOUR_MAP_ID, 2493);
         $this->addPoint($session, 3, null, [], self::MAP_ID, 2565);
 
-        $points = collect((new BuildSessionZones)->exec($session))
-            ->firstWhere('id', self::MAP_ID)['points'];
+        $zones = collect((new BuildSessionZones)->exec($session))
+            ->where('id', self::MAP_ID);
+
+        $this->assertCount(1, $zones, 'дребезг границы не должен плодить посещения');
+
+        $points = $zones->first()['points'];
 
         $this->assertCount(2, $points);
-        $this->assertTrue($points[0]['gap']);
         $this->assertFalse($points[1]['gap'], 'возврат через 9.6 с не должен рвать линию');
     }
 
-    public function test_a_long_absence_from_a_map_breaks_the_line(): void
+    public function test_a_return_after_a_long_absence_is_a_separate_visit(): void
     {
         Map::query()->insert(['id' => self::NEIGHBOUR_MAP_ID, 'name' => 'Duskwood']);
 
@@ -155,35 +164,74 @@ class BuildSessionZonesTest extends TestCase
         $this->addPoint($session, 2, null, [], self::NEIGHBOUR_MAP_ID, 200);
         $this->addPoint($session, 3, null, [], self::MAP_ID, 1500);
 
-        $points = collect((new BuildSessionZones)->exec($session))
-            ->firstWhere('id', self::MAP_ID)['points'];
+        $zones = (new BuildSessionZones)->exec($session);
 
-        $this->assertTrue($points[1]['gap'], 'отлучка на 140 с должна рвать линию');
+        $this->assertSame(
+            [self::MAP_ID, self::NEIGHBOUR_MAP_ID, self::MAP_ID],
+            array_column($zones, 'id'),
+            'посещения идут в хронологическом порядке',
+        );
+
+        $this->assertNotSame($zones[0]['key'], $zones[2]['key']);
+        $this->assertCount(1, $zones[2]['points']);
+        $this->assertTrue($zones[2]['points'][0]['gap']);
     }
 
-    public function test_standing_still_on_the_same_map_does_not_break_the_line(): void
+    public function test_standing_still_on_the_same_map_keeps_one_visit(): void
     {
         $session = GameSession::factory()->create();
 
         $this->addPoint($session, 1, null, [], self::MAP_ID, 100);
         $this->addPoint($session, 2, null, [], self::MAP_ID, 19000);
 
-        $points = collect((new BuildSessionZones)->exec($session))
-            ->firstWhere('id', self::MAP_ID)['points'];
+        $zones = (new BuildSessionZones)->exec($session);
 
-        $this->assertFalse($points[1]['gap'], 'простой на месте не должен рвать линию');
+        $this->assertCount(1, $zones, 'простой на месте не должен резать посещение');
+        $this->assertFalse($zones[0]['points'][1]['gap']);
     }
 
-    public function test_a_loading_screen_still_breaks_the_line_on_the_same_map(): void
+    public function test_a_loading_screen_closes_the_visit(): void
     {
         $session = GameSession::factory()->create();
 
         $this->addPoint($session, 1, null, [], self::MAP_ID, 100);
         $this->addPoint($session, 2, EventTypeEnum::GAP, [], self::MAP_ID, 19000);
+        $this->addPoint($session, 3, null, [], self::MAP_ID, 19100);
 
-        $points = collect((new BuildSessionZones)->exec($session))
-            ->firstWhere('id', self::MAP_ID)['points'];
+        $zones = (new BuildSessionZones)->exec($session);
 
-        $this->assertTrue($points[1]['gap'], 'загрузочный экран должен рвать линию');
+        $this->assertCount(2, $zones);
+        $this->assertCount(1, $zones[0]['points']);
+        $this->assertCount(2, $zones[1]['points']);
+        $this->assertTrue($zones[1]['points'][0]['gap']);
+    }
+
+    public function test_it_reports_when_and_how_long_each_visit_lasted(): void
+    {
+        $session = GameSession::factory()->create(['session_start_at' => '2026-09-06 17:00:00']);
+
+        $this->addPoint($session, 1, null, [], self::MAP_ID, 600);
+        $this->addPoint($session, 2, null, [], self::MAP_ID, 2400);
+
+        $zone = (new BuildSessionZones)->exec($session)[0];
+
+        $this->assertSame('2026-09-06T17:01:00+00:00', $zone['time']);
+        $this->assertSame(180, $zone['duration']);
+    }
+
+    public function test_maps_without_an_image_do_not_split_a_visit(): void
+    {
+        Map::query()->insert(['id' => self::NEIGHBOUR_MAP_ID, 'name' => 'Nowhere Land']);
+
+        $session = GameSession::factory()->create();
+
+        $this->addPoint($session, 1, null, [], self::MAP_ID, 100);
+        $this->addPoint($session, 2, null, [], self::NEIGHBOUR_MAP_ID, 20000);
+        $this->addPoint($session, 3, null, [], self::MAP_ID, 40000);
+
+        $zones = (new BuildSessionZones)->exec($session);
+
+        $this->assertCount(1, $zones);
+        $this->assertCount(2, $zones[0]['points']);
     }
 }

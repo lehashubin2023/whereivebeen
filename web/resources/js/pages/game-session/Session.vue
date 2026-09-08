@@ -25,20 +25,20 @@ const title = computed(
         props.session.character || `Session #${props.session.game_session_id}`,
 );
 
-const selectedZoneId = ref<number | null>(props.zones[0]?.id ?? null);
+const selectedZoneKey = ref<string | null>(props.zones[0]?.key ?? null);
 
 watch(
     () => props.zones,
     (zones) => {
-        if (!zones.some((zone) => zone.id === selectedZoneId.value)) {
-            selectedZoneId.value = zones[0]?.id ?? null;
+        if (!zones.some((zone) => zone.key === selectedZoneKey.value)) {
+            selectedZoneKey.value = zones[0]?.key ?? null;
         }
     },
 );
 
 const selectedZone = computed(
     () =>
-        props.zones.find((zone) => zone.id === selectedZoneId.value) ??
+        props.zones.find((zone) => zone.key === selectedZoneKey.value) ??
         props.zones[0] ??
         null,
 );
@@ -46,6 +46,45 @@ const selectedZone = computed(
 function formatDate(value: string | null): string {
     return value ? new Date(value).toLocaleString() : '—';
 }
+
+function formatTime(value: string): string {
+    return new Date(value).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+}
+
+function formatDuration(seconds: number): string {
+    if (seconds < 60) {
+        return `${seconds}s`;
+    }
+
+    const minutes = Math.round(seconds / 60);
+
+    if (minutes < 60) {
+        return `${minutes}m`;
+    }
+
+    return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+}
+
+const visits = computed(() =>
+    props.zones.map((zone, index) => {
+        const day = new Date(zone.time).toDateString();
+        const previous = props.zones[index - 1];
+
+        return {
+            zone,
+            day:
+                previous && new Date(previous.time).toDateString() === day
+                    ? null
+                    : new Date(zone.time).toLocaleDateString([], {
+                          month: 'short',
+                          day: 'numeric',
+                      }),
+        };
+    }),
+);
 </script>
 
 <template>
@@ -64,6 +103,9 @@ function formatDate(value: string | null): string {
                 <span v-if="selectedZone">
                     · {{ selectedZone.points_count }} points</span
                 >
+                <span v-if="selectedZone">
+                    · {{ formatDuration(selectedZone.duration) }}</span
+                >
                 ·
                 {{
                     formatDate(
@@ -76,31 +118,43 @@ function formatDate(value: string | null): string {
         </div>
 
         <div v-if="selectedZone" class="flex flex-1 flex-col gap-4 lg:flex-row">
-            <aside class="shrink-0 lg:w-56">
+            <aside class="shrink-0 lg:w-64">
                 <div class="wow-panel flex flex-col gap-1 p-2">
-                    <button
-                        v-for="zone in zones"
-                        :key="zone.id"
-                        type="button"
-                        class="flex items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors"
-                        :class="
-                            zone.id === selectedZoneId
-                                ? 'text-gold bg-accent'
-                                : 'text-muted-foreground hover:bg-muted/50'
-                        "
-                        @click="selectedZoneId = zone.id"
-                    >
-                        <MapPin class="size-4 shrink-0" />
-                        <span class="min-w-0 flex-1 truncate">
-                            {{ zone.name }}
-                        </span>
-                    </button>
+                    <template v-for="visit in visits" :key="visit.zone.key">
+                        <p
+                            v-if="visit.day"
+                            class="text-gold/70 px-2 pt-2 pb-1 text-[11px] tracking-wide uppercase"
+                        >
+                            {{ visit.day }}
+                        </p>
+
+                        <button
+                            type="button"
+                            class="flex items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors"
+                            :class="
+                                visit.zone.key === selectedZoneKey
+                                    ? 'text-gold bg-accent'
+                                    : 'text-muted-foreground hover:bg-muted/50'
+                            "
+                            @click="selectedZoneKey = visit.zone.key"
+                        >
+                            <MapPin class="size-4 shrink-0" />
+                            <span class="min-w-0 flex-1 truncate">
+                                {{ visit.zone.name }}
+                            </span>
+                            <span
+                                class="shrink-0 text-xs tabular-nums opacity-70"
+                            >
+                                {{ formatTime(visit.zone.time) }}
+                            </span>
+                        </button>
+                    </template>
                 </div>
             </aside>
 
             <div class="flex-1">
                 <RouteMap
-                    :key="selectedZone.id"
+                    :key="selectedZone.key"
                     :image="selectedZone.image_path"
                     :points="selectedZone.points"
                     :game-session-id="session.id"
