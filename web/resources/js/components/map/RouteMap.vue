@@ -16,6 +16,17 @@ import type { EventSlug, RoutePoint, RouteState } from '@/types';
 type State = RouteState;
 type Point = RoutePoint;
 
+interface PlacedEvent {
+    point: Point;
+    x: number;
+    y: number;
+    anchorX: number;
+    anchorY: number;
+    fanned: boolean;
+}
+
+const FAN_SPREAD = 1.9;
+
 const STATE_COLORS: Record<State, { line: string; dot: string }> = {
     ground: { line: '#f5c542', dot: '#f7cf5a' },
     mounted: { line: EVENT_COLORS.mount, dot: EVENT_COLORS.mount },
@@ -119,6 +130,69 @@ const eventPoints = computed(() =>
     props.points.filter((p) => p.event !== null),
 );
 
+const placedEvents = computed<PlacedEvent[]>(() => {
+    const width = stageWidth.value;
+    const height = stageHeight.value;
+    const groups = new Map<string, Point[]>();
+
+    for (const point of eventPoints.value) {
+        const key = `${point.x},${point.y}`;
+        const group = groups.get(key);
+
+        if (group) {
+            group.push(point);
+        } else {
+            groups.set(key, [point]);
+        }
+    }
+
+    const spread = eventRadius.value * FAN_SPREAD;
+    const placed: PlacedEvent[] = [];
+
+    for (const group of groups.values()) {
+        const anchorX = group[0].x * width;
+        const anchorY = group[0].y * height;
+
+        if (group.length === 1) {
+            placed.push({
+                point: group[0],
+                x: anchorX,
+                y: anchorY,
+                anchorX,
+                anchorY,
+                fanned: false,
+            });
+
+            continue;
+        }
+
+        const ordered = [...group].sort(
+            (a, b) =>
+                EVENT_ORDER.indexOf(a.event as EventSlug) -
+                EVENT_ORDER.indexOf(b.event as EventSlug),
+        );
+
+        ordered.forEach((point, index) => {
+            const angle = (Math.PI * 2 * index) / ordered.length - Math.PI / 2;
+
+            placed.push({
+                point,
+                x: anchorX + Math.cos(angle) * spread,
+                y: anchorY + Math.sin(angle) * spread,
+                anchorX,
+                anchorY,
+                fanned: true,
+            });
+        });
+    }
+
+    return placed;
+});
+
+const fannedEvents = computed(() =>
+    placedEvents.value.filter((placed) => placed.fanned),
+);
+
 const eventLegend = computed<EventSlug[]>(() => {
     const present = new Set(eventPoints.value.map((p) => p.event as EventSlug));
 
@@ -135,23 +209,24 @@ const {
 
 const selectedSequence = ref<number | null>(null);
 
-const selectedPoint = computed(
+const selectedPlacement = computed(
     () =>
-        props.points.find((p) => p.sequence === selectedSequence.value) ?? null,
+        placedEvents.value.find(
+            (placed) => placed.point.sequence === selectedSequence.value,
+        ) ?? null,
 );
 
 const POPUP_CLEARANCE = 190;
 
 const popupPlacement = computed(() => {
-    const point = selectedPoint.value;
+    const placed = selectedPlacement.value;
 
-    if (!point) {
+    if (!placed) {
         return null;
     }
 
-    const anchorX = translateX.value + point.x * stageWidth.value * scale.value;
-    const anchorY =
-        translateY.value + point.y * stageHeight.value * scale.value;
+    const anchorX = translateX.value + placed.x * scale.value;
+    const anchorY = translateY.value + placed.y * scale.value;
     const offset = eventRadius.value * scale.value + 8;
     const below = anchorY < POPUP_CLEARANCE;
 
@@ -361,37 +436,53 @@ function reset(): void {
                             vector-effect="non-scaling-stroke"
                         />
 
+                        <line
+                            v-for="placed in fannedEvents"
+                            :key="`leader-${placed.point.sequence}`"
+                            :x1="placed.anchorX"
+                            :y1="placed.anchorY"
+                            :x2="placed.x"
+                            :y2="placed.y"
+                            :stroke="EVENT_OUTLINE"
+                            stroke-width="1"
+                            stroke-opacity="0.55"
+                            vector-effect="non-scaling-stroke"
+                        />
+
                         <g class="pointer-events-auto">
                             <g
-                                v-for="point in eventPoints"
-                                :key="`event-${point.sequence}`"
+                                v-for="placed in placedEvents"
+                                :key="`event-${placed.point.sequence}`"
                                 class="cursor-pointer"
                                 @pointerdown.stop
-                                @click.stop="selectEvent(point)"
+                                @click.stop="selectEvent(placed.point)"
                             >
                                 <circle
-                                    v-if="selectedSequence === point.sequence"
-                                    :cx="point.x * stageWidth"
-                                    :cy="point.y * stageHeight"
+                                    v-if="
+                                        selectedSequence ===
+                                        placed.point.sequence
+                                    "
+                                    :cx="placed.x"
+                                    :cy="placed.y"
                                     :r="selectionRadius"
                                     fill="none"
-                                    :stroke="EVENT_COLORS[point.event!]"
+                                    :stroke="EVENT_COLORS[placed.point.event!]"
                                     stroke-width="1.5"
                                     stroke-opacity="0.9"
                                     vector-effect="non-scaling-stroke"
                                 />
                                 <circle
-                                    :cx="point.x * stageWidth"
-                                    :cy="point.y * stageHeight"
+                                    :cx="placed.x"
+                                    :cy="placed.y"
                                     :r="eventRadius"
-                                    :fill="EVENT_COLORS[point.event!]"
+                                    :fill="EVENT_COLORS[placed.point.event!]"
                                     :stroke="EVENT_OUTLINE"
                                     stroke-width="1.5"
                                     vector-effect="non-scaling-stroke"
                                 />
                                 <circle
-                                    :cx="point.x * stageWidth"
-                                    :cy="point.y * stageHeight"
+                                    :cx="placed.x"
+                                    :cy="placed.y"
                                     :r="hitRadius"
                                     fill="transparent"
                                 />
