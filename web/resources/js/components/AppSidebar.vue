@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Download, Map, ScrollText, User } from '@lucide/vue';
+import { ChartColumn, Download, Map, ScrollText, User } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -20,6 +20,11 @@ const mainNavItems: NavItem[] = [
         title: 'Sessions',
         href: '/game-session/sessions',
         icon: Map,
+    },
+    {
+        title: 'Statistics',
+        href: '/statistics',
+        icon: ChartColumn,
     },
     {
         title: 'Imports',
