@@ -160,4 +160,30 @@ class BuildSessionZonesTest extends TestCase
 
         $this->assertTrue($points[1]['gap'], 'отлучка на 140 с должна рвать линию');
     }
+
+    public function test_standing_still_on_the_same_map_does_not_break_the_line(): void
+    {
+        $session = GameSession::factory()->create();
+
+        $this->addPoint($session, 1, null, [], self::MAP_ID, 100);
+        $this->addPoint($session, 2, null, [], self::MAP_ID, 19000);
+
+        $points = collect((new BuildSessionZones)->exec($session))
+            ->firstWhere('id', self::MAP_ID)['points'];
+
+        $this->assertFalse($points[1]['gap'], 'простой на месте не должен рвать линию');
+    }
+
+    public function test_a_loading_screen_still_breaks_the_line_on_the_same_map(): void
+    {
+        $session = GameSession::factory()->create();
+
+        $this->addPoint($session, 1, null, [], self::MAP_ID, 100);
+        $this->addPoint($session, 2, EventTypeEnum::GAP, [], self::MAP_ID, 19000);
+
+        $points = collect((new BuildSessionZones)->exec($session))
+            ->firstWhere('id', self::MAP_ID)['points'];
+
+        $this->assertTrue($points[1]['gap'], 'загрузочный экран должен рвать линию');
+    }
 }
