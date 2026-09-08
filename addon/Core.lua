@@ -118,11 +118,11 @@ end
 function eventHandlers.PLAYER_LOGIN(self)
     WIVBN.InitDB()
     WIVBN.ResetTracking()
-    WIVBN.ResumeOrIdle()
 end
 
 function eventHandlers.PLAYER_LOGOUT(self)
     WIVBN.FlushPending()
+    WIVBN.MarkSessionLeft()
 end
 
 function eventHandlers.UNIT_AURA(self)
@@ -174,7 +174,8 @@ function eventHandlers.PLAYER_ENTERING_WORLD(self, isInitialLogin, isReload)
     WIVBN.playerGuid = UnitGUID("player")
     WIVBN.SyncStateFlags()
 
-    if isInitialLogin or isReload then
+    if isInitialLogin or isReload or not WIVBN.IsSessionActive() then
+        WIVBN.BeginPlaySession(isReload)
         WIVBN.SaveZoneState()
         return
     end

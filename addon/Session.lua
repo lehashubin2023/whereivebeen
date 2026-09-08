@@ -236,17 +236,34 @@ function WIVBN.StartSession(continuesFrom)
     return id
 end
 
+local function OfflineSeconds(session)
+    if session.left then
+        return math.max(0, time() - session.left)
+    end
+
+    local last  = session.points and session.points[#session.points]
+    local lastT = last and last.t or session.tBase or 0
+
+    return math.max(0, (time() - session.started) - lastT)
+end
+
+function WIVBN.MarkSessionLeft()
+    local session = WIVBN.CurrentSession()
+    if not session then return end
+
+    session.left = time()
+end
+
 function WIVBN.ResumeSession(id)
     local session = WhereIveBeenDB.sessions[id]
     if not session then return nil end
 
-    local last    = session.points and session.points[#session.points]
-    local lastT   = last and last.t or session.tBase or 0
-    local offline = math.max(0, (time() - session.started) - lastT)
+    local offline = OfflineSeconds(session)
 
     session.tBase = time() - session.started
     session.clock = GetTime()
     session.ended = nil
+    session.left  = nil
 
     WIVBN.SetCombatLogEnabled(true)
     WIVBN.sessionId = id
@@ -267,7 +284,17 @@ function WIVBN.ResumeSession(id)
     return id
 end
 
-function WIVBN.ResumeOrIdle()
+function WIVBN.CloseSession(id)
+    local session = WhereIveBeenDB.sessions[id]
+
+    if session and not session.ended then
+        session.ended = session.left or time()
+    end
+
+    WIVBN.ForgetActiveSession(id)
+end
+
+function WIVBN.BeginPlaySession(isReload)
     local db = WhereIveBeenDB
 
     WIVBN.PurgeEmptySessions()
@@ -276,12 +303,17 @@ function WIVBN.ResumeOrIdle()
     local activeId = WIVBN.ActiveSessionId()
     local session  = activeId and db.sessions[activeId] or nil
 
-    if WIVBN.BelongsToCurrentCharacter(session) then
+    if isReload and WIVBN.BelongsToCurrentCharacter(session) then
         WIVBN.ResumeSession(activeId)
         WIVBN.EnforceBudget()
         return
     end
 
+    if activeId then
+        WIVBN.CloseSession(activeId)
+    end
+
+    WIVBN.sessionId = nil
     WIVBN.SetActiveSessionId(nil)
 
     WIVBN.StartSession()
