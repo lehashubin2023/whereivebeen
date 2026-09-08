@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { ChartColumn, Tally5 } from '@lucide/vue';
+import { ChartColumn } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import type { StatisticGroup, StatisticOverview } from '@/types';
@@ -67,7 +67,6 @@ const selectedGroup = computed(
                         "
                         @click="selectedSlug = group.slug"
                     >
-                        <Tally5 class="size-4 shrink-0" />
                         <span class="min-w-0 flex-1 truncate">
                             {{ group.label }}
                         </span>
