@@ -1,6 +1,15 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { ChartColumn, Download, Map, ScrollText, User } from '@lucide/vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import {
+    ChartColumn,
+    Download,
+    Inbox,
+    LifeBuoy,
+    Map,
+    ScrollText,
+    User,
+} from '@lucide/vue';
+import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -15,7 +24,9 @@ import {
 } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
+const page = usePage();
+
+const mainNavItems = computed<NavItem[]>(() => [
     {
         title: 'Sessions',
         href: '/game-session/sessions',
@@ -41,7 +52,21 @@ const mainNavItems: NavItem[] = [
         href: '/profile',
         icon: User,
     },
-];
+    {
+        title: 'Report a problem',
+        href: '/issue-report',
+        icon: LifeBuoy,
+    },
+    ...(page.props.auth.user?.is_admin
+        ? [
+              {
+                  title: 'Problem reports',
+                  href: '/admin/issue-reports',
+                  icon: Inbox,
+              },
+          ]
+        : []),
+]);
 </script>
 
 <template>
