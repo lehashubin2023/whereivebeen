@@ -23,6 +23,11 @@
             rel="stylesheet"
         >
 
+        <script>
+            window.__locale = @json($locale);
+            window.__translations = @json((object) $translations);
+        </script>
+
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head>
             <title>{{ config('app.name', 'Laravel') }}</title>

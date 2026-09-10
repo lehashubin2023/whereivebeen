@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, Head, usePage } from '@inertiajs/vue3';
+import { Form, Head, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/ProfileController';
 import DeleteUser from '@/components/DeleteUser.vue';
@@ -9,10 +9,20 @@ import PasswordInput from '@/components/PasswordInput.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { locale, t } from '@/lib/i18n';
 import { edit } from '@/routes/profile';
+import type { LocaleOption } from '@/types';
 
 type Props = {
     passwordRules: string;
+    locales: LocaleOption[];
 };
 
 const props = defineProps<Props>();
@@ -21,7 +31,7 @@ defineOptions({
     layout: {
         breadcrumbs: [
             {
-                title: 'Profile',
+                title: t('Profile'),
                 href: edit(),
             },
         ],
@@ -30,18 +40,30 @@ defineOptions({
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+
+function changeLocale(value: unknown): void {
+    if (typeof value !== 'string' || value === locale) {
+        return;
+    }
+
+    router.patch(
+        ProfileController.updateLocale.url(),
+        { locale: value },
+        { onSuccess: () => window.location.reload() },
+    );
+}
 </script>
 
 <template>
-    <Head title="Profile" />
+    <Head :title="t('Profile')" />
 
-    <h1 class="sr-only">Profile</h1>
+    <h1 class="sr-only">{{ t('Profile') }}</h1>
 
     <div class="flex flex-col space-y-6">
         <Heading
             variant="small"
-            title="Profile"
-            description="Update your email address"
+            :title="t('Profile')"
+            :description="t('Update your email address')"
         />
 
         <Form
@@ -50,7 +72,7 @@ const user = computed(() => page.props.auth.user);
             v-slot="{ errors, processing }"
         >
             <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+                <Label for="email">{{ t('Email address') }}</Label>
                 <Input
                     id="email"
                     type="email"
@@ -59,15 +81,18 @@ const user = computed(() => page.props.auth.user);
                     :default-value="user.email"
                     required
                     autocomplete="username"
-                    placeholder="Email address"
+                    :placeholder="t('Email address')"
                 />
                 <InputError class="mt-2" :message="errors.email" />
             </div>
 
             <div class="flex items-center gap-4">
-                <Button :disabled="processing" data-test="update-profile-button"
-                    >Save</Button
+                <Button
+                    :disabled="processing"
+                    data-test="update-profile-button"
                 >
+                    {{ t('Save') }}
+                </Button>
             </div>
         </Form>
     </div>
@@ -75,8 +100,38 @@ const user = computed(() => page.props.auth.user);
     <div class="space-y-6">
         <Heading
             variant="small"
-            title="Update password"
-            description="Ensure your account is using a long, random password to stay secure"
+            :title="t('Language')"
+            :description="t('Choose the language of the interface')"
+        />
+
+        <div class="grid max-w-xs gap-2">
+            <Label for="locale">{{ t('Language') }}</Label>
+            <Select :default-value="locale" @update:model-value="changeLocale">
+                <SelectTrigger id="locale" data-test="locale-select">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem
+                        v-for="option in props.locales"
+                        :key="option.value"
+                        :value="option.value"
+                    >
+                        {{ option.label }}
+                    </SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <Heading
+            variant="small"
+            :title="t('Update password')"
+            :description="
+                t(
+                    'Ensure your account is using a long, random password to stay secure',
+                )
+            "
         />
 
         <Form
@@ -94,38 +149,42 @@ const user = computed(() => page.props.auth.user);
             v-slot="{ errors, processing }"
         >
             <div class="grid gap-2">
-                <Label for="current_password">Current password</Label>
+                <Label for="current_password">{{
+                    t('Current password')
+                }}</Label>
                 <PasswordInput
                     id="current_password"
                     name="current_password"
                     class="mt-1 block w-full"
                     autocomplete="current-password"
-                    placeholder="Current password"
+                    :placeholder="t('Current password')"
                 />
                 <InputError :message="errors.current_password" />
             </div>
 
             <div class="grid gap-2">
-                <Label for="password">New password</Label>
+                <Label for="password">{{ t('New password') }}</Label>
                 <PasswordInput
                     id="password"
                     name="password"
                     class="mt-1 block w-full"
                     autocomplete="new-password"
-                    placeholder="New password"
+                    :placeholder="t('New password')"
                     :passwordrules="props.passwordRules"
                 />
                 <InputError :message="errors.password" />
             </div>
 
             <div class="grid gap-2">
-                <Label for="password_confirmation">Confirm password</Label>
+                <Label for="password_confirmation">
+                    {{ t('Confirm password') }}
+                </Label>
                 <PasswordInput
                     id="password_confirmation"
                     name="password_confirmation"
                     class="mt-1 block w-full"
                     autocomplete="new-password"
-                    placeholder="Confirm password"
+                    :placeholder="t('Confirm password')"
                     :passwordrules="props.passwordRules"
                 />
                 <InputError :message="errors.password_confirmation" />
@@ -136,7 +195,7 @@ const user = computed(() => page.props.auth.user);
                     :disabled="processing"
                     data-test="update-password-button"
                 >
-                    Save
+                    {{ t('Save') }}
                 </Button>
             </div>
         </Form>

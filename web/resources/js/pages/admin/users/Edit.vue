@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { t } from '@/lib/i18n';
 import type { AdminUserForm } from '@/types/admin-user';
 
 const props = defineProps<{
@@ -18,20 +19,20 @@ const props = defineProps<{
 
 defineOptions({
     layout: {
-        breadcrumbs: [{ title: 'Users', href: '/admin/users' }],
+        breadcrumbs: [{ title: t('Users'), href: '/admin/users' }],
     },
 });
 </script>
 
 <template>
-    <Head :title="`Edit ${props.user.email}`" />
+    <Head :title="t('Edit :email', { email: props.user.email })" />
 
     <div class="flex flex-1 flex-col p-4 md:p-8">
-        <h1 class="sr-only">Edit user</h1>
+        <h1 class="sr-only">{{ t('Edit user') }}</h1>
 
         <div class="wow-panel max-w-xl p-6">
             <h2 class="text-gold font-display text-lg tracking-wide">
-                Edit user
+                {{ t('Edit user') }}
             </h2>
             <hr class="wow-divider my-4" />
 
@@ -42,7 +43,7 @@ defineOptions({
                 class="flex flex-col gap-4"
             >
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email">{{ t('Email address') }}</Label>
                     <Input
                         id="email"
                         type="email"
@@ -55,24 +56,26 @@ defineOptions({
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password">New password</Label>
+                    <Label for="password">{{ t('New password') }}</Label>
                     <PasswordInput
                         id="password"
                         name="password"
                         autocomplete="new-password"
-                        placeholder="Leave blank to keep the current one"
+                        :placeholder="t('Leave blank to keep the current one')"
                         :passwordrules="passwordRules"
                     />
                     <InputError :message="errors.password" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password</Label>
+                    <Label for="password_confirmation">
+                        {{ t('Confirm password') }}
+                    </Label>
                     <PasswordInput
                         id="password_confirmation"
                         name="password_confirmation"
                         autocomplete="new-password"
-                        placeholder="Confirm new password"
+                        :placeholder="t('Confirm new password')"
                         :passwordrules="passwordRules"
                     />
                     <InputError :message="errors.password_confirmation" />
@@ -86,10 +89,10 @@ defineOptions({
                         :default-value="props.user.is_admin"
                         :disabled="props.isSelf"
                     />
-                    <Label for="is_admin">Administrator</Label>
+                    <Label for="is_admin">{{ t('Administrator') }}</Label>
                 </div>
                 <p v-if="props.isSelf" class="text-xs text-muted-foreground">
-                    You cannot remove your own administrator access.
+                    {{ t('You cannot remove your own administrator access.') }}
                 </p>
                 <input
                     v-if="props.isSelf"
@@ -106,10 +109,10 @@ defineOptions({
                         data-test="update-user-button"
                     >
                         <Spinner v-if="processing" />
-                        Save
+                        {{ t('Save') }}
                     </Button>
                     <Button as-child variant="secondary">
-                        <Link href="/admin/users">Cancel</Link>
+                        <Link href="/admin/users">{{ t('Cancel') }}</Link>
                     </Button>
                 </div>
             </Form>

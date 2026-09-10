@@ -11,6 +11,7 @@ import {
     EVENT_ORDER,
     EVENT_OUTLINE,
 } from '@/lib/eventStyles';
+import { t } from '@/lib/i18n';
 import type { EventSlug, RoutePoint, RouteState } from '@/types';
 
 type State = RouteState;
@@ -516,7 +517,7 @@ function reset(): void {
                         <button
                             type="button"
                             class="wow-frame text-gold flex size-8 items-center justify-center bg-sidebar"
-                            title="Zoom in"
+                            :title="t('Zoom in')"
                             @pointerdown.stop
                             @click="zoomButton(1.3)"
                         >
@@ -525,7 +526,7 @@ function reset(): void {
                         <button
                             type="button"
                             class="wow-frame text-gold flex size-8 items-center justify-center bg-sidebar"
-                            title="Zoom out"
+                            :title="t('Zoom out')"
                             @pointerdown.stop
                             @click="zoomButton(1 / 1.3)"
                         >
@@ -534,7 +535,7 @@ function reset(): void {
                         <button
                             type="button"
                             class="wow-frame text-gold flex size-8 items-center justify-center bg-sidebar"
-                            title="Reset view"
+                            :title="t('Reset view')"
                             @pointerdown.stop
                             @click="reset"
                         >

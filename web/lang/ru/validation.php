@@ -1,0 +1,73 @@
+<?php
+
+return [
+    'accepted' => 'Нужно принять :attribute.',
+    'array' => 'Поле :attribute должно быть массивом.',
+    'between' => [
+        'array' => 'Поле :attribute должно содержать от :min до :max элементов.',
+        'file' => 'Размер файла в поле :attribute должен быть от :min до :max килобайт.',
+        'numeric' => 'Поле :attribute должно быть от :min до :max.',
+        'string' => 'Поле :attribute должно содержать от :min до :max символов.',
+    ],
+    'boolean' => 'Поле :attribute должно иметь значение true или false.',
+    'confirmed' => 'Поле :attribute не совпадает с подтверждением.',
+    'current_password' => 'Неверный пароль.',
+    'date' => 'Поле :attribute должно быть корректной датой.',
+    'different' => 'Поля :attribute и :other должны различаться.',
+    'digits' => 'Поле :attribute должно содержать :digits цифр.',
+    'email' => 'Поле :attribute должно быть корректным адресом email.',
+    'enum' => 'Выбранное значение для :attribute некорректно.',
+    'exists' => 'Выбранное значение для :attribute некорректно.',
+    'file' => 'Поле :attribute должно быть файлом.',
+    'filled' => 'Поле :attribute обязательно для заполнения.',
+    'image' => 'Поле :attribute должно быть изображением.',
+    'in' => 'Выбранное значение для :attribute некорректно.',
+    'integer' => 'Поле :attribute должно быть целым числом.',
+    'lowercase' => 'Поле :attribute должно быть в нижнем регистре.',
+    'max' => [
+        'array' => 'Поле :attribute должно содержать не более :max элементов.',
+        'file' => 'Размер файла в поле :attribute не должен превышать :max килобайт.',
+        'numeric' => 'Поле :attribute не должно быть больше :max.',
+        'string' => 'Поле :attribute не должно быть длиннее :max символов.',
+    ],
+    'mimes' => 'Поле :attribute должно быть файлом одного из типов: :values.',
+    'min' => [
+        'array' => 'Поле :attribute должно содержать не менее :min элементов.',
+        'file' => 'Размер файла в поле :attribute должен быть не менее :min килобайт.',
+        'numeric' => 'Поле :attribute должно быть не менее :min.',
+        'string' => 'Поле :attribute должно содержать не менее :min символов.',
+    ],
+    'numeric' => 'Поле :attribute должно быть числом.',
+    'present' => 'Поле :attribute должно присутствовать.',
+    'regex' => 'Поле :attribute имеет некорректный формат.',
+    'required' => 'Поле :attribute обязательно для заполнения.',
+    'same' => 'Поля :attribute и :other должны совпадать.',
+    'size' => [
+        'array' => 'Поле :attribute должно содержать :size элементов.',
+        'file' => 'Размер файла в поле :attribute должен быть :size килобайт.',
+        'numeric' => 'Поле :attribute должно быть равно :size.',
+        'string' => 'Поле :attribute должно содержать :size символов.',
+    ],
+    'string' => 'Поле :attribute должно быть строкой.',
+    'unique' => 'Такое значение поля :attribute уже занято.',
+    'uploaded' => 'Не удалось загрузить файл в поле :attribute.',
+    'url' => 'Поле :attribute должно быть корректной ссылкой.',
+
+    'custom' => [
+        'attribute-name' => [
+            'rule-name' => 'custom-message',
+        ],
+    ],
+
+    'attributes' => [
+        'current_password' => 'текущий пароль',
+        'email' => 'email',
+        'game_session' => 'данные сессии',
+        'is_admin' => 'администратор',
+        'locale' => 'язык',
+        'message' => 'сообщение',
+        'password' => 'пароль',
+        'password_confirmation' => 'подтверждение пароля',
+        'status' => 'статус',
+    ],
+];

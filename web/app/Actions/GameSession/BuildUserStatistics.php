@@ -122,11 +122,11 @@ class BuildUserStatistics
         }
 
         return [
-            ['label' => 'Sessions', 'value' => (string) count($sessionIds)],
-            ['label' => 'Waypoints', 'value' => (string) $points],
-            ['label' => 'Zones visited', 'value' => (string) $maps],
-            ['label' => 'Events', 'value' => (string) array_sum($this->totals)],
-            ['label' => 'Time played', 'value' => self::duration(max(0, $tracked - $this->offline()))],
+            ['label' => __('Sessions'), 'value' => (string) count($sessionIds)],
+            ['label' => __('Waypoints'), 'value' => (string) $points],
+            ['label' => __('Zones visited'), 'value' => (string) $maps],
+            ['label' => __('Events'), 'value' => (string) array_sum($this->totals)],
+            ['label' => __('Time played'), 'value' => self::duration(max(0, $tracked - $this->offline()))],
         ];
     }
 
@@ -283,8 +283,12 @@ class BuildUserStatistics
         }
 
         return StatisticTableDTO::fromArray([
-            'title' => $title,
-            'columns' => array_merge([$keyColumn], array_values($notes), array_values($counters)),
+            'title' => __($title),
+            'columns' => array_merge(
+                [__($keyColumn)],
+                array_map(self::translate(...), array_values($notes)),
+                array_map(self::translate(...), array_values($counters)),
+            ),
             'rows' => $rows,
             'rows_total' => count($keys),
         ])->toArray();
@@ -349,7 +353,7 @@ class BuildUserStatistics
             return (string) $killer['creatureType'];
         }
 
-        return $pvp ? 'Player' : '—';
+        return $pvp ? __('Player') : '—';
     }
 
     /**
@@ -359,7 +363,7 @@ class BuildUserStatistics
     {
         $counter = ($payload['action'] ?? null) === 'turnin' ? 'turnin' : 'accept';
 
-        $this->tally('quest.action', $counter === 'turnin' ? 'Turned in' : 'Accepted');
+        $this->tally('quest.action', $counter === 'turnin' ? __('Turned in') : __('Accepted'));
 
         $title = (string) ($payload['title'] ?? '');
 
@@ -422,7 +426,7 @@ class BuildUserStatistics
             foreach ($places as $place) {
                 $slug = (string) $place;
 
-                $this->tally('visit.place', self::PLACES[$slug] ?? ucfirst($slug));
+                $this->tally('visit.place', __(self::PLACES[$slug] ?? ucfirst($slug)));
             }
         }
 
@@ -480,8 +484,8 @@ class BuildUserStatistics
     {
         $reason = ucfirst((string) ($payload['reason'] ?? 'unknown'));
 
-        $this->tally('gap.reason', $reason);
-        $this->tally('gap.reason', $reason, 'seconds', max(0, (int) ($payload['seconds'] ?? 0)));
+        $this->tally('gap.reason', __($reason));
+        $this->tally('gap.reason', __($reason), 'seconds', max(0, (int) ($payload['seconds'] ?? 0)));
     }
 
     /**
@@ -489,7 +493,7 @@ class BuildUserStatistics
      */
     private function flag(string $bucket, array $payload, string $key, string $onLabel, string $offLabel): void
     {
-        $this->tally($bucket, ($payload[$key] ?? false) ? $onLabel : $offLabel);
+        $this->tally($bucket, ($payload[$key] ?? false) ? __($onLabel) : __($offLabel));
     }
 
     private function tally(string $bucket, string $key, string $counter = 'count', int $by = 1): void
@@ -509,15 +513,23 @@ class BuildUserStatistics
     private static function duration(int $seconds): string
     {
         if ($seconds < 60) {
-            return $seconds.'s';
+            return $seconds.self::translate('s');
         }
 
         $minutes = (int) round($seconds / 60);
 
         if ($minutes < 60) {
-            return $minutes.'m';
+            return $minutes.self::translate('m');
         }
 
-        return intdiv($minutes, 60).'h '.($minutes % 60).'m';
+        return intdiv($minutes, 60).self::translate('h').' '.($minutes % 60).self::translate('m');
+    }
+
+    /**
+     * @param  array<string, int|string>  $replace
+     */
+    private static function translate(string $key, array $replace = []): string
+    {
+        return (string) __($key, $replace);
     }
 }

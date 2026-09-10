@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { ChevronRight } from '@lucide/vue';
+import { locale, t } from '@/lib/i18n';
 
 interface SessionRow {
     id: number;
@@ -21,27 +22,27 @@ defineProps<{ sessions: SessionsPaginator }>();
 
 defineOptions({
     layout: {
-        breadcrumbs: [{ title: 'Sessions', href: '/game-session/sessions' }],
+        breadcrumbs: [{ title: t('Sessions'), href: '/game-session/sessions' }],
     },
 });
 
 function formatDate(value: string | null): string {
-    return value ? new Date(value).toLocaleString() : '—';
+    return value ? new Date(value).toLocaleString(locale) : '—';
 }
 </script>
 
 <template>
-    <Head title="Sessions" />
+    <Head :title="t('Sessions')" />
 
     <div class="flex flex-1 flex-col p-4 md:p-8">
-        <h1 class="sr-only">Sessions</h1>
+        <h1 class="sr-only">{{ t('Sessions') }}</h1>
 
         <div class="mb-6 flex items-center justify-end">
             <Link
                 href="/game-session/imports"
                 class="text-gold text-sm underline-offset-4 hover:underline"
             >
-                New import
+                {{ t('New import') }}
             </Link>
         </div>
 
@@ -51,11 +52,17 @@ function formatDate(value: string | null): string {
                     class="border-b border-border/70 text-left text-muted-foreground"
                 >
                     <tr>
-                        <th class="px-4 py-3 font-medium">Character</th>
-                        <th class="px-4 py-3 font-medium">Realm</th>
-                        <th class="px-4 py-3 font-medium">Session</th>
-                        <th class="px-4 py-3 font-medium">Points</th>
-                        <th class="px-4 py-3 font-medium">Started</th>
+                        <th class="px-4 py-3 font-medium">
+                            {{ t('Character') }}
+                        </th>
+                        <th class="px-4 py-3 font-medium">{{ t('Realm') }}</th>
+                        <th class="px-4 py-3 font-medium">
+                            {{ t('Session') }}
+                        </th>
+                        <th class="px-4 py-3 font-medium">{{ t('Points') }}</th>
+                        <th class="px-4 py-3 font-medium">
+                            {{ t('Started') }}
+                        </th>
                         <th class="px-4 py-3" />
                     </tr>
                 </thead>
@@ -87,7 +94,7 @@ function formatDate(value: string | null): string {
                             <Link
                                 :href="`/game-session/sessions/${row.id}`"
                                 class="group-hover:text-gold text-muted-foreground"
-                                aria-label="Open map"
+                                :aria-label="t('Open map')"
                             >
                                 <ChevronRight class="ml-auto size-4" />
                             </Link>
@@ -101,12 +108,12 @@ function formatDate(value: string | null): string {
             v-else
             class="wow-panel flex flex-col items-center justify-center gap-3 p-12 text-center"
         >
-            <p class="text-muted-foreground">No sessions yet.</p>
+            <p class="text-muted-foreground">{{ t('No sessions yet.') }}</p>
             <Link
                 href="/game-session/imports"
                 class="text-gold underline-offset-4 hover:underline"
             >
-                Import your first session
+                {{ t('Import your first session') }}
             </Link>
         </div>
 
@@ -119,7 +126,7 @@ function formatDate(value: string | null): string {
                 :href="sessions.prev_page_url"
                 class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
             >
-                Previous
+                {{ t('Previous') }}
             </Link>
             <span v-else />
             <Link
@@ -127,7 +134,7 @@ function formatDate(value: string | null): string {
                 :href="sessions.next_page_url"
                 class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
             >
-                Next
+                {{ t('Next') }}
             </Link>
         </div>
     </div>

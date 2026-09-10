@@ -2,6 +2,7 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import AddonDownloadButton from '@/components/AddonDownloadButton.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { t } from '@/lib/i18n';
 import { login, register } from '@/routes';
 import type { AddonDownload } from '@/types';
 
@@ -16,24 +17,37 @@ const appName = page.props.name;
 
 const steps = [
     {
-        title: 'Install the addon',
-        text: 'Unpack the archive into Interface/AddOns. The folder must be named WhereIveBeen.',
+        title: t('Install the addon'),
+        text: t(
+            'Unpack the archive into Interface/AddOns. The folder must be named WhereIveBeen.',
+        ),
     },
     {
-        title: 'Play as usual',
-        text: 'The addon records your position and in-game events while you play. Nothing to configure.',
+        title: t('Play as usual'),
+        text: t(
+            'The addon records your position and in-game events while you play. Nothing to configure.',
+        ),
     },
     {
-        title: 'Import the log',
-        text: 'Export a session from the addon window and paste it on the Imports page.',
+        title: t('Import the log'),
+        text: t(
+            'Export a session from the addon window and paste it on the Imports page.',
+        ),
     },
 ];
 
-const clients = ['Vanilla', 'TBC', 'Wrath', 'Cataclysm', 'Mists', 'Retail'];
+const clients = [
+    t('Vanilla'),
+    t('TBC'),
+    t('Wrath'),
+    t('Cataclysm'),
+    t('Mists'),
+    t('Retail'),
+];
 </script>
 
 <template>
-    <Head title="Welcome" />
+    <Head :title="t('Welcome')" />
 
     <div class="flex min-h-svh flex-col bg-background px-6 py-6 lg:px-10">
         <header
@@ -51,8 +65,12 @@ const clients = ['Vanilla', 'TBC', 'Wrath', 'Cataclysm', 'Mists', 'Retail'];
             </div>
 
             <nav class="flex items-center gap-3">
-                <Link :href="login()" class="wow-btn-ghost">Log in</Link>
-                <Link :href="register()" class="wow-btn">Sign up</Link>
+                <Link :href="login()" class="wow-btn-ghost">
+                    {{ t('Log in') }}
+                </Link>
+                <Link :href="register()" class="wow-btn">
+                    {{ t('Sign up') }}
+                </Link>
             </nav>
         </header>
 
@@ -66,11 +84,11 @@ const clients = ['Vanilla', 'TBC', 'Wrath', 'Cataclysm', 'Mists', 'Retail'];
             <hr class="wow-divider-ornate my-7 max-w-md" />
 
             <p class="max-w-2xl text-base leading-relaxed text-foreground/90">
-                A route tracker for World of Warcraft. An addon records where
-                your character goes and what happens along the way — mounts,
-                flight paths, deaths, levels, loot, quests. You export the
-                session, import it here, and the route is drawn on the zone map
-                with every event marked on it.
+                {{
+                    t(
+                        'A route tracker for World of Warcraft. An addon records where your character goes and what happens along the way — mounts, flight paths, deaths, levels, loot, quests. You export the session, import it here, and the route is drawn on the zone map with every event marked on it.',
+                    )
+                }}
             </p>
 
             <div class="mt-8">
@@ -86,7 +104,7 @@ const clients = ['Vanilla', 'TBC', 'Wrath', 'Cataclysm', 'Mists', 'Retail'];
                     <span
                         class="text-xs tracking-[0.3em] text-muted-foreground uppercase"
                     >
-                        Step {{ index + 1 }}
+                        {{ t('Step :number', { number: index + 1 }) }}
                     </span>
                     <h2 class="text-gold font-display tracking-wide">
                         {{ step.title }}
@@ -99,7 +117,9 @@ const clients = ['Vanilla', 'TBC', 'Wrath', 'Cataclysm', 'Mists', 'Retail'];
         <footer
             class="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground"
         >
-            <span class="tracking-wide uppercase">Supported clients</span>
+            <span class="tracking-wide uppercase">
+                {{ t('Supported clients') }}
+            </span>
             <span class="h-3 w-px bg-border" />
             <span v-for="client in clients" :key="client">{{ client }}</span>
         </footer>

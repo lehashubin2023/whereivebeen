@@ -43,7 +43,7 @@ enum EventTypeEnum: int
 
     public function label(): string
     {
-        return match ($this) {
+        return (string) __(match ($this) {
             self::MOUNT => 'Mount',
             self::COMBAT => 'Combat',
             self::DEATH => 'Death',
@@ -57,7 +57,7 @@ enum EventTypeEnum: int
             self::GAP => 'Route gap',
             self::ZONE => 'Zone',
             self::GATHER => 'Gather',
-        };
+        });
     }
 
     public function hasMarker(): bool

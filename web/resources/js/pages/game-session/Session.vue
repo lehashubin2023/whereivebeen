@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import { Compass, MapPin } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import RouteMap from '@/components/map/RouteMap.vue';
+import { locale, t } from '@/lib/i18n';
 
 import type { SessionInfo, Zone } from '@/types';
 
@@ -14,15 +15,16 @@ const props = defineProps<{
 defineOptions({
     layout: {
         breadcrumbs: [
-            { title: 'Sessions', href: '/game-session/sessions' },
-            { title: 'Map', href: '#' },
+            { title: t('Sessions'), href: '/game-session/sessions' },
+            { title: t('Map'), href: '#' },
         ],
     },
 });
 
 const title = computed(
     () =>
-        props.session.character || `Session #${props.session.game_session_id}`,
+        props.session.character ||
+        t('Session #:id', { id: props.session.game_session_id }),
 );
 
 const selectedZoneKey = ref<string | null>(props.zones[0]?.key ?? null);
@@ -44,11 +46,11 @@ const selectedZone = computed(
 );
 
 function formatDate(value: string | null): string {
-    return value ? new Date(value).toLocaleString() : '—';
+    return value ? new Date(value).toLocaleString(locale) : '—';
 }
 
 function formatTime(value: string): string {
-    return new Date(value).toLocaleTimeString([], {
+    return new Date(value).toLocaleTimeString(locale, {
         hour: '2-digit',
         minute: '2-digit',
     });
@@ -56,16 +58,16 @@ function formatTime(value: string): string {
 
 function formatDuration(seconds: number): string {
     if (seconds < 60) {
-        return `${seconds}s`;
+        return `${seconds}${t('s')}`;
     }
 
     const minutes = Math.round(seconds / 60);
 
     if (minutes < 60) {
-        return `${minutes}m`;
+        return `${minutes}${t('m')}`;
     }
 
-    return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+    return `${Math.floor(minutes / 60)}${t('h')} ${minutes % 60}${t('m')}`;
 }
 
 const visits = computed(() =>
@@ -78,7 +80,7 @@ const visits = computed(() =>
             day:
                 previous && new Date(previous.time).toDateString() === day
                     ? null
-                    : new Date(zone.time).toLocaleDateString([], {
+                    : new Date(zone.time).toLocaleDateString(locale, {
                           month: 'short',
                           day: 'numeric',
                       }),
@@ -101,7 +103,12 @@ const visits = computed(() =>
                 <span v-if="session.realm"> · {{ session.realm }}</span>
                 <span v-if="selectedZone"> · {{ selectedZone.name }}</span>
                 <span v-if="selectedZone">
-                    · {{ selectedZone.points_count }} points</span
+                    ·
+                    {{
+                        t(':count points', {
+                            count: selectedZone.points_count,
+                        })
+                    }}</span
                 >
                 <span v-if="selectedZone">
                     · {{ formatDuration(selectedZone.duration) }}</span
@@ -171,10 +178,10 @@ const visits = computed(() =>
             >
                 <Compass class="text-gold size-7" />
                 <p class="text-gold font-display text-lg tracking-wide">
-                    Nothing to chart
+                    {{ t('Nothing to chart') }}
                 </p>
                 <p class="max-w-xs text-sm text-muted-foreground">
-                    This session has no mapped waypoints yet.
+                    {{ t('This session has no mapped waypoints yet.') }}
                 </p>
             </div>
         </div>

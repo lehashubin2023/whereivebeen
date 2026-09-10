@@ -3,6 +3,7 @@ import { Form, Head, Link } from '@inertiajs/vue3';
 import AdminIssueReportController from '@/actions/App/Http/Controllers/AdminIssueReportController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { locale, t } from '@/lib/i18n';
 import type {
     IssueReportStatus,
     IssueReportsPaginator,
@@ -16,7 +17,7 @@ const props = defineProps<{
 defineOptions({
     layout: {
         breadcrumbs: [
-            { title: 'Problem reports', href: '/admin/issue-reports' },
+            { title: t('Problem reports'), href: '/admin/issue-reports' },
         ],
     },
 });
@@ -27,14 +28,14 @@ const statusClass: Record<IssueReportStatus, string> = {
 };
 
 const statusLabel: Record<IssueReportStatus, string> = {
-    new: 'New',
-    resolved: 'Resolved',
+    new: t('New'),
+    resolved: t('Resolved'),
 };
 
 const filters: { label: string; value: IssueReportStatus | null }[] = [
-    { label: 'All', value: null },
-    { label: 'New', value: 'new' },
-    { label: 'Resolved', value: 'resolved' },
+    { label: t('All'), value: null },
+    { label: t('New'), value: 'new' },
+    { label: t('Resolved'), value: 'resolved' },
 ];
 
 function filterHref(value: IssueReportStatus | null): string {
@@ -52,19 +53,19 @@ function nextStatus(status: IssueReportStatus): IssueReportStatus {
 }
 
 function actionLabel(status: IssueReportStatus): string {
-    return status === 'new' ? 'Mark resolved' : 'Reopen';
+    return status === 'new' ? t('Mark resolved') : t('Reopen');
 }
 
 function formatDate(value: string | null): string {
-    return value ? new Date(value).toLocaleString() : '—';
+    return value ? new Date(value).toLocaleString(locale) : '—';
 }
 </script>
 
 <template>
-    <Head title="Problem reports" />
+    <Head :title="t('Problem reports')" />
 
     <div class="flex flex-1 flex-col p-4 md:p-8">
-        <h1 class="sr-only">Problem reports</h1>
+        <h1 class="sr-only">{{ t('Problem reports') }}</h1>
 
         <div class="mb-6 flex items-center gap-2">
             <Link
@@ -88,10 +89,14 @@ function formatDate(value: string | null): string {
                     class="border-b border-border/70 text-left text-muted-foreground"
                 >
                     <tr>
-                        <th class="px-4 py-3 font-medium">User</th>
-                        <th class="px-4 py-3 font-medium">Message</th>
-                        <th class="px-4 py-3 font-medium">Status</th>
-                        <th class="px-4 py-3 font-medium">Created</th>
+                        <th class="px-4 py-3 font-medium">{{ t('User') }}</th>
+                        <th class="px-4 py-3 font-medium">
+                            {{ t('Message') }}
+                        </th>
+                        <th class="px-4 py-3 font-medium">{{ t('Status') }}</th>
+                        <th class="px-4 py-3 font-medium">
+                            {{ t('Created') }}
+                        </th>
                         <th class="px-4 py-3" />
                     </tr>
                 </thead>
@@ -153,7 +158,7 @@ function formatDate(value: string | null): string {
             v-else
             class="wow-panel flex flex-col items-center justify-center gap-3 p-12 text-center"
         >
-            <p class="text-muted-foreground">No reports yet.</p>
+            <p class="text-muted-foreground">{{ t('No reports yet.') }}</p>
         </div>
 
         <div
@@ -165,7 +170,7 @@ function formatDate(value: string | null): string {
                 :href="reports.prev_page_url"
                 class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
             >
-                Previous
+                {{ t('Previous') }}
             </Link>
             <span v-else />
             <Link
@@ -173,7 +178,7 @@ function formatDate(value: string | null): string {
                 :href="reports.next_page_url"
                 class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
             >
-                Next
+                {{ t('Next') }}
             </Link>
         </div>
     </div>

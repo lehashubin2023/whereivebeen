@@ -1,8 +1,11 @@
+import type { LocaleCode } from './locale';
+
 export type User = {
     id: number;
     email: string;
     avatar?: string;
     is_admin: boolean;
+    locale: LocaleCode;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;

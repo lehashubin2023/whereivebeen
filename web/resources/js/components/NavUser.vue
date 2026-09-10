@@ -6,6 +6,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { t } from '@/lib/i18n';
 import { logout } from '@/routes';
 
 const handleLogout = () => {
@@ -25,7 +26,7 @@ const handleLogout = () => {
                     @click="handleLogout"
                 >
                     <LogOut />
-                    <span>Log out</span>
+                    <span>{{ t('Log out') }}</span>
                 </Link>
             </SidebarMenuButton>
         </SidebarMenuItem>

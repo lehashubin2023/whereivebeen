@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { locale, t } from '@/lib/i18n';
 
 type ImportStatus = 'new' | 'in_process' | 'completed' | 'failed';
 
@@ -31,7 +32,7 @@ defineProps<{ imports: ImportsPaginator }>();
 
 defineOptions({
     layout: {
-        breadcrumbs: [{ title: 'Imports', href: '/game-session/imports' }],
+        breadcrumbs: [{ title: t('Imports'), href: '/game-session/imports' }],
     },
 });
 
@@ -43,31 +44,34 @@ const statusClass: Record<ImportStatus, string> = {
 };
 
 const statusLabel: Record<ImportStatus, string> = {
-    new: 'New',
-    in_process: 'In process',
-    completed: 'Completed',
-    failed: 'Failed',
+    new: t('New'),
+    in_process: t('In process'),
+    completed: t('Completed'),
+    failed: t('Failed'),
 };
 
 function formatDate(value: string | null): string {
-    return value ? new Date(value).toLocaleString() : '—';
+    return value ? new Date(value).toLocaleString(locale) : '—';
 }
 </script>
 
 <template>
-    <Head title="Imports" />
+    <Head :title="t('Imports')" />
 
     <div class="flex flex-1 flex-col p-4 md:p-8">
-        <h1 class="sr-only">Imports</h1>
+        <h1 class="sr-only">{{ t('Imports') }}</h1>
 
         <div class="wow-panel mb-6 p-6">
             <h2 class="text-gold font-display text-lg tracking-wide">
-                Import Session
+                {{ t('Import Session') }}
             </h2>
             <hr class="wow-divider my-4" />
             <p class="mb-6 text-sm text-muted-foreground">
-                Paste the session exported from the addon and submit it for
-                processing.
+                {{
+                    t(
+                        'Paste the session exported from the addon and submit it for processing.',
+                    )
+                }}
             </p>
 
             <Form
@@ -77,13 +81,15 @@ function formatDate(value: string | null): string {
                 class="flex flex-col gap-4"
             >
                 <div class="grid gap-2">
-                    <Label for="game_session">Session data</Label>
+                    <Label for="game_session">{{ t('Session data') }}</Label>
                     <Textarea
                         id="game_session"
                         name="game_session"
                         required
                         rows="8"
-                        placeholder="Paste the exported session, e.g. WIVB1:…"
+                        :placeholder="
+                            t('Paste the exported session, e.g. WIVB1:…')
+                        "
                         class="min-h-48 font-mono"
                     />
                     <InputError :message="errors.game_session" />
@@ -96,7 +102,7 @@ function formatDate(value: string | null): string {
                     data-test="import-session-button"
                 >
                     <Spinner v-if="processing" />
-                    Import
+                    {{ t('Import') }}
                 </Button>
             </Form>
         </div>
@@ -107,11 +113,15 @@ function formatDate(value: string | null): string {
                     class="border-b border-border/70 text-left text-muted-foreground"
                 >
                     <tr>
-                        <th class="px-4 py-3 font-medium">Session</th>
-                        <th class="px-4 py-3 font-medium">Status</th>
-                        <th class="px-4 py-3 font-medium">Points</th>
-                        <th class="px-4 py-3 font-medium">Time</th>
-                        <th class="px-4 py-3 font-medium">Created</th>
+                        <th class="px-4 py-3 font-medium">
+                            {{ t('Session') }}
+                        </th>
+                        <th class="px-4 py-3 font-medium">{{ t('Status') }}</th>
+                        <th class="px-4 py-3 font-medium">{{ t('Points') }}</th>
+                        <th class="px-4 py-3 font-medium">{{ t('Time') }}</th>
+                        <th class="px-4 py-3 font-medium">
+                            {{ t('Created') }}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -141,7 +151,9 @@ function formatDate(value: string | null): string {
                         <td class="px-4 py-3">
                             {{ row.points_done }} / {{ row.points_total }}
                         </td>
-                        <td class="px-4 py-3">{{ row.execution_time }}s</td>
+                        <td class="px-4 py-3">
+                            {{ `${row.execution_time}${t('s')}` }}
+                        </td>
                         <td class="px-4 py-3 text-muted-foreground">
                             {{ formatDate(row.created_at) }}
                         </td>
@@ -154,7 +166,7 @@ function formatDate(value: string | null): string {
             v-else
             class="wow-panel flex flex-col items-center justify-center gap-3 p-12 text-center"
         >
-            <p class="text-muted-foreground">No imports yet.</p>
+            <p class="text-muted-foreground">{{ t('No imports yet.') }}</p>
         </div>
 
         <div
@@ -166,7 +178,7 @@ function formatDate(value: string | null): string {
                 :href="imports.prev_page_url"
                 class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
             >
-                Previous
+                {{ t('Previous') }}
             </Link>
             <span v-else />
             <Link
@@ -174,7 +186,7 @@ function formatDate(value: string | null): string {
                 :href="imports.next_page_url"
                 class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
             >
-                Next
+                {{ t('Next') }}
             </Link>
         </div>
     </div>

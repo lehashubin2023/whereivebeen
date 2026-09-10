@@ -15,6 +15,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { locale, t } from '@/lib/i18n';
 import type { AdminUsersPaginator } from '@/types/admin-user';
 
 defineProps<{
@@ -25,20 +26,20 @@ defineProps<{
 
 defineOptions({
     layout: {
-        breadcrumbs: [{ title: 'Users', href: '/admin/users' }],
+        breadcrumbs: [{ title: t('Users'), href: '/admin/users' }],
     },
 });
 
 function formatDate(value: string | null): string {
-    return value ? new Date(value).toLocaleString() : '—';
+    return value ? new Date(value).toLocaleString(locale) : '—';
 }
 </script>
 
 <template>
-    <Head title="Users" />
+    <Head :title="t('Users')" />
 
     <div class="flex flex-1 flex-col p-4 md:p-8">
-        <h1 class="sr-only">Users</h1>
+        <h1 class="sr-only">{{ t('Users') }}</h1>
 
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
             <form method="get" action="/admin/users" class="flex gap-2">
@@ -46,14 +47,16 @@ function formatDate(value: string | null): string {
                     type="search"
                     name="search"
                     :default-value="search ?? ''"
-                    placeholder="Search by email"
+                    :placeholder="t('Search by email')"
                     class="w-64"
                 />
-                <Button type="submit" variant="outline">Search</Button>
+                <Button type="submit" variant="outline">
+                    {{ t('Search') }}
+                </Button>
             </form>
 
             <Button as-child>
-                <Link href="/admin/users/create">New user</Link>
+                <Link href="/admin/users/create">{{ t('New user') }}</Link>
             </Button>
         </div>
 
@@ -63,11 +66,17 @@ function formatDate(value: string | null): string {
                     class="border-b border-border/70 text-left text-muted-foreground"
                 >
                     <tr>
-                        <th class="px-4 py-3 font-medium">Email</th>
-                        <th class="px-4 py-3 font-medium">Role</th>
-                        <th class="px-4 py-3 font-medium">Sessions</th>
-                        <th class="px-4 py-3 font-medium">Verified</th>
-                        <th class="px-4 py-3 font-medium">Created</th>
+                        <th class="px-4 py-3 font-medium">{{ t('Email') }}</th>
+                        <th class="px-4 py-3 font-medium">{{ t('Role') }}</th>
+                        <th class="px-4 py-3 font-medium">
+                            {{ t('Sessions') }}
+                        </th>
+                        <th class="px-4 py-3 font-medium">
+                            {{ t('Verified') }}
+                        </th>
+                        <th class="px-4 py-3 font-medium">
+                            {{ t('Created') }}
+                        </th>
                         <th class="px-4 py-3" />
                     </tr>
                 </thead>
@@ -83,7 +92,7 @@ function formatDate(value: string | null): string {
                                 v-if="row.id === currentUserId"
                                 class="ml-2 text-xs text-muted-foreground"
                             >
-                                (you)
+                                {{ t('(you)') }}
                             </span>
                         </td>
                         <td class="px-4 py-3">
@@ -95,12 +104,12 @@ function formatDate(value: string | null): string {
                                         : 'border-border bg-muted text-muted-foreground'
                                 "
                             >
-                                {{ row.is_admin ? 'Admin' : 'User' }}
+                                {{ row.is_admin ? t('Admin') : t('User') }}
                             </Badge>
                         </td>
                         <td class="px-4 py-3">{{ row.sessions_count }}</td>
                         <td class="px-4 py-3 text-muted-foreground">
-                            {{ row.email_verified_at ? 'Yes' : 'No' }}
+                            {{ row.email_verified_at ? t('Yes') : t('No') }}
                         </td>
                         <td class="px-4 py-3 text-muted-foreground">
                             {{ formatDate(row.created_at) }}
@@ -115,7 +124,7 @@ function formatDate(value: string | null): string {
                                 >
                                     <Link :href="`/admin/users/${row.id}/edit`">
                                         <Pencil class="size-3.5" />
-                                        Edit
+                                        {{ t('Edit') }}
                                     </Link>
                                 </Button>
 
@@ -126,7 +135,7 @@ function formatDate(value: string | null): string {
                                             size="sm"
                                             :data-test="`delete-user-${row.id}`"
                                         >
-                                            Delete
+                                            {{ t('Delete') }}
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent>
@@ -142,21 +151,25 @@ function formatDate(value: string | null): string {
                                         >
                                             <DialogHeader class="space-y-3">
                                                 <DialogTitle>
-                                                    Delete {{ row.email }}?
+                                                    {{
+                                                        t('Delete :email?', {
+                                                            email: row.email,
+                                                        })
+                                                    }}
                                                 </DialogTitle>
                                                 <DialogDescription>
-                                                    All sessions, routes and
-                                                    reports belonging to this
-                                                    user will be permanently
-                                                    deleted. This cannot be
-                                                    undone.
+                                                    {{
+                                                        t(
+                                                            'All sessions, routes and reports belonging to this user will be permanently deleted. This cannot be undone.',
+                                                        )
+                                                    }}
                                                 </DialogDescription>
                                             </DialogHeader>
 
                                             <DialogFooter class="gap-2">
                                                 <DialogClose as-child>
                                                     <Button variant="secondary">
-                                                        Cancel
+                                                        {{ t('Cancel') }}
                                                     </Button>
                                                 </DialogClose>
                                                 <Button
@@ -165,7 +178,7 @@ function formatDate(value: string | null): string {
                                                     :disabled="processing"
                                                     :data-test="`confirm-delete-user-${row.id}`"
                                                 >
-                                                    Delete user
+                                                    {{ t('Delete user') }}
                                                 </Button>
                                             </DialogFooter>
                                         </Form>
@@ -182,7 +195,7 @@ function formatDate(value: string | null): string {
             v-else
             class="wow-panel flex flex-col items-center justify-center gap-3 p-12 text-center"
         >
-            <p class="text-muted-foreground">No users found.</p>
+            <p class="text-muted-foreground">{{ t('No users found.') }}</p>
         </div>
 
         <div
@@ -194,7 +207,7 @@ function formatDate(value: string | null): string {
                 :href="users.prev_page_url"
                 class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
             >
-                Previous
+                {{ t('Previous') }}
             </Link>
             <span v-else />
             <Link
@@ -202,7 +215,7 @@ function formatDate(value: string | null): string {
                 :href="users.next_page_url"
                 class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
             >
-                Next
+                {{ t('Next') }}
             </Link>
         </div>
     </div>

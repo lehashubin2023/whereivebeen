@@ -23,23 +23,24 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { t } from '@/lib/i18n';
 import type { NavItem } from '@/types';
 
 const page = usePage();
 
 const adminNavItems: NavItem[] = [
     {
-        title: 'Problem reports',
+        title: t('Problem reports'),
         href: '/admin/issue-reports',
         icon: Inbox,
     },
     {
-        title: 'Users',
+        title: t('Users'),
         href: '/admin/users',
         icon: Users,
     },
     {
-        title: 'Profile',
+        title: t('Profile'),
         href: '/profile',
         icon: User,
     },
@@ -47,32 +48,32 @@ const adminNavItems: NavItem[] = [
 
 const userNavItems: NavItem[] = [
     {
-        title: 'Sessions',
+        title: t('Sessions'),
         href: '/game-session/sessions',
         icon: Map,
     },
     {
-        title: 'Statistics',
+        title: t('Statistics'),
         href: '/statistics',
         icon: ChartColumn,
     },
     {
-        title: 'Imports',
+        title: t('Imports'),
         href: '/game-session/imports',
         icon: ScrollText,
     },
     {
-        title: 'Addon',
+        title: t('Addon'),
         href: '/addon',
         icon: Download,
     },
     {
-        title: 'Profile',
+        title: t('Profile'),
         href: '/profile',
         icon: User,
     },
     {
-        title: 'Report a problem',
+        title: t('Report a problem'),
         href: '/issue-report',
         icon: LifeBuoy,
     },

@@ -4,6 +4,7 @@ import type { Component } from 'vue';
 import { computed } from 'vue';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EVENT_COLORS, EVENT_ICONS } from '@/lib/eventStyles';
+import { t } from '@/lib/i18n';
 import type { SessionEvent } from '@/types';
 
 const props = defineProps<{
@@ -39,7 +40,7 @@ function formatTime(value: string | null): string {
         <button
             type="button"
             class="absolute top-1.5 right-1.5 rounded-sm p-0.5 text-muted-foreground transition-colors hover:text-primary"
-            title="Close"
+            :title="t('Close')"
             @click="$emit('close')"
         >
             <X class="size-3.5" />

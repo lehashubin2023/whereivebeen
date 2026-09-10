@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import { ChartColumn } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import { t } from '@/lib/i18n';
 import type { StatisticGroup, StatisticOverview } from '@/types';
 
 const props = defineProps<{
@@ -12,7 +13,7 @@ const props = defineProps<{
 
 defineOptions({
     layout: {
-        breadcrumbs: [{ title: 'Statistics', href: '/statistics' }],
+        breadcrumbs: [{ title: t('Statistics'), href: '/statistics' }],
     },
 });
 
@@ -27,10 +28,10 @@ const selectedGroup = computed(
 </script>
 
 <template>
-    <Head title="Statistics" />
+    <Head :title="t('Statistics')" />
 
     <div class="flex flex-1 flex-col gap-4 p-4 md:p-6">
-        <h1 class="sr-only">Statistics</h1>
+        <h1 class="sr-only">{{ t('Statistics') }}</h1>
 
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             <div
@@ -82,7 +83,8 @@ const selectedGroup = computed(
                     <span class="text-gold font-display tracking-wide">
                         {{ selectedGroup.label }}
                     </span>
-                    · {{ selectedGroup.total }} events
+                    ·
+                    {{ t(':count events', { count: selectedGroup.total }) }}
                 </p>
 
                 <div
@@ -104,8 +106,12 @@ const selectedGroup = computed(
                                 v-if="table.rows_total > table.rows.length"
                                 class="text-xs text-muted-foreground"
                             >
-                                top {{ table.rows.length }} of
-                                {{ table.rows_total }}
+                                {{
+                                    t('top :shown of :total', {
+                                        shown: table.rows.length,
+                                        total: table.rows_total,
+                                    })
+                                }}
                             </span>
                         </div>
 
@@ -158,7 +164,7 @@ const selectedGroup = computed(
                     v-else
                     class="wow-panel flex flex-1 items-center justify-center p-12 text-center text-sm text-muted-foreground"
                 >
-                    This event has no extra details to break down.
+                    {{ t('This event has no extra details to break down.') }}
                 </div>
             </div>
         </div>
@@ -172,10 +178,12 @@ const selectedGroup = computed(
             >
                 <ChartColumn class="text-gold size-7" />
                 <p class="text-gold font-display text-lg tracking-wide">
-                    Nothing to count
+                    {{ t('Nothing to count') }}
                 </p>
                 <p class="max-w-xs text-sm text-muted-foreground">
-                    Import a session and your deeds will show up here.
+                    {{
+                        t('Import a session and your deeds will show up here.')
+                    }}
                 </p>
             </div>
         </div>
