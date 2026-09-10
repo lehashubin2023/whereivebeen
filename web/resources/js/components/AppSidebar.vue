@@ -8,6 +8,7 @@ import {
     Map,
     ScrollText,
     User,
+    Users,
 } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -26,7 +27,20 @@ import type { NavItem } from '@/types';
 
 const page = usePage();
 
-const mainNavItems = computed<NavItem[]>(() => [
+const adminNavItems: NavItem[] = [
+    {
+        title: 'Problem reports',
+        href: '/admin/issue-reports',
+        icon: Inbox,
+    },
+    {
+        title: 'Users',
+        href: '/admin/users',
+        icon: Users,
+    },
+];
+
+const userNavItems: NavItem[] = [
     {
         title: 'Sessions',
         href: '/game-session/sessions',
@@ -57,16 +71,19 @@ const mainNavItems = computed<NavItem[]>(() => [
         href: '/issue-report',
         icon: LifeBuoy,
     },
-    ...(page.props.auth.user?.is_admin
-        ? [
-              {
-                  title: 'Problem reports',
-                  href: '/admin/issue-reports',
-                  icon: Inbox,
-              },
-          ]
-        : []),
-]);
+];
+
+const isAdmin = computed<boolean>(
+    () => page.props.auth.user?.is_admin === true,
+);
+
+const mainNavItems = computed<NavItem[]>(() =>
+    isAdmin.value ? adminNavItems : userNavItems,
+);
+
+const homeHref = computed<string>(() =>
+    isAdmin.value ? '/admin/issue-reports' : '/game-session/sessions',
+);
 </script>
 
 <template>
@@ -75,7 +92,7 @@ const mainNavItems = computed<NavItem[]>(() => [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link href="/game-session/sessions">
+                        <Link :href="homeHref">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>
