@@ -8,7 +8,7 @@ use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 
-#[Middleware('auth')]
+#[Middleware(['auth', 'deny-admins'])]
 class AddonController extends Controller
 {
     #[Get('addon', name: 'addon')]

@@ -38,6 +38,11 @@ const adminNavItems: NavItem[] = [
         href: '/admin/users',
         icon: Users,
     },
+    {
+        title: 'Profile',
+        href: '/profile',
+        icon: User,
+    },
 ];
 
 const userNavItems: NavItem[] = [
