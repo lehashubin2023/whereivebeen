@@ -29,7 +29,7 @@ class SupportPageTest extends TestCase
 
     public function test_guests_can_open_the_support_page()
     {
-        $this->get('/support')
+        $this->get('/en/support')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Support')
@@ -40,7 +40,7 @@ class SupportPageTest extends TestCase
     public function test_authenticated_users_can_open_the_support_page()
     {
         $this->actingAs(User::factory()->create())
-            ->get('/support')
+            ->get('/en/support')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Support'));
     }
@@ -48,14 +48,14 @@ class SupportPageTest extends TestCase
     public function test_admins_can_open_the_support_page()
     {
         $this->actingAs(User::factory()->admin()->create())
-            ->get('/support')
+            ->get('/en/support')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Support'));
     }
 
     public function test_configured_channels_reach_the_page()
     {
-        $this->get('/support')
+        $this->get('/en/support')
             ->assertInertia(fn (Assert $page) => $page
                 ->where('channels.boosty', 'https://boosty.to/whereivebeen')
                 ->where('channels.telegram', 'https://t.me/whereivebeen_bot')
@@ -76,7 +76,7 @@ class SupportPageTest extends TestCase
             ],
         ]);
 
-        $this->get('/support')
+        $this->get('/en/support')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('channels.boosty', null)
@@ -94,7 +94,7 @@ class SupportPageTest extends TestCase
             'crypto' => [],
         ]);
 
-        $this->get('/support')
+        $this->get('/en/support')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Support'));
     }

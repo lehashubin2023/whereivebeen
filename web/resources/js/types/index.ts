@@ -5,6 +5,7 @@ export * from './game-session';
 export * from './issue-report';
 export * from './locale';
 export * from './navigation';
+export * from './seo';
 export * from './statistics';
 export * from './support';
 export * from './ui';

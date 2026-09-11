@@ -2,6 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { watchEffect } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { locale } from '@/lib/i18n';
 import { home } from '@/routes';
 
 defineProps<{
@@ -31,7 +32,7 @@ watchEffect(() => {
         <div class="w-full max-w-sm">
             <div class="flex flex-col items-center gap-6">
                 <Link
-                    :href="home()"
+                    :href="home({ locale })"
                     class="flex flex-col items-center gap-3 font-medium"
                 >
                     <div

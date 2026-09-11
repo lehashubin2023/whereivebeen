@@ -43,6 +43,14 @@
   (`#[Get]`, `#[Post]`, `#[Group]`, `#[Middleware]`); простые страницы — в [routes/web.php](web/routes/web.php)
   и [routes/settings.php](web/routes/settings.php) (`Route::inertia`).
 - **Аутентификация**: Laravel **Fortify** ([app/Actions/Fortify/](web/app/Actions/Fortify/)).
+- **Публичный контур и SEO**: индексируемые страницы живут под префиксом локали
+  (`/{locale}`, `/{locale}/faq`, `/{locale}/support`) в [PageController](web/app/Http/Controllers/PageController.php);
+  `/`, `/support`, `/faq` без префикса редиректят туда ([LocaleRedirectController](web/app/Http/Controllers/LocaleRedirectController.php)).
+  Мету (title/description/canonical/hreflang/OG/JSON-LD) строит [BuildPageMeta](web/app/Actions/Seo/BuildPageMeta.php),
+  она шарится Inertia-пропом `meta` и рендерится сервером в [app.blade.php](web/resources/views/app.blade.php);
+  всё, чего нет в `config('seo.indexable')`, получает `noindex`. `robots.txt` и `sitemap.xml`
+  отдаёт [SeoController](web/app/Http/Controllers/SeoController.php). Тексты — в `lang/{locale}/seo.php`
+  и `lang/{locale}/faq.php`.
 - **Wayfinder**: генерит типизированные JS-экшены/роуты в [resources/js/actions/](web/resources/js/actions/)
   и [resources/js/routes/](web/resources/js/routes/) — **не редактировать руками**.
 

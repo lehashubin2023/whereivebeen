@@ -14,9 +14,19 @@ export default defineConfig({
             fonts: [
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
+                    preload: [{ weight: 400 }],
                 }),
                 bunny('Cinzel', {
-                    weights: [500, 600, 700],
+                    weights: [400, 500, 600, 700],
+                    preload: [{ weight: 600 }],
+                }),
+                bunny('Cinzel Decorative', {
+                    weights: [400, 700, 900],
+                    preload: [{ weight: 900 }],
+                }),
+                bunny('Marcellus', {
+                    weights: [400],
+                    preload: false,
                 }),
             ],
         }),

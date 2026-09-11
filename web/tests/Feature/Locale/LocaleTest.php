@@ -3,6 +3,7 @@
 namespace Tests\Feature\Locale;
 
 use App\Enums\LocaleEnum;
+use App\Http\Middleware\HandleLocale;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -70,6 +71,33 @@ class LocaleTest extends TestCase
 
         $response->assertDontSee('window.__translations', false);
         $response->assertDontSee($this->encoded('Сессии'), false);
+    }
+
+    public function test_the_url_prefix_picks_the_language()
+    {
+        $response = $this->withHeader('Accept-Language', 'en-US,en;q=0.9')->get('/ru');
+
+        $response->assertOk();
+        $response->assertSee('window.__locale = "ru"', false);
+        $response->assertCookie(HandleLocale::COOKIE, 'ru', false);
+    }
+
+    public function test_the_remembered_language_carries_over_to_pages_without_a_prefix()
+    {
+        $response = $this->withUnencryptedCookie(HandleLocale::COOKIE, 'ru')->get('/login');
+
+        $response->assertOk();
+        $response->assertSee('window.__locale = "ru"', false);
+    }
+
+    public function test_the_url_prefix_wins_over_the_user_setting()
+    {
+        $user = User::factory()->create(['locale' => LocaleEnum::RU]);
+
+        $this->actingAs($user)
+            ->get('/en/faq')
+            ->assertOk()
+            ->assertSee('window.__locale = "en"', false);
     }
 
     public function test_guests_fall_back_to_the_browser_language()

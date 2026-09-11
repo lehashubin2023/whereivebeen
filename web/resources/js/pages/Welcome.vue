@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import AddonDownloadButton from '@/components/AddonDownloadButton.vue';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
-import { t } from '@/lib/i18n';
-import { login, register } from '@/routes';
+import PublicHeader from '@/components/PublicHeader.vue';
+import { locale, t } from '@/lib/i18n';
+import { faq } from '@/routes';
 import type { AddonDownload } from '@/types';
 
 type Props = {
@@ -14,6 +15,7 @@ defineProps<Props>();
 
 const page = usePage();
 const appName = page.props.name;
+const meta = computed(() => page.props.meta);
 
 const steps = [
     {
@@ -47,35 +49,10 @@ const clients = [
 </script>
 
 <template>
-    <Head :title="t('Welcome')" />
+    <Head :title="meta.title" />
 
     <div class="flex min-h-svh flex-col bg-background px-6 py-6 lg:px-10">
-        <header
-            class="mx-auto flex w-full max-w-5xl items-center justify-between"
-        >
-            <div class="flex items-center gap-3">
-                <div
-                    class="wow-frame flex size-11 items-center justify-center bg-sidebar"
-                >
-                    <AppLogoIcon class="text-gold size-6 fill-current" />
-                </div>
-                <span class="text-gold font-display text-lg tracking-[0.22em]">
-                    {{ appName }}
-                </span>
-            </div>
-
-            <nav class="flex items-center gap-3">
-                <Link href="/support" class="wow-btn-ghost">
-                    {{ t('Support') }}
-                </Link>
-                <Link :href="login()" class="wow-btn-ghost">
-                    {{ t('Log in') }}
-                </Link>
-                <Link :href="register()" class="wow-btn">
-                    {{ t('Sign up') }}
-                </Link>
-            </nav>
-        </header>
+        <PublicHeader :app-name="appName" />
 
         <main
             class="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center py-14"
@@ -94,8 +71,11 @@ const clients = [
                 }}
             </p>
 
-            <div class="mt-8">
+            <div class="mt-8 flex flex-wrap items-center gap-4">
                 <AddonDownloadButton :addon="addon" />
+                <Link :href="faq({ locale })" class="wow-btn-ghost">
+                    {{ t('Read the FAQ') }}
+                </Link>
             </div>
 
             <div class="mt-14 grid gap-4 md:grid-cols-3">

@@ -8,11 +8,18 @@ import type { Auth } from '@/types';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => {
+        if (!title) {
+            return appName;
+        }
+
+        return title.includes(appName) ? title : `${title} - ${appName}`;
+    },
     layout: (name, page) => {
         switch (true) {
             case name === 'Welcome':
                 return null;
+            case name === 'Faq':
             case name === 'Support':
                 return (page.props as { auth?: Auth }).auth?.user
                     ? AppLayout

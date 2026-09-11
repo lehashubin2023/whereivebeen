@@ -8,6 +8,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { locale } from '@/lib/i18n';
 import { home } from '@/routes';
 
 defineProps<{
@@ -22,7 +23,7 @@ defineProps<{
     >
         <div class="flex w-full max-w-md flex-col gap-6">
             <Link
-                :href="home()"
+                :href="home({ locale })"
                 class="flex items-center gap-2 self-center font-medium"
             >
                 <div class="flex h-9 w-9 items-center justify-center">

@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import { Check, Copy, Heart, Send } from '@lucide/vue';
 import { useClipboard } from '@vueuse/core';
 import { computed, onUnmounted, ref } from 'vue';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import PublicHeader from '@/components/PublicHeader.vue';
 import { t } from '@/lib/i18n';
-import { login, register } from '@/routes';
 import type { SupportChannels } from '@/types';
 
 type Props = {
@@ -22,6 +21,7 @@ defineOptions({
 
 const page = usePage();
 const appName = page.props.name;
+const meta = computed(() => page.props.meta);
 const isGuest = computed(() => !page.props.auth?.user);
 
 const hasAnyChannel = computed(
@@ -50,7 +50,7 @@ onUnmounted(() => clearTimeout(resetTimer));
 </script>
 
 <template>
-    <Head :title="t('Support the project')" />
+    <Head :title="meta.title" />
 
     <div
         :class="
@@ -59,30 +59,7 @@ onUnmounted(() => clearTimeout(resetTimer));
                 : 'flex flex-1 flex-col p-4 md:p-8'
         "
     >
-        <header
-            v-if="isGuest"
-            class="mx-auto mb-10 flex w-full max-w-3xl items-center justify-between"
-        >
-            <Link href="/" class="flex items-center gap-3">
-                <div
-                    class="wow-frame flex size-11 items-center justify-center bg-sidebar"
-                >
-                    <AppLogoIcon class="text-gold size-6 fill-current" />
-                </div>
-                <span class="text-gold font-display text-lg tracking-[0.22em]">
-                    {{ appName }}
-                </span>
-            </Link>
-
-            <nav class="flex items-center gap-3">
-                <Link :href="login()" class="wow-btn-ghost">
-                    {{ t('Log in') }}
-                </Link>
-                <Link :href="register()" class="wow-btn">
-                    {{ t('Sign up') }}
-                </Link>
-            </nav>
-        </header>
+        <PublicHeader v-if="isGuest" :app-name="appName" class="mb-10" />
 
         <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
             <div class="wow-panel flex flex-col gap-3 p-6">

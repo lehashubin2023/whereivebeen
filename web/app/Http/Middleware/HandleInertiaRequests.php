@@ -2,11 +2,16 @@
 
 namespace App\Http\Middleware;
 
+use App\Actions\Seo\BuildPageMeta;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+    public function __construct(
+        private readonly BuildPageMeta $buildPageMeta,
+    ) {}
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -43,6 +48,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'backgroundMap' => $this->randomMapUrl(),
+            'meta' => $this->buildPageMeta->exec($request)->toArray(),
         ];
     }
 

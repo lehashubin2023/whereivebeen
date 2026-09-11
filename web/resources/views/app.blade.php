@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
     <head>
+        @php($meta = $page['props']['meta'] ?? [])
+
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -14,14 +16,35 @@
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-        @fonts
+        <meta name="description" content="{{ $meta['description'] ?? '' }}">
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link
-            href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Cinzel+Decorative:wght@400;700;900&family=Marcellus&display=swap"
-            rel="stylesheet"
-        >
+        @if ($meta['noindex'] ?? false)
+            <meta name="robots" content="noindex, nofollow">
+        @else
+            <link rel="canonical" href="{{ $meta['canonical'] ?? url()->current() }}">
+
+            @foreach ($meta['alternates'] ?? [] as $hreflang => $href)
+                <link rel="alternate" hreflang="{{ $hreflang }}" href="{{ $href }}">
+            @endforeach
+        @endif
+
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="{{ config('app.name') }}">
+        <meta property="og:title" content="{{ $meta['title'] ?? config('app.name') }}">
+        <meta property="og:description" content="{{ $meta['description'] ?? '' }}">
+        <meta property="og:url" content="{{ $meta['canonical'] ?? url()->current() }}">
+        <meta property="og:image" content="{{ $meta['image'] ?? '' }}">
+        <meta property="og:locale" content="{{ $ogLocale }}">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $meta['title'] ?? config('app.name') }}">
+        <meta name="twitter:description" content="{{ $meta['description'] ?? '' }}">
+        <meta name="twitter:image" content="{{ $meta['image'] ?? '' }}">
+
+        @if (! empty($meta['schema']))
+            <script type="application/ld+json">{!! json_encode($meta['schema'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}</script>
+        @endif
+
+        @fonts
 
         <script>
             window.__locale = @json($locale);
@@ -30,7 +53,7 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
+            <title>{{ $meta['title'] ?? config('app.name', 'Laravel') }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">

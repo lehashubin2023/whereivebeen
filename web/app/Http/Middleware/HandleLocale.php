@@ -6,11 +6,14 @@ use App\Enums\LocaleEnum;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class HandleLocale
 {
+    public const COOKIE = 'locale';
+
     /**
      * Handle an incoming request.
      *
@@ -18,32 +21,59 @@ class HandleLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
-
-        $locale = $user instanceof User
-            ? $user->locale
-            : $this->preferred($request);
+        $locale = $this->resolve($request);
 
         app()->setLocale($locale->value);
 
         View::share('locale', $locale->value);
+        View::share('ogLocale', $locale->tag());
         View::share('translations', $this->translations($locale));
+
+        $fromUrl = $this->fromUrl($request);
+
+        if ($fromUrl instanceof LocaleEnum && $request->cookie(self::COOKIE) !== $fromUrl->value) {
+            Cookie::queue(self::COOKIE, $fromUrl->value, 60 * 24 * 365);
+        }
 
         return $next($request);
     }
 
+    private function resolve(Request $request): LocaleEnum
+    {
+        $fromUrl = $this->fromUrl($request);
+
+        if ($fromUrl instanceof LocaleEnum) {
+            return $fromUrl;
+        }
+
+        $user = $request->user();
+
+        if ($user instanceof User) {
+            return $user->locale;
+        }
+
+        return $this->fromCookie($request) ?? $this->preferred($request);
+    }
+
+    private function fromUrl(Request $request): ?LocaleEnum
+    {
+        $locale = $request->route('locale');
+
+        return is_string($locale) ? LocaleEnum::tryFrom($locale) : null;
+    }
+
+    private function fromCookie(Request $request): ?LocaleEnum
+    {
+        $locale = $request->cookie(self::COOKIE);
+
+        return is_string($locale) ? LocaleEnum::tryFrom($locale) : null;
+    }
+
     private function preferred(Request $request): LocaleEnum
     {
-        $supported = array_map(
-            fn (LocaleEnum $locale): string => $locale->value,
-            LocaleEnum::cases(),
-        );
+        $preferred = $request->getPreferredLanguage(LocaleEnum::values());
 
-        $preferred = $request->getPreferredLanguage($supported);
-
-        return LocaleEnum::tryFrom((string) $preferred)
-            ?? LocaleEnum::tryFrom(config()->string('app.locale'))
-            ?? LocaleEnum::EN;
+        return LocaleEnum::tryFrom((string) $preferred) ?? LocaleEnum::default();
     }
 
     /**

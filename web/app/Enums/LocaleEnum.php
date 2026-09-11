@@ -15,6 +15,32 @@ enum LocaleEnum: string
         };
     }
 
+    public function tag(): string
+    {
+        return match ($this) {
+            self::EN => 'en_US',
+            self::RU => 'ru_RU',
+        };
+    }
+
+    public static function default(): self
+    {
+        return self::tryFrom(config()->string('app.fallback_locale')) ?? self::EN;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function values(): array
+    {
+        return array_map(fn (self $locale): string => $locale->value, self::cases());
+    }
+
+    public static function pattern(): string
+    {
+        return implode('|', self::values());
+    }
+
     /**
      * @return array<int, array{value: string, label: string}>
      */

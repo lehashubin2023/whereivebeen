@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { PageMeta } from '@/types/seo';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -20,6 +21,7 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             backgroundMap: string;
+            meta: PageMeta;
             [key: string]: unknown;
         };
     }
