@@ -65,6 +65,9 @@ const clients = [
             </div>
 
             <nav class="flex items-center gap-3">
+                <Link href="/support" class="wow-btn-ghost">
+                    {{ t('Support') }}
+                </Link>
                 <Link :href="login()" class="wow-btn-ghost">
                     {{ t('Log in') }}
                 </Link>

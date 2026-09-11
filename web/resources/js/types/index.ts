@@ -6,4 +6,5 @@ export * from './issue-report';
 export * from './locale';
 export * from './navigation';
 export * from './statistics';
+export * from './support';
 export * from './ui';

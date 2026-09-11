@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import {
     ChartColumn,
     Download,
+    Heart,
     Inbox,
     LifeBuoy,
     Map,
@@ -76,6 +77,11 @@ const userNavItems: NavItem[] = [
         title: t('Report a problem'),
         href: '/issue-report',
         icon: LifeBuoy,
+    },
+    {
+        title: t('Support the project'),
+        href: '/support',
+        icon: Heart,
     },
 ];
 
