@@ -56,6 +56,16 @@ class UserFactory extends Factory
     }
 
     /**
+     * Set new password
+     */
+    public function setPassword(string $password): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'password' => Hash::make($password),
+        ]);
+    }
+
+    /**
      * Indicate that the model has two-factor authentication configured.
      */
     public function withTwoFactor(): static {}

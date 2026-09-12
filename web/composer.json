@@ -18,6 +18,7 @@
         "laravel/horizon": "*",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
+        "laravel/telescope": "*",
         "spatie/laravel-route-attributes": "*"
     },
     "require-dev": {
