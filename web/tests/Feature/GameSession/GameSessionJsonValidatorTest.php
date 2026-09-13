@@ -21,8 +21,26 @@ class GameSessionJsonValidatorTest extends TestCase
     public function test_are_required_fields_checked_correctly()
     {
         $this->assertFailsValidation([], [
-            'version', 'sessionId', 'started', 'char', 'realm', 'points',
+            'sessionId', 'started', 'char', 'realm', 'points',
         ]);
+    }
+
+    public function test_version_is_optional_because_savedvariables_has_no_toc_version()
+    {
+        $payload = $this->validPayload();
+        unset($payload['version']);
+
+        $validated = GameSessionJsonValidator::validate($payload);
+
+        $this->assertArrayNotHasKey('version', $validated);
+    }
+
+    public function test_coordinates_outside_the_map_are_rejected()
+    {
+        $this->assertFailsValidation(
+            $this->validPayload([], ['x' => 1.5, 'y' => -0.1]),
+            ['points.0.x', 'points.0.y'],
+        );
     }
 
     public function test_are_string_fields_checked_correctly()
@@ -75,7 +93,7 @@ class GameSessionJsonValidatorTest extends TestCase
             'char' => 'Thrall',
             'realm' => 'Silvermoon',
             'points' => [
-                array_merge(['x' => 1.5, 'y' => 2.5, 'mapId' => 10], $pointOverrides),
+                array_merge(['x' => 0.15, 'y' => 0.25, 'mapId' => 10], $pointOverrides),
             ],
         ], $overrides);
     }

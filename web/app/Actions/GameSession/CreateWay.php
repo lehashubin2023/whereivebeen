@@ -10,21 +10,26 @@ use App\Models\GameSession;
 use App\Models\WayPoint;
 use App\Support\GameSession\ImportProgress\ImportGameSessionProgressContract;
 use App\Support\GameSession\ImportProgress\NullImportGameSessionProgress;
+use App\Support\GameSession\MapIdFilter;
 use Illuminate\Support\Facades\DB;
 
 class CreateWay
 {
     const CHUNK_SIZE = 1000;
 
-    private int $sequence = 1;
-
+    /**
+     * @param  array<int, array<string, mixed>>  $waypoints
+     */
     public function exec(
         GameSession $gameSession,
         array $waypoints,
-        ImportGameSessionProgressContract $progress = new NullImportGameSessionProgress
+        ImportGameSessionProgressContract $progress = new NullImportGameSessionProgress,
+        ?MapIdFilter $maps = null
     ): void {
+        $sequence = 1;
+
         foreach (array_chunk($waypoints, $this->getChunkSize()) as $chunk) {
-            [$wayPointData, $eventData] = $this->prepareWayData($chunk, $gameSession->id);
+            [$wayPointData, $eventData] = $this->prepareWayData($chunk, $gameSession->id, $sequence, $maps);
 
             DB::transaction(function () use ($wayPointData, $eventData) {
                 WayPoint::insert(array_map(
@@ -34,27 +39,31 @@ class CreateWay
                 Event::insert($eventData);
             });
 
-            $progress->track($this->sequence - 1);
+            $progress->track($sequence - 1);
         }
     }
 
-    private function prepareWayData(array $chunk, int $gameSessionId): array
+    private function prepareWayData(array $chunk, int $gameSessionId, int &$sequence, ?MapIdFilter $maps): array
     {
         $wayPointData = [];
         $eventData = [];
 
         foreach ($chunk as $waypoint) {
-            $wayPointData[] = CreateWayPointDTO::fromPoint($waypoint, $gameSessionId, $this->sequence)->toArray();
+            if ($maps instanceof MapIdFilter) {
+                $waypoint['mapId'] = $maps->resolve($waypoint['mapId'] ?? null);
+            }
+
+            $wayPointData[] = CreateWayPointDTO::fromPoint($waypoint, $gameSessionId, $sequence)->toArray();
 
             if (! empty($waypoint['event'])) {
                 $eventType = EventTypeEnum::fromSlug($waypoint['event']);
 
                 if ($eventType !== null) {
-                    $eventData[] = CreateEventDTO::fromPoint($waypoint, $gameSessionId, $this->sequence, $eventType->value)->toArray();
+                    $eventData[] = CreateEventDTO::fromPoint($waypoint, $gameSessionId, $sequence, $eventType->value)->toArray();
                 }
             }
 
-            $this->sequence += 1;
+            $sequence += 1;
         }
 
         return [$wayPointData, $eventData];

@@ -146,6 +146,57 @@ const clients: { name: string; toc: string }[] = [
         <div class="wow-panel flex flex-col gap-3 p-6">
             <Heading
                 variant="small"
+                :title="t('Import every session at once')"
+                :description="
+                    t(
+                        'Upload the save file instead of copying sessions one by one',
+                    )
+                "
+            />
+            <ol
+                class="list-decimal space-y-2 pl-5 text-sm text-muted-foreground"
+            >
+                <li>
+                    {{
+                        t(
+                            'Log out of the game so the file holds every session.',
+                        )
+                    }}
+                </li>
+                <li>
+                    {{ t('Find the save file:') }}
+                    <code class="text-gold block font-mono text-xs break-all"
+                        >World of
+                        Warcraft/_classic_era_/WTF/Account/&lt;ACCOUNT&gt;/SavedVariables/WhereIveBeen.lua</code
+                    >
+                    {{
+                        t(
+                            'For other clients use _retail_ or _classic_ instead of _classic_era_.',
+                        )
+                    }}
+                </li>
+                <li>
+                    {{ t('Drop it on the') }}
+                    <Link
+                        href="/game-session/imports"
+                        class="text-gold underline-offset-4 hover:underline"
+                        >{{ t('Imports') }}</Link
+                    >
+                    {{ t('page — every session in it is imported at once.') }}
+                </li>
+            </ol>
+            <p class="text-xs text-muted-foreground">
+                {{
+                    t(
+                        'Sessions you already imported are refreshed rather than duplicated, so uploading the same file twice is safe.',
+                    )
+                }}
+            </p>
+        </div>
+
+        <div class="wow-panel flex flex-col gap-3 p-6">
+            <Heading
+                variant="small"
                 :title="t('Slash commands')"
                 :description="
                     t('/whereivebeen, /wivebeen, /wivbn and /wivb all work')

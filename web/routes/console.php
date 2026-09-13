@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('telescope:prune')->weekly();
+Schedule::command('imports:prune-spool')->hourly();

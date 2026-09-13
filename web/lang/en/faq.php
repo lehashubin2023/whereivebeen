@@ -28,6 +28,10 @@ return [
             'answer' => 'Type /wivbn get_sessions in game, pick a session and copy the line from the window that opens. On the site, sign in and paste that line on the Imports page. The route appears once the import finishes.',
         ],
         [
+            'question' => 'How do I import every session at once?',
+            'answer' => 'Instead of copying sessions one by one, upload the addon save file. Log out of the game first, then open the Imports page and drop WhereIveBeen.lua onto the upload area. The file lives in World of Warcraft/_classic_era_/WTF/Account/<ACCOUNT>/SavedVariables/WhereIveBeen.lua — use _retail_ or _classic_ for other clients. Every session in the file is imported at once, and sessions you already imported are refreshed rather than duplicated.',
+        ],
+        [
             'question' => 'What exactly is recorded?',
             'answer' => 'Map coordinates with a timestamp, plus in-game events: level ups, deaths, loot, quests taken and handed in, mounts, flight paths, vendors, trainers and similar interactions. Character name, realm, faction, class and level are stored with the session so routes can be told apart.',
         ],

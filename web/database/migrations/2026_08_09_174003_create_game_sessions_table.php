@@ -25,7 +25,8 @@ return new class extends Migration
             $table->dateTime('session_end_at')
                 ->nullable();
             $table->mediumInteger('version')
-                ->unsigned();
+                ->unsigned()
+                ->nullable();
             $table->string('game_version', 16)
                 ->nullable();
             $table->string('addon_version', 16)

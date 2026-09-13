@@ -53,3 +53,48 @@ export interface SessionEvent {
     time: string | null;
     details: EventDetail[];
 }
+
+export type ImportStatus = 'new' | 'in_process' | 'completed' | 'failed';
+
+export type ImportOutcome = 'created' | 'replaced';
+
+export interface ImportWarnings {
+    unknown_maps?: Record<string, number>;
+}
+
+export interface ImportRow {
+    id: number;
+    status: ImportStatus;
+    outcome: ImportOutcome | null;
+    points_total: number;
+    points_done: number;
+    execution_time: number;
+    error_code: string | null;
+    error_context: Record<string, unknown> | null;
+    error_message: string | null;
+    warnings: ImportWarnings | null;
+    import_batch_id: number | null;
+    game_session_id: number | null;
+    created_at: string | null;
+}
+
+export interface ImportSkip {
+    session_id: string;
+    character: string | null;
+    points: number;
+    reason: string;
+}
+
+export interface ImportBatchRow {
+    id: number;
+    filename: string;
+    file_size: number;
+    status: string;
+    sessions_found: number;
+    sessions_queued: number;
+    sessions_skipped: number;
+    skipped: ImportSkip[] | null;
+    error_code: string | null;
+    error_context: Record<string, unknown> | null;
+    created_at: string | null;
+}

@@ -3,8 +3,11 @@
 namespace App\Jobs;
 
 use App\Actions\GameSession\ImportGameSession;
+use App\Actions\GameSession\MapImportFailure;
 use App\Models\User;
 use App\Support\GameSession\ImportProgress\ImportGameSessionProgress;
+use App\Support\GameSession\ImportSource\ImportSourceContract;
+use App\Support\GameSession\ImportSource\InlineImportSource;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Queue;
@@ -18,22 +21,38 @@ class ImportGameSessionJob implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public string $rawGameSessionInput,
-        public User $user
+        public string|ImportSourceContract $rawGameSessionInput,
+        public User $user,
+        public ?int $importBatchId = null
     ) {}
 
     /**
      * Execute the job.
      */
-    public function handle(ImportGameSession $importer): void
+    public function handle(ImportGameSession $importer, MapImportFailure $failures): void
     {
-        $progress = new ImportGameSessionProgress($this->user);
+        $source = $this->source();
+        $progress = new ImportGameSessionProgress($this->user, $this->importBatchId);
 
         try {
-            $gameSessionId = $importer->exec($this->rawGameSessionInput, $this->user, $progress);
+            $gameSessionId = $importer->exec($source->read(), $this->user, $progress);
             $progress->complete($gameSessionId);
         } catch (\Throwable $e) {
-            $progress->fail($e);
+            $progress->fail($e, $failures->exec($e));
+        } finally {
+            $source->release();
         }
+    }
+
+    public function failed(\Throwable $e): void
+    {
+        $this->source()->release();
+    }
+
+    private function source(): ImportSourceContract
+    {
+        return is_string($this->rawGameSessionInput)
+            ? new InlineImportSource($this->rawGameSessionInput)
+            : $this->rawGameSessionInput;
     }
 }

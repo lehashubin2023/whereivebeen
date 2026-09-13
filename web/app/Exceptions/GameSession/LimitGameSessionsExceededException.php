@@ -2,9 +2,9 @@
 
 namespace App\Exceptions\GameSession;
 
-use Exception;
-
-class LimitGameSessionsExceededException extends Exception
+class LimitGameSessionsExceededException extends ImportException
 {
     protected $message = 'Create limits are exceeded';
+
+    protected string $errorCode = 'import.session_limit';
 }

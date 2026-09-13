@@ -2,6 +2,7 @@
 
 namespace App\Support\GameSession\ImportProgress;
 
+use App\Enums\GameSession\ImportOutcomeEnum;
 use Throwable;
 
 /**
@@ -15,5 +16,9 @@ class NullImportGameSessionProgress implements ImportGameSessionProgressContract
 
     public function complete(int $gameSessionId): void {}
 
-    public function fail(Throwable $e): void {}
+    public function outcome(ImportOutcomeEnum $outcome): void {}
+
+    public function fail(Throwable $e, ?array $failure = null): void {}
+
+    public function warn(array $warnings): void {}
 }

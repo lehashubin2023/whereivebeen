@@ -38,7 +38,7 @@ class DTOTest extends TestCase
         $this->assertSame($export['sessionId'], $dto['game_session_id']);
         $this->assertSame($export['started'], $dto['session_start_at']);
         $this->assertSame($export['realm'], $dto['realm']);
-        $this->assertSame((string) $export['version'], $dto['version']);
+        $this->assertSame((int) $export['version'], $dto['version']);
         $this->assertNull($dto['user_id']);
     }
 

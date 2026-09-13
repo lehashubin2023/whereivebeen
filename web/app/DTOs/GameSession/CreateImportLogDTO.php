@@ -13,7 +13,8 @@ class CreateImportLogDTO implements DTOContract
         public readonly ?int $game_session_id,
         public readonly ImportStatusEnum $status,
         public readonly int $execution_time,
-        public readonly ?string $error_message
+        public readonly ?string $error_message,
+        public readonly ?int $import_batch_id = null
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -28,7 +29,8 @@ class CreateImportLogDTO implements DTOContract
             game_session_id: $data['game_session_id'] ?? null,
             status: isset($data['status']) ? ImportStatusEnum::from($data['status']) : ImportStatusEnum::NEW,
             execution_time: $data['execution_time'] ?? 0,
-            error_message: $data['error_message'] ?? null
+            error_message: $data['error_message'] ?? null,
+            import_batch_id: $data['import_batch_id'] ?? null
         );
     }
 
@@ -40,6 +42,7 @@ class CreateImportLogDTO implements DTOContract
             'status' => $this->status,
             'execution_time' => $this->execution_time,
             'error_message' => $this->error_message,
+            'import_batch_id' => $this->import_batch_id,
         ];
     }
 }

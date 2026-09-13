@@ -3,9 +3,11 @@
 namespace App\Actions\GameSession;
 
 use App\DTOs\GameSession\CreateGameSessionDTO;
+use App\Enums\GameSession\ImportOutcomeEnum;
 use App\Models\User;
 use App\Support\GameSession\ImportProgress\ImportGameSessionProgressContract;
 use App\Support\GameSession\ImportProgress\NullImportGameSessionProgress;
+use App\Support\GameSession\MapIdFilter;
 use App\Validators\GameSessionJsonValidator;
 use Illuminate\Support\Facades\DB;
 
@@ -27,15 +29,27 @@ class ImportGameSession
 
         $progress->process(count((array) $validated['points']));
 
-        return DB::transaction(function () use ($validated, $user, $progress) {
+        $maps = MapIdFilter::fromDatabase();
+
+        $gameSessionId = DB::transaction(function () use ($validated, $user, $progress, $maps) {
             $gameSession = $this->createGameSession->exec(
                 CreateGameSessionDTO::fromArray($validated),
                 $user
             );
 
-            $this->createWay->exec($gameSession, $validated['points'], $progress);
+            $progress->outcome($gameSession->wasRecentlyCreated
+                ? ImportOutcomeEnum::CREATED
+                : ImportOutcomeEnum::REPLACED);
+
+            $this->createWay->exec($gameSession, $validated['points'], $progress, $maps);
 
             return $gameSession->id;
         });
+
+        if ($maps->hasUnknown()) {
+            $progress->warn(['unknown_maps' => $maps->unknown()]);
+        }
+
+        return $gameSessionId;
     }
 }

@@ -21,14 +21,29 @@ return new class extends Migration
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
+            $table->foreignId('import_batch_id')
+                ->nullable()
+                ->constrained()
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
             $table->enum('status', ['completed', 'failed', 'in_process', 'new'])
                 ->default('new');
-            $table->decimal('execution_time', 4, 2)
+            $table->enum('outcome', ['created', 'replaced'])
+                ->nullable();
+            $table->decimal('execution_time', 8, 2)
                 ->unsigned()
                 ->default(0);
+            $table->string('error_code', 64)
+                ->nullable();
+            $table->json('error_context')
+                ->nullable();
+            $table->json('warnings')
+                ->nullable();
             $table->text('error_message')
                 ->nullable();
             $table->timestamps();
+
+            $table->index(['user_id', 'created_at']);
         });
     }
 

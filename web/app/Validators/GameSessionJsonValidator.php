@@ -13,7 +13,7 @@ class GameSessionJsonValidator
     protected static function rules(): array
     {
         return [
-            'version' => 'required|integer',
+            'version' => 'sometimes|nullable|integer',
             'sessionId' => 'required|integer',
             'started' => 'required|integer',
             'char' => 'required|string',
@@ -31,14 +31,14 @@ class GameSessionJsonValidator
             'level' => 'sometimes|nullable|integer',
 
             'points' => 'required|array',
-            'points.*.x' => 'required|numeric',
-            'points.*.y' => 'required|numeric',
+            'points.*.x' => 'required|numeric|between:0,1',
+            'points.*.y' => 'required|numeric|between:0,1',
             'points.*.t' => 'sometimes|numeric',
             'points.*.mapId' => 'sometimes|nullable|numeric',
             'points.*.event' => 'sometimes|string',
 
             'points.*.questId' => 'sometimes|numeric',
-            'points.*.level' => 'sometimes|numeric',
+            'points.*.level' => 'sometimes|numeric|between:0,255',
             'points.*.action' => 'sometimes|string',
             'points.*.title' => 'sometimes|string',
             'points.*.inCombat' => 'sometimes|boolean',

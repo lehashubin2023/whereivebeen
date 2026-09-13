@@ -22,7 +22,7 @@ class DecodeRawInput
         $input = trim($input);
 
         if ($input === '') {
-            throw new InvalidGameSessionInputException('Empty input');
+            throw InvalidGameSessionInputException::empty();
         }
 
         if (str_starts_with($input, self::COMPRESSED_PREFIX)) {
@@ -32,7 +32,7 @@ class DecodeRawInput
         $decodedJson = json_decode($input, true, self::MAX_DEPTH);
 
         if (! is_array($decodedJson)) {
-            throw new InvalidGameSessionInputException('Invalid JSON input');
+            throw InvalidGameSessionInputException::badJson();
         }
 
         return $decodedJson;
@@ -43,13 +43,13 @@ class DecodeRawInput
         $binary = base64_decode(trim($payload), true);
 
         if ($binary === false) {
-            throw new InvalidGameSessionInputException('Invalid base64 input');
+            throw InvalidGameSessionInputException::badBase64();
         }
 
         $json = @gzinflate($binary);
 
         if ($json === false) {
-            throw new InvalidGameSessionInputException('Invalid compressed input');
+            throw InvalidGameSessionInputException::badDeflate();
         }
 
         return $json;
