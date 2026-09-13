@@ -3,17 +3,19 @@ import { Head } from '@inertiajs/vue3';
 import { ChartColumn } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import JourneyOverview from '@/components/JourneyOverview.vue';
 import { t } from '@/lib/i18n';
-import type { StatisticGroup, StatisticOverview } from '@/types';
+import type { Journey, StatisticGroup, StatisticOverview } from '@/types';
 
 const props = defineProps<{
     overview: StatisticOverview[];
     groups: StatisticGroup[];
+    journey: Journey;
 }>();
 
 defineOptions({
     layout: {
-        breadcrumbs: [{ title: t('Statistics'), href: '/statistics' }],
+        breadcrumbs: [{ title: t('Journey'), href: '/statistics' }],
     },
 });
 
@@ -28,10 +30,10 @@ const selectedGroup = computed(
 </script>
 
 <template>
-    <Head :title="t('Statistics')" />
+    <Head :title="t('Journey')" />
 
     <div class="flex flex-1 flex-col gap-4 p-4 md:p-6">
-        <h1 class="sr-only">{{ t('Statistics') }}</h1>
+        <h1 class="sr-only">{{ t('Journey') }}</h1>
 
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             <div
@@ -49,6 +51,8 @@ const selectedGroup = computed(
                 </span>
             </div>
         </div>
+
+        <JourneyOverview :journey="journey" />
 
         <div
             v-if="selectedGroup"

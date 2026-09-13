@@ -54,7 +54,7 @@ const userNavItems: NavItem[] = [
         icon: Map,
     },
     {
-        title: t('Statistics'),
+        title: t('Journey'),
         href: '/statistics',
         icon: ChartColumn,
     },

@@ -7,7 +7,6 @@ use App\Models\Event;
 use App\Models\GameSession;
 use App\Models\Map;
 use App\Models\User;
-use App\Models\WayPoint;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -18,6 +17,8 @@ use Illuminate\Support\Facades\DB;
 class BuildSessionList
 {
     private const PER_PAGE = 20;
+
+    public function __construct(private readonly MeasureSessionTime $measureTime) {}
 
     /**
      * @return LengthAwarePaginator<int, array<string, mixed>>
@@ -35,7 +36,7 @@ class BuildSessionList
         $ids = collect($sessions->items())->pluck('id')->all();
 
         $route = $this->routeEdges($ids);
-        $durations = $this->durations($ids);
+        $durations = $this->measureTime->exec($ids);
         $levels = $this->levels($ids);
 
         /** @var LengthAwarePaginator<int, array<string, mixed>> $rows */
@@ -144,61 +145,6 @@ class BuildSessionList
             ->whereIn('id', array_values(array_unique(array_filter($mapIds))))
             ->pluck('name', 'id')
             ->all();
-    }
-
-    /**
-     * @param  array<int, int>  $ids
-     * @return array<int, int>
-     */
-    private function durations(array $ids): array
-    {
-        if ($ids === []) {
-            return [];
-        }
-
-        $tracked = WayPoint::query()
-            ->whereIn('game_session_id', $ids)
-            ->selectRaw('game_session_id, max(`time`) as tracked')
-            ->groupBy('game_session_id')
-            ->pluck('tracked', 'game_session_id')
-            ->map(fn ($value) => (int) round((int) $value / 10))
-            ->all();
-
-        foreach ($this->offline($ids) as $sessionId => $seconds) {
-            $tracked[$sessionId] = max(0, ($tracked[$sessionId] ?? 0) - $seconds);
-        }
-
-        return $tracked;
-    }
-
-    /**
-     * Отрезок между выходом из игры и следующим входом временем игры не
-     * считается: аддон пишет его длину в событие `gap`.
-     *
-     * @param  array<int, int>  $ids
-     * @return array<int, int>
-     */
-    private function offline(array $ids): array
-    {
-        $offline = [];
-
-        Event::query()
-            ->whereIn('game_session_id', $ids)
-            ->where('event_type_id', EventTypeEnum::GAP->value)
-            ->select(['game_session_id', 'payload'])
-            ->cursor()
-            ->each(function (Event $event) use (&$offline) {
-                $payload = $event->getAttribute('payload');
-
-                if (! is_array($payload) || ! isset($payload['seconds'])) {
-                    return;
-                }
-
-                $id = (int) $event->getAttribute('game_session_id');
-                $offline[$id] = ($offline[$id] ?? 0) + (int) $payload['seconds'];
-            });
-
-        return $offline;
     }
 
     /**
