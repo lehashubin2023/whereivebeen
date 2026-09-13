@@ -21,11 +21,19 @@ defineOptions({
     },
 });
 
-const title = computed(
-    () =>
-        props.session.character ||
-        t('Session #:id', { id: props.session.game_session_id }),
-);
+const title = computed(() => {
+    const first = props.zones.at(0)?.name;
+    const last = props.zones.at(-1)?.name;
+
+    if (first === undefined) {
+        return (
+            props.session.character ||
+            t('Session #:id', { id: props.session.game_session_id })
+        );
+    }
+
+    return first === last ? first : `${first} → ${last}`;
+});
 
 const selectedZoneKey = ref<string | null>(props.zones[0]?.key ?? null);
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\GameSession\BuildSessionList;
 use App\Actions\GameSession\BuildSessionZones;
 use App\Actions\GameSession\ShowSessionEvent;
 use App\Enums\GameSession\ImportBatchStatusEnum;
@@ -12,9 +13,11 @@ use App\Jobs\ImportSavedVariablesFileJob;
 use App\Models\GameSession;
 use App\Models\ImportBatch;
 use App\Models\ImportLog;
+use App\Models\User;
 use App\Support\GameSession\SavedVariables\SessionSpool;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Get;
@@ -28,6 +31,7 @@ class GameSessionController extends Controller
 {
     public function __construct(
         private readonly BuildSessionZones $buildSessionZones,
+        private readonly BuildSessionList $buildSessionList,
         private readonly ShowSessionEvent $showSessionEvent,
     ) {}
 
@@ -108,24 +112,18 @@ class GameSessionController extends Controller
     }
 
     #[Get('sessions', name: 'sessions')]
-    public function sessions(): Response
+    public function sessions(Request $request): Response
     {
-        $sessions = GameSession::query()
-            ->where('user_id', auth()->id())
-            ->withCount('wayPoints')
-            ->latest('session_start_at')
-            ->paginate(20)
-            ->through(fn (GameSession $session) => [
-                'id' => $session->id,
-                'game_session_id' => $session->game_session_id,
-                'character' => $session->character,
-                'realm' => $session->realm,
-                'points_count' => $session->way_points_count,
-                'session_start_at' => $session->session_start_at->toIso8601String(),
-            ]);
+        /** @var User $user */
+        $user = $request->user();
+
+        $character = $request->string('character')->toString() ?: null;
+        $realm = $request->string('realm')->toString() ?: null;
 
         return Inertia::render('game-session/Sessions', [
-            'sessions' => $sessions,
+            'sessions' => $this->buildSessionList->exec($user, $character, $realm),
+            'characters' => $this->buildSessionList->characters($user),
+            'filters' => ['character' => $character, 'realm' => $realm],
         ]);
     }
 

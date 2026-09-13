@@ -41,11 +41,13 @@ return new class extends Migration
                 ->nullable();
             $table->unsignedTinyInteger('level')
                 ->nullable();
-            $table->string('realm');
-            $table->string('character');
+            $table->string('realm', 64);
+            $table->string('character', 24);
             $table->timestamps();
 
             $table->unique(['user_id', 'game_session_id']);
+            $table->index(['user_id', 'character', 'realm']);
+            $table->index(['user_id', 'session_start_at']);
         });
     }
 
