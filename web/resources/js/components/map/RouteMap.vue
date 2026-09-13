@@ -29,7 +29,7 @@ interface PlacedEvent {
 const FAN_SPREAD = 1.9;
 
 const STATE_COLORS: Record<State, { line: string; dot: string }> = {
-    ground: { line: '#f5c542', dot: '#f7cf5a' },
+    ground: { line: '#b8c8db', dot: '#d3e0ee' },
     mounted: { line: EVENT_COLORS.mount, dot: EVENT_COLORS.mount },
     flying: { line: EVENT_COLORS.taxi, dot: EVENT_COLORS.taxi },
 };

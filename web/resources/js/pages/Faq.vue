@@ -39,7 +39,7 @@ const isGuest = computed(() => !page.props.auth?.user);
 
         <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
             <div class="wow-panel flex flex-col gap-3 p-6">
-                <h1 class="text-gold font-display text-lg tracking-wide">
+                <h1 class="font-display text-lg tracking-wide text-foreground">
                     {{ heading }}
                 </h1>
                 <hr class="wow-divider" />
@@ -53,7 +53,7 @@ const isGuest = computed(() => !page.props.auth?.user);
                 :key="item.question"
                 class="wow-panel flex flex-col gap-2 p-6"
             >
-                <h2 class="text-gold font-display tracking-wide">
+                <h2 class="font-semibold tracking-wide text-foreground">
                     {{ item.question }}
                 </h2>
                 <p class="text-sm leading-relaxed text-muted-foreground">

@@ -62,7 +62,7 @@ function formatDate(value: string | null): string {
         <h1 class="sr-only">{{ t('Imports') }}</h1>
 
         <div class="wow-panel mb-6 p-6">
-            <h2 class="text-gold font-display text-lg tracking-wide">
+            <h2 class="font-display text-lg tracking-wide text-foreground">
                 {{ t('Import Session') }}
             </h2>
             <hr class="wow-divider my-4" />

@@ -64,7 +64,7 @@ onUnmounted(() => clearTimeout(resetTimer));
         <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
             <div class="wow-panel flex flex-col gap-3 p-6">
                 <h1
-                    class="text-gold flex items-center gap-2 font-display text-lg tracking-wide"
+                    class="flex items-center gap-2 font-display text-lg tracking-wide text-foreground"
                 >
                     <Heart class="size-5" />
                     {{ t('Support the project') }}
@@ -83,7 +83,9 @@ onUnmounted(() => clearTimeout(resetTimer));
                 v-if="channels.boosty"
                 class="wow-panel flex flex-col gap-3 p-6"
             >
-                <h2 class="text-gold font-display tracking-wide">Boosty</h2>
+                <h2 class="font-semibold tracking-wide text-foreground">
+                    Boosty
+                </h2>
                 <p class="text-sm text-muted-foreground">
                     {{
                         t(
@@ -109,7 +111,7 @@ onUnmounted(() => clearTimeout(resetTimer));
                 v-if="channels.telegram"
                 class="wow-panel flex flex-col gap-3 p-6"
             >
-                <h2 class="text-gold font-display tracking-wide">
+                <h2 class="font-semibold tracking-wide text-foreground">
                     {{ t('Telegram Stars') }}
                 </h2>
                 <p class="text-sm text-muted-foreground">
@@ -137,7 +139,7 @@ onUnmounted(() => clearTimeout(resetTimer));
                 v-if="channels.crypto.length"
                 class="wow-panel flex flex-col gap-3 p-6"
             >
-                <h2 class="text-gold font-display tracking-wide">
+                <h2 class="font-semibold tracking-wide text-foreground">
                     {{ t('Crypto') }}
                 </h2>
                 <p class="text-sm text-muted-foreground">

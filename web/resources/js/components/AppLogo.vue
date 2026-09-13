@@ -6,14 +6,12 @@ const name = usePage().props.name;
 </script>
 
 <template>
-    <div
-        class="wow-frame flex aspect-square size-8 items-center justify-center bg-sidebar"
-    >
-        <AppLogoIcon class="text-gold size-5 fill-current" />
+    <div class="flex aspect-square size-8 items-center justify-center">
+        <AppLogoIcon class="text-gold size-7" />
     </div>
-    <div class="ml-1 grid flex-1 text-left text-sm">
+    <div class="ml-1 grid flex-1 text-left">
         <span
-            class="text-gold mb-0.5 truncate font-display text-sm leading-tight font-semibold tracking-[0.14em]"
+            class="truncate font-mono text-[0.78rem] leading-tight font-medium tracking-[0.18em] text-foreground uppercase"
             >{{ name }}</span
         >
     </div>

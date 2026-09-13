@@ -8,7 +8,7 @@
 
         <style>
             html {
-                background-color: hsl(30 12% 8%);
+                background-color: hsl(220 14% 6%);
             }
         </style>
 

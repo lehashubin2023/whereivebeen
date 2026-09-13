@@ -57,7 +57,7 @@ function formatTime(value: string | null): string {
 
         <template v-else-if="event">
             <p
-                class="text-gold text-center font-display text-sm tracking-wide"
+                class="text-center text-sm font-semibold text-foreground"
                 :style="accent ? { color: accent } : undefined"
             >
                 {{ event.label }}

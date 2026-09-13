@@ -35,13 +35,11 @@ watchEffect(() => {
                     :href="home({ locale })"
                     class="flex flex-col items-center gap-3 font-medium"
                 >
-                    <div
-                        class="wow-frame flex h-14 w-14 items-center justify-center bg-sidebar"
-                    >
-                        <AppLogoIcon class="text-gold size-8 fill-current" />
+                    <div class="flex h-14 w-14 items-center justify-center">
+                        <AppLogoIcon class="text-gold size-12" />
                     </div>
                     <span
-                        class="text-gold font-display text-lg tracking-[0.2em]"
+                        class="font-mono text-sm font-medium tracking-[0.2em] text-foreground uppercase"
                     >
                         {{ name }}
                     </span>
@@ -50,7 +48,7 @@ watchEffect(() => {
                 <div class="wow-panel w-full p-6">
                     <div class="mb-4 space-y-2 text-center">
                         <h1
-                            class="text-gold font-display text-xl font-semibold tracking-wide"
+                            class="font-display text-xl font-semibold tracking-wide text-foreground"
                         >
                             {{ title }}
                         </h1>

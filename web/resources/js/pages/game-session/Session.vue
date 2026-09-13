@@ -97,7 +97,7 @@ const visits = computed(() =>
 
         <div class="flex flex-wrap items-end justify-between gap-3">
             <p class="text-sm text-muted-foreground">
-                <span class="text-gold font-display tracking-wide">
+                <span class="font-semibold tracking-wide text-foreground">
                     {{ title }}
                 </span>
                 <span v-if="session.realm"> · {{ session.realm }}</span>
@@ -130,7 +130,7 @@ const visits = computed(() =>
                     <template v-for="visit in visits" :key="visit.zone.key">
                         <p
                             v-if="visit.day"
-                            class="text-gold/70 px-2 pt-2 pb-1 text-[11px] tracking-wide uppercase"
+                            class="px-2 pt-2 pb-1 font-mono text-[11px] tracking-wide text-muted-foreground uppercase"
                         >
                             {{ visit.day }}
                         </p>
@@ -177,7 +177,7 @@ const visits = computed(() =>
                 class="wow-panel flex flex-col items-center gap-2 px-8 py-6 text-center"
             >
                 <Compass class="text-gold size-7" />
-                <p class="text-gold font-display text-lg tracking-wide">
+                <p class="font-display text-lg tracking-wide text-foreground">
                     {{ t('Nothing to chart') }}
                 </p>
                 <p class="max-w-xs text-sm text-muted-foreground">

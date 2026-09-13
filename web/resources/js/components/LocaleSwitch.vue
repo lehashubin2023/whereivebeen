@@ -23,7 +23,7 @@ const alternates = computed(() =>
                 :href="alternate.href"
                 :hreflang="alternate.code"
                 :class="[
-                    'px-1 tracking-widest uppercase',
+                    'px-1 font-mono tracking-widest uppercase',
                     alternate.code === locale
                         ? 'text-gold'
                         : 'text-muted-foreground hover:text-foreground',

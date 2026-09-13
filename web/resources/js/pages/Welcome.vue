@@ -85,11 +85,11 @@ const clients = [
                     class="wow-panel flex flex-col gap-2 p-5"
                 >
                     <span
-                        class="text-xs tracking-[0.3em] text-muted-foreground uppercase"
+                        class="font-mono text-[0.7rem] tracking-[0.25em] text-primary uppercase"
                     >
                         {{ t('Step :number', { number: index + 1 }) }}
                     </span>
-                    <h2 class="text-gold font-display tracking-wide">
+                    <h2 class="font-semibold tracking-wide text-foreground">
                         {{ step.title }}
                     </h2>
                     <p class="text-sm text-muted-foreground">{{ step.text }}</p>
@@ -100,7 +100,7 @@ const clients = [
         <footer
             class="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground"
         >
-            <span class="tracking-wide uppercase">
+            <span class="font-mono tracking-wide uppercase">
                 {{ t('Supported clients') }}
             </span>
             <span class="h-3 w-px bg-border" />

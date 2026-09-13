@@ -17,16 +17,12 @@ export default defineConfig({
                     preload: [{ weight: 400 }],
                 }),
                 bunny('Cinzel', {
-                    weights: [400, 500, 600, 700],
+                    weights: [500, 600],
                     preload: [{ weight: 600 }],
                 }),
-                bunny('Cinzel Decorative', {
-                    weights: [400, 700, 900],
-                    preload: [{ weight: 900 }],
-                }),
-                bunny('Marcellus', {
-                    weights: [400],
-                    preload: false,
+                bunny('IBM Plex Mono', {
+                    weights: [400, 500],
+                    preload: [{ weight: 500 }],
                 }),
             ],
         }),

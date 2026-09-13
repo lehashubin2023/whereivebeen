@@ -40,11 +40,11 @@ const selectedGroup = computed(
                 class="wow-panel flex flex-col gap-1 px-4 py-3"
             >
                 <span
-                    class="text-[11px] tracking-wide text-muted-foreground uppercase"
+                    class="font-mono text-[11px] tracking-wide text-muted-foreground uppercase"
                 >
                     {{ item.label }}
                 </span>
-                <span class="text-gold font-display text-xl tabular-nums">
+                <span class="font-mono text-xl text-foreground tabular-nums">
                     {{ item.value }}
                 </span>
             </div>
@@ -80,7 +80,7 @@ const selectedGroup = computed(
 
             <div class="flex flex-1 flex-col gap-4">
                 <p class="text-sm text-muted-foreground">
-                    <span class="text-gold font-display tracking-wide">
+                    <span class="font-semibold tracking-wide text-foreground">
                         {{ selectedGroup.label }}
                     </span>
                     ·
@@ -99,7 +99,9 @@ const selectedGroup = computed(
                         <div
                             class="flex items-baseline justify-between gap-2 border-b border-border/70 px-4 py-3"
                         >
-                            <h2 class="text-gold font-display tracking-wide">
+                            <h2
+                                class="font-semibold tracking-wide text-foreground"
+                            >
                                 {{ table.title }}
                             </h2>
                             <span
@@ -177,7 +179,7 @@ const selectedGroup = computed(
                 class="wow-panel flex flex-col items-center gap-2 px-8 py-6 text-center"
             >
                 <ChartColumn class="text-gold size-7" />
-                <p class="text-gold font-display text-lg tracking-wide">
+                <p class="font-display text-lg tracking-wide text-foreground">
                     {{ t('Nothing to count') }}
                 </p>
                 <p class="max-w-xs text-sm text-muted-foreground">

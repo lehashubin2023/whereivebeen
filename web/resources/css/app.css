@@ -14,8 +14,9 @@
         'Noto Color Emoji';
 
     --font-display: 'Cinzel', ui-serif, Georgia, serif;
-    --font-title: 'Cinzel Decorative', 'Cinzel', ui-serif, Georgia, serif;
-    --font-serif: 'Marcellus', ui-serif, Georgia, serif;
+    --font-mono:
+        'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas,
+        monospace;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -100,46 +101,44 @@
 
 :root,
 .dark {
-    --background: hsl(28 7% 9%);
-    --foreground: hsl(40 32% 84%);
-    --card: hsl(28 13% 12%);
-    --card-foreground: hsl(40 30% 85%);
-    --popover: hsl(28 15% 10%);
-    --popover-foreground: hsl(40 30% 85%);
-    --primary: hsl(42 64% 53%);
-    --primary-foreground: hsl(30 35% 8%);
-    --secondary: hsl(30 14% 18%);
-    --secondary-foreground: hsl(40 30% 85%);
-    --muted: hsl(30 12% 16%);
-    --muted-foreground: hsl(38 16% 60%);
-    --accent: hsl(42 42% 27%);
-    --accent-foreground: hsl(42 66% 78%);
-    --destructive: hsl(0 62% 46%);
-    --destructive-foreground: hsl(40 30% 92%);
-    --fel: hsl(96 62% 46%);
-    --fel-foreground: hsl(96 70% 88%);
-    --arcane: hsl(275 58% 64%);
-    --arcane-foreground: hsl(275 70% 90%);
-    --border: hsl(38 32% 26%);
-    --input: hsl(35 16% 22%);
-    --ring: hsl(42 70% 55%);
-    --chart-1: hsl(42 64% 53%);
-    --chart-2: hsl(96 45% 46%);
-    --chart-3: hsl(0 62% 52%);
-    --chart-4: hsl(200 48% 55%);
-    --chart-5: hsl(275 45% 62%);
+    --background: hsl(220 14% 6%);
+    --foreground: hsl(40 12% 90%);
+    --card: hsl(222 12% 11%);
+    --card-foreground: hsl(40 12% 90%);
+    --popover: hsl(222 13% 9%);
+    --popover-foreground: hsl(40 12% 90%);
+    --primary: hsl(42 72% 65%);
+    --primary-foreground: hsl(40 60% 6%);
+    --secondary: hsl(220 11% 16%);
+    --secondary-foreground: hsl(40 12% 90%);
+    --muted: hsl(220 11% 13%);
+    --muted-foreground: hsl(40 7% 58%);
+    --accent: hsl(42 30% 16%);
+    --accent-foreground: hsl(42 72% 70%);
+    --destructive: hsl(358 70% 58%);
+    --destructive-foreground: hsl(358 60% 96%);
+    --fel: hsl(140 55% 60%);
+    --fel-foreground: hsl(140 60% 92%);
+    --arcane: hsl(258 80% 75%);
+    --arcane-foreground: hsl(258 70% 94%);
+    --border: hsl(220 11% 19%);
+    --input: hsl(220 11% 17%);
+    --ring: hsl(42 72% 65%);
+    --chart-1: hsl(42 72% 65%);
+    --chart-2: hsl(197 72% 70%);
+    --chart-3: hsl(358 70% 62%);
+    --chart-4: hsl(140 50% 58%);
+    --chart-5: hsl(258 75% 75%);
     --radius: 0.5rem;
-    --sidebar-background: hsl(28 16% 5%);
-    --sidebar-foreground: hsl(40 26% 78%);
-    --sidebar-primary: hsl(42 64% 53%);
-    --sidebar-primary-foreground: hsl(30 35% 8%);
-    --sidebar-accent: hsl(40 46% 20%);
-    --sidebar-accent-foreground: hsl(42 66% 76%);
-    --sidebar-border: hsl(38 30% 20%);
-    --sidebar-ring: hsl(42 70% 55%);
-    --sidebar: hsl(28 16% 5%);
-
-    --tex-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+    --sidebar-background: hsl(222 15% 4%);
+    --sidebar-foreground: hsl(40 9% 76%);
+    --sidebar-primary: hsl(42 72% 65%);
+    --sidebar-primary-foreground: hsl(40 60% 6%);
+    --sidebar-accent: hsl(42 26% 14%);
+    --sidebar-accent-foreground: hsl(42 72% 70%);
+    --sidebar-border: hsl(220 11% 15%);
+    --sidebar-ring: hsl(42 72% 65%);
+    --sidebar: hsl(222 15% 4%);
 }
 
 @layer base {
@@ -149,35 +148,9 @@
     body {
         @apply bg-background text-foreground;
     }
-    body::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        background-image: var(--tex-noise);
-        background-size: 160px 160px;
-        opacity: 0.05;
-        mix-blend-mode: overlay;
-    }
-
     * {
-        scrollbar-color: hsl(40 42% 34%) transparent;
-    }
-    ::-webkit-scrollbar {
-        width: 11px;
-        height: 11px;
-    }
-    ::-webkit-scrollbar-track {
-        background: hsl(28 14% 8%);
-    }
-    ::-webkit-scrollbar-thumb {
-        border-radius: 6px;
-        border: 1px solid hsl(42 50% 40% / 0.35);
-        background: linear-gradient(hsl(40 42% 30%), hsl(34 36% 19%));
-    }
-    ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(hsl(44 52% 38%), hsl(38 44% 25%));
+        scrollbar-color: var(--border) transparent;
+        scrollbar-width: thin;
     }
 }
 
@@ -186,87 +159,38 @@
         background-image:
             linear-gradient(
                 to bottom,
-                hsl(28 14% 6% / 0.9),
-                hsl(28 14% 6% / 0.82)
+                hsl(220 14% 6% / 0.86),
+                hsl(220 14% 5% / 0.94)
             ),
             var(--page-bg-image, url('/maps/Hellfire_Peninsula.png'));
         background-repeat: no-repeat;
         background-position: center;
         background-size: cover;
-        background-attachment: fixed;
     }
 
     .wow-panel {
         position: relative;
         border-radius: var(--radius-lg);
-        border: 1px solid hsl(40 46% 44% / 0.5);
-        background-color: hsl(28 15% 11%);
-        background-image:
-            linear-gradient(
-                180deg,
-                hsl(32 16% 15% / 0.92),
-                hsl(28 15% 9% / 0.96)
-            ),
-            var(--tex-noise);
-        background-size:
-            auto,
-            160px 160px;
-        background-blend-mode: normal, overlay;
-        box-shadow:
-            0 0 0 1px hsl(42 60% 30% / 0.35),
-            0 18px 40px -18px hsl(0 0% 0% / 0.85),
-            inset 0 1px 0 hsl(42 60% 60% / 0.12);
-    }
-
-    .wow-panel::after {
-        content: '';
-        position: absolute;
-        inset: 4px;
-        border-radius: calc(var(--radius-lg) - 3px);
-        border: 1px solid hsl(42 52% 55% / 0.15);
-        pointer-events: none;
+        border: 1px solid var(--border);
+        background-color: var(--card);
     }
 
     .wow-frame {
-        border: 2px solid transparent;
-        border-image: linear-gradient(
-                160deg,
-                hsl(46 74% 66%),
-                hsl(38 55% 38%),
-                hsl(46 74% 66%)
-            )
-            1;
-        box-shadow: 0 0 14px -3px hsl(42 72% 46% / 0.55);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
     }
 
     .wow-map-frame {
         position: relative;
         border-radius: var(--radius-lg);
-        padding: 6px;
-        background: linear-gradient(
-            155deg,
-            hsl(44 58% 50%),
-            hsl(32 40% 22%) 45%,
-            hsl(44 62% 52%)
-        );
-        box-shadow:
-            0 22px 55px -22px hsl(0 0% 0% / 0.9),
-            inset 0 0 0 1px hsl(42 62% 62% / 0.3);
+        border: 1px solid var(--border);
+        background-color: var(--card);
+        padding: 4px;
     }
     .wow-map-frame > * {
         display: block;
         width: 100%;
         border-radius: calc(var(--radius-lg) - 4px);
-    }
-    .wow-map-frame::after {
-        content: '';
-        position: absolute;
-        inset: 6px;
-        border-radius: calc(var(--radius-lg) - 4px);
-        box-shadow:
-            inset 0 0 45px hsl(28 40% 4% / 0.72),
-            inset 0 0 0 1px hsl(30 20% 8% / 0.8);
-        pointer-events: none;
     }
 
     .wow-medallion {
@@ -280,174 +204,105 @@
         width: 2.75rem;
         height: 2.75rem;
         border-radius: 9999px;
-        border: 2px solid transparent;
-        background:
-            radial-gradient(
-                    circle at 50% 30%,
-                    hsl(42 42% 27%),
-                    hsl(28 30% 10%) 70%
-                )
-                padding-box,
-            linear-gradient(
-                    160deg,
-                    hsl(46 74% 66%),
-                    hsl(38 55% 38%) 55%,
-                    hsl(46 74% 66%)
-                )
-                border-box;
-        box-shadow:
-            0 0 16px -2px hsl(42 72% 46% / 0.6),
-            inset 0 1px 0 hsl(42 60% 60% / 0.2);
+        border: 1px solid var(--border);
+        background-color: var(--popover);
     }
 
     .text-gold {
-        color: hsl(42 68% 62%);
+        color: var(--primary);
     }
     .text-fel {
-        color: hsl(96 58% 58%);
+        color: var(--fel);
     }
     .text-arcane {
-        color: hsl(275 60% 72%);
+        color: var(--arcane);
     }
 
     .wow-title {
-        font-family: var(--font-title);
-        background: linear-gradient(
-            180deg,
-            hsl(46 86% 78%),
-            hsl(42 72% 54%) 52%,
-            hsl(34 58% 38%)
-        );
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        filter: drop-shadow(0 2px 10px hsl(42 70% 42% / 0.4));
-        letter-spacing: 0.04em;
+        font-family: var(--font-display);
+        color: hsl(40 18% 96%);
+        letter-spacing: -0.01em;
     }
 
     .wow-divider {
         height: 1px;
         border: 0;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            hsl(42 56% 46% / 0.7),
-            transparent
-        );
+        background-color: var(--border);
     }
 
     .wow-divider-ornate {
         position: relative;
-        height: 14px;
+        height: 1px;
         border: 0;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            hsl(42 56% 46% / 0.6),
-            transparent
-        );
-        mask: linear-gradient(
-            90deg,
-            transparent,
-            #000 30%,
-            #000 70%,
-            transparent
-        );
+        background-color: var(--border);
     }
     .wow-divider-ornate::after {
         content: '';
         position: absolute;
         top: 50%;
-        left: 50%;
-        width: 14px;
-        height: 14px;
-        transform: translate(-50%, -50%) rotate(45deg);
-        background: linear-gradient(135deg, hsl(46 72% 60%), hsl(36 52% 34%));
-        box-shadow: 0 0 10px hsl(42 68% 46% / 0.6);
+        left: 0;
+        width: 2.5rem;
+        height: 2px;
+        transform: translateY(-50%);
+        border-radius: 1px;
+        background-color: var(--primary);
     }
 
     .wow-btn {
-        position: relative;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
         border-radius: var(--radius-md);
-        border: 1px solid hsl(42 56% 40%);
-        padding: 0.62rem 1.5rem;
-        font-family: var(--font-display);
-        font-weight: 600;
-        font-size: 0.8rem;
-        letter-spacing: 0.08em;
+        border: 1px solid var(--primary);
+        padding: 0.55rem 1.25rem;
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: 0.78rem;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        color: hsl(46 92% 88%);
-        background: linear-gradient(
-            180deg,
-            hsl(42 62% 42%),
-            hsl(38 56% 27%) 55%,
-            hsl(34 50% 20%)
-        );
-        box-shadow:
-            inset 0 1px 0 hsl(46 82% 72% / 0.38),
-            inset 0 -2px 6px hsl(28 40% 8% / 0.55),
-            0 6px 16px -8px hsl(0 0% 0% / 0.8);
+        color: var(--primary-foreground);
+        background-color: var(--primary);
         transition:
-            border-color 0.18s ease,
-            box-shadow 0.18s ease,
-            background 0.18s ease,
-            transform 0.18s ease;
+            background-color 0.15s ease,
+            border-color 0.15s ease;
     }
     .wow-btn:hover {
-        border-color: hsl(46 72% 60%);
-        background: linear-gradient(
-            180deg,
-            hsl(44 66% 48%),
-            hsl(40 58% 31%) 55%,
-            hsl(36 52% 22%)
-        );
-        box-shadow:
-            inset 0 1px 0 hsl(46 86% 76% / 0.48),
-            0 0 20px hsl(42 72% 46% / 0.5),
-            0 8px 20px -8px hsl(0 0% 0% / 0.85);
+        background-color: hsl(42 76% 71%);
+        border-color: hsl(42 76% 71%);
     }
-    .wow-btn:active {
-        transform: translateY(1px);
+    .wow-btn:focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
     }
 
     .wow-btn-ghost {
-        position: relative;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
         border-radius: var(--radius-md);
-        border: 1px solid hsl(40 30% 34%);
-        padding: 0.62rem 1.5rem;
-        font-family: var(--font-display);
-        font-weight: 600;
-        font-size: 0.8rem;
-        letter-spacing: 0.08em;
+        border: 1px solid var(--border);
+        padding: 0.55rem 1.25rem;
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: 0.78rem;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        color: hsl(42 56% 68%);
-        background: linear-gradient(180deg, hsl(30 13% 16%), hsl(28 14% 10%));
-        box-shadow:
-            inset 0 1px 0 hsl(42 50% 55% / 0.12),
-            0 6px 16px -10px hsl(0 0% 0% / 0.8);
+        color: var(--foreground);
+        background-color: transparent;
         transition:
-            border-color 0.18s ease,
-            box-shadow 0.18s ease,
-            color 0.18s ease,
-            transform 0.18s ease;
+            background-color 0.15s ease,
+            border-color 0.15s ease,
+            color 0.15s ease;
     }
     .wow-btn-ghost:hover {
-        border-color: hsl(42 56% 50%);
-        color: hsl(46 72% 80%);
-        box-shadow:
-            inset 0 1px 0 hsl(42 55% 58% / 0.18),
-            0 0 16px hsl(42 62% 42% / 0.35),
-            0 8px 20px -10px hsl(0 0% 0% / 0.85);
+        border-color: var(--primary);
+        color: var(--primary);
+        background-color: var(--accent);
     }
-    .wow-btn-ghost:active {
-        transform: translateY(1px);
+    .wow-btn-ghost:focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
     }
 }

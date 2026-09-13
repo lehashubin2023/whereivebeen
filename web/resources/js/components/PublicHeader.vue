@@ -17,12 +17,10 @@ defineProps<Props>();
         class="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-4"
     >
         <Link :href="home({ locale })" class="flex items-center gap-3">
-            <div
-                class="wow-frame flex size-11 items-center justify-center bg-sidebar"
+            <AppLogoIcon class="text-gold size-9" />
+            <span
+                class="font-mono text-sm font-medium tracking-[0.2em] text-foreground uppercase"
             >
-                <AppLogoIcon class="text-gold size-6 fill-current" />
-            </div>
-            <span class="text-gold font-display text-lg tracking-[0.22em]">
                 {{ appName }}
             </span>
         </Link>
