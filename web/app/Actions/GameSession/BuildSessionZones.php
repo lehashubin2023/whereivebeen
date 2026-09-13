@@ -176,6 +176,7 @@ class BuildSessionZones
         foreach ($points as $point) {
             $result[] = [
                 'sequence' => (int) $point->getAttribute('sequence'),
+                'time' => (int) $point->getAttribute('time'),
                 'x' => $point->getAttribute('x'),
                 'y' => $point->getAttribute('y'),
                 'state' => $point->getAttribute('state'),

@@ -15,6 +15,8 @@ export type EventSlug =
 
 export interface RoutePoint {
     sequence: number;
+    /** Децисекунды от начала сессии. */
+    time: number;
     x: number;
     y: number;
     state: RouteState;

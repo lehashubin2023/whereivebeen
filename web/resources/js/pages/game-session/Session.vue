@@ -92,7 +92,7 @@ const visits = computed(() =>
 <template>
     <Head :title="title" />
 
-    <div class="flex flex-1 flex-col gap-4 p-4 md:p-6">
+    <div class="flex min-h-0 flex-1 flex-col gap-3 p-3 md:p-4">
         <h1 class="sr-only">{{ title }}</h1>
 
         <div class="flex flex-wrap items-end justify-between gap-3">
@@ -124,9 +124,14 @@ const visits = computed(() =>
             </p>
         </div>
 
-        <div v-if="selectedZone" class="flex flex-1 flex-col gap-4 lg:flex-row">
-            <aside class="shrink-0 lg:w-64">
-                <div class="wow-panel flex flex-col gap-1 p-2">
+        <div
+            v-if="selectedZone"
+            class="flex min-h-0 flex-1 flex-col gap-3 lg:flex-row"
+        >
+            <aside class="shrink-0 lg:w-60">
+                <div
+                    class="wow-panel flex max-h-[30vh] flex-col gap-1 overflow-y-auto p-2 lg:max-h-full"
+                >
                     <template v-for="visit in visits" :key="visit.zone.key">
                         <p
                             v-if="visit.day"
@@ -159,12 +164,13 @@ const visits = computed(() =>
                 </div>
             </aside>
 
-            <div class="flex-1">
+            <div class="min-w-0 flex-1">
                 <RouteMap
                     :key="selectedZone.key"
                     :image="selectedZone.image_path"
                     :points="selectedZone.points"
                     :game-session-id="session.id"
+                    height-class="h-[calc(100svh-18rem)] min-h-[22rem]"
                 />
             </div>
         </div>

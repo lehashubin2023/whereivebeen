@@ -92,9 +92,22 @@ class BuildSessionZonesTest extends TestCase
         $point = $zones[0]['points'][0];
 
         $this->assertSame(
-            ['sequence', 'x', 'y', 'state', 'gap', 'event'],
+            ['sequence', 'time', 'x', 'y', 'state', 'gap', 'event'],
             array_keys($point),
         );
+    }
+
+    public function test_points_carry_their_time_so_the_timeline_can_play_them()
+    {
+        $session = GameSession::factory()->create();
+
+        $this->addPoint($session, 1, time: 0);
+        $this->addPoint($session, 2, time: 150);
+        $this->addPoint($session, 3, time: 300);
+
+        $points = (new BuildSessionZones)->exec($session)[0]['points'];
+
+        $this->assertSame([0, 150, 300], array_column($points, 'time'));
     }
 
     public function test_it_still_tracks_state(): void
