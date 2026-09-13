@@ -48,13 +48,18 @@ class SeoTest extends TestCase
         $response->assertSee('hreflang="x-default" href="'.route('home', ['locale' => 'en']).'"', false);
     }
 
-    public function test_titles_and_descriptions_are_translated()
+    public function test_titles_are_translated_and_end_with_the_project_name()
     {
-        $this->get('/en')
-            ->assertSee('<title>'.trans('seo.home.title', [], 'en').'</title>', false);
+        $name = config()->string('app.name');
 
-        $this->get('/ru')
-            ->assertSee(e(trans('seo.home.title', [], 'ru')), false);
+        $this->get('/en')
+            ->assertSee('<title>'.trans('seo.home.title', [], 'en').' - '.$name.'</title>', false);
+
+        $this->get('/en/faq')
+            ->assertSee('<title>Addon FAQ - '.$name.'</title>', false);
+
+        $this->get('/ru/faq')
+            ->assertSee('<title>'.e(trans('seo.faq.title', [], 'ru')).' - '.$name.'</title>', false);
     }
 
     public function test_the_landing_page_ships_social_tags()

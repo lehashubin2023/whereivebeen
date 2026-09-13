@@ -20,7 +20,7 @@ class BuildPageMeta
         $copy = $this->copy($route ?? 'default');
 
         return new PageMetaData(
-            title: $copy['title'],
+            title: $this->title($copy['title']),
             description: $copy['description'],
             canonical: $route !== null
                 ? route($route, ['locale' => $locale->value])
@@ -55,6 +55,13 @@ class BuildPageMeta
         ));
     }
 
+    private function title(string $title): string
+    {
+        $name = config()->string('app.name');
+
+        return $title === '' ? $name : $title.' - '.$name;
+    }
+
     /**
      * @return array{title: string, description: string}
      */
@@ -67,7 +74,7 @@ class BuildPageMeta
         }
 
         if (! is_array($copy) || ! isset($copy['title'], $copy['description'])) {
-            return ['title' => config()->string('app.name'), 'description' => ''];
+            return ['title' => '', 'description' => ''];
         }
 
         return [
