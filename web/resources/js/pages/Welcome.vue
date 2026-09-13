@@ -2,6 +2,7 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AddonDownloadButton from '@/components/AddonDownloadButton.vue';
+import ProductShot from '@/components/ProductShot.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
 import { locale, t } from '@/lib/i18n';
 import { faq } from '@/routes';
@@ -76,6 +77,28 @@ const clients = [
                 <Link :href="faq({ locale })" class="wow-btn-ghost">
                     {{ t('Read the FAQ') }}
                 </Link>
+            </div>
+
+            <div class="mt-14 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+                <ProductShot
+                    src="/screenshots/session-map.png"
+                    :alt="t('A recorded route drawn on the zone map')"
+                    :caption="
+                        t(
+                            'Every session is drawn on the zone map: the line is coloured by how you travelled, and each event sits where it happened.',
+                        )
+                    "
+                />
+                <ProductShot
+                    src="/screenshots/journey.png"
+                    ratio="4 / 5"
+                    :alt="t('Play time, zones and levels over time')"
+                    :caption="
+                        t(
+                            'The journey page adds up every session: time played, where it went, and when each level came.',
+                        )
+                    "
+                />
             </div>
 
             <div class="mt-14 grid gap-4 md:grid-cols-3">

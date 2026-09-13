@@ -2,6 +2,7 @@
 import { Head } from '@inertiajs/vue3';
 import { Compass, MapPin } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
+import EmptyState from '@/components/EmptyState.vue';
 import RouteMap from '@/components/map/RouteMap.vue';
 import { locale, t } from '@/lib/i18n';
 
@@ -183,21 +184,11 @@ const visits = computed(() =>
             </div>
         </div>
 
-        <div
+        <EmptyState
             v-else
-            class="wow-map-frame relative flex min-h-[280px] flex-1 items-center justify-center p-6"
-        >
-            <div
-                class="wow-panel flex flex-col items-center gap-2 px-8 py-6 text-center"
-            >
-                <Compass class="text-gold size-7" />
-                <p class="font-display text-lg tracking-wide text-foreground">
-                    {{ t('Nothing to chart') }}
-                </p>
-                <p class="max-w-xs text-sm text-muted-foreground">
-                    {{ t('This session has no mapped waypoints yet.') }}
-                </p>
-            </div>
-        </div>
+            :icon="Compass"
+            :title="t('Nothing to chart')"
+            :description="t('This session has no mapped waypoints yet.')"
+        />
     </div>
 </template>

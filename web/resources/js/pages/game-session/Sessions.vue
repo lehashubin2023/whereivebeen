@@ -2,6 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ChevronRight } from '@lucide/vue';
 import { computed } from 'vue';
+import SetupChecklist from '@/components/SetupChecklist.vue';
 import { locale, t } from '@/lib/i18n';
 
 interface SessionRow {
@@ -215,18 +216,7 @@ function filterByCharacter(event: Event): void {
             </template>
         </div>
 
-        <div
-            v-else
-            class="wow-panel flex flex-col items-center justify-center gap-3 p-12 text-center"
-        >
-            <p class="text-muted-foreground">{{ t('No sessions yet.') }}</p>
-            <Link
-                href="/game-session/imports"
-                class="text-gold underline-offset-4 hover:underline"
-            >
-                {{ t('Import your first session') }}
-            </Link>
-        </div>
+        <SetupChecklist v-else />
 
         <div
             v-if="sessions.prev_page_url || sessions.next_page_url"

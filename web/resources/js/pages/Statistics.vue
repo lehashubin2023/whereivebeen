@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import { ChartColumn } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import EmptyState from '@/components/EmptyState.vue';
 import JourneyOverview from '@/components/JourneyOverview.vue';
 import { t } from '@/lib/i18n';
 import type { Journey, StatisticGroup, StatisticOverview } from '@/types';
@@ -175,23 +176,13 @@ const selectedGroup = computed(
             </div>
         </div>
 
-        <div
+        <EmptyState
             v-else
-            class="wow-map-frame relative flex min-h-[280px] flex-1 items-center justify-center p-6"
-        >
-            <div
-                class="wow-panel flex flex-col items-center gap-2 px-8 py-6 text-center"
-            >
-                <ChartColumn class="text-gold size-7" />
-                <p class="font-display text-lg tracking-wide text-foreground">
-                    {{ t('Nothing to count') }}
-                </p>
-                <p class="max-w-xs text-sm text-muted-foreground">
-                    {{
-                        t('Import a session and your deeds will show up here.')
-                    }}
-                </p>
-            </div>
-        </div>
+            :icon="ChartColumn"
+            :title="t('Nothing to count')"
+            :description="
+                t('Import a session and your deeds will show up here.')
+            "
+        />
     </div>
 </template>

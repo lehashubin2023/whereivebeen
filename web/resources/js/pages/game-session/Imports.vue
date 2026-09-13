@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { ChevronDown } from '@lucide/vue';
+import { ChevronDown, Inbox } from '@lucide/vue';
 import { ref } from 'vue';
 import GameSessionController from '@/actions/App/Http/Controllers/GameSessionController';
+import EmptyState from '@/components/EmptyState.vue';
 import FileDropZone from '@/components/import/FileDropZone.vue';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
@@ -409,12 +410,14 @@ function toggle(id: number): void {
             </table>
         </div>
 
-        <div
+        <EmptyState
             v-else
-            class="wow-panel flex flex-col items-center justify-center gap-3 p-12 text-center"
-        >
-            <p class="text-muted-foreground">{{ t('No imports yet.') }}</p>
-        </div>
+            :icon="Inbox"
+            :title="t('No imports yet.')"
+            :description="
+                t('Paste a session above or upload the addon save file.')
+            "
+        />
 
         <div
             v-if="imports.prev_page_url || imports.next_page_url"
