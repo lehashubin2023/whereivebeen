@@ -2,6 +2,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import ProfileLayout from '@/layouts/profile/Layout.vue';
+import { initializeCookieConsent } from '@/lib/cookieConsent';
 import { initializeFlashToast } from '@/lib/flashToast';
 import type { Auth } from '@/types';
 
@@ -37,5 +38,5 @@ createInertiaApp({
     },
 });
 
-// This will listen for flash toast data from the server...
 initializeFlashToast();
+initializeCookieConsent();

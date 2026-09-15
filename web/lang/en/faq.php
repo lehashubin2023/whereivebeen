@@ -44,6 +44,10 @@ return [
             'answer' => 'The addon uses the regular API the game exposes to any Lua addon and only reads information your client already has. It does not automate play in any way.',
         ],
         [
+            'question' => 'Does the site use cookies?',
+            'answer' => 'Only the ones it needs to work: a session cookie that keeps you signed in, a CSRF token, and small cookies that remember your language and interface settings. There is no analytics, no advertising and no third-party tracking, so there is nothing to opt out of.',
+        ],
+        [
             'question' => 'Is WhereIveBeen free?',
             'answer' => 'Yes. There are no paid features and no ads. Donations on the support page are voluntary and unlock nothing.',
         ],
