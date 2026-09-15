@@ -2,6 +2,7 @@
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import PublicHeader from '@/components/PublicHeader.vue';
+import { useBackgroundMap } from '@/composables/useBackgroundMap';
 import { t } from '@/lib/i18n';
 import type { FaqItem } from '@/types';
 
@@ -23,6 +24,8 @@ const page = usePage();
 const appName = page.props.name;
 const meta = computed(() => page.props.meta);
 const isGuest = computed(() => !page.props.auth?.user);
+
+useBackgroundMap();
 </script>
 
 <template>
@@ -31,7 +34,7 @@ const isGuest = computed(() => !page.props.auth?.user);
     <div
         :class="
             isGuest
-                ? 'flex min-h-svh flex-col bg-background px-6 py-6 lg:px-10'
+                ? 'page-bg flex min-h-svh flex-col bg-background px-6 py-6 lg:px-10'
                 : 'flex flex-1 flex-col p-4 md:p-8'
         "
     >

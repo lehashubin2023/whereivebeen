@@ -4,6 +4,7 @@ import { computed } from 'vue';
 import AddonDownloadButton from '@/components/AddonDownloadButton.vue';
 import ProductShot from '@/components/ProductShot.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
+import { useBackgroundMap } from '@/composables/useBackgroundMap';
 import { locale, t } from '@/lib/i18n';
 import { faq } from '@/routes';
 import type { AddonDownload } from '@/types';
@@ -17,6 +18,8 @@ defineProps<Props>();
 const page = usePage();
 const appName = page.props.name;
 const meta = computed(() => page.props.meta);
+
+useBackgroundMap();
 
 const steps = [
     {
@@ -52,7 +55,9 @@ const clients = [
 <template>
     <Head :title="meta.title" />
 
-    <div class="flex min-h-svh flex-col bg-background px-6 py-6 lg:px-10">
+    <div
+        class="page-bg flex min-h-svh flex-col bg-background px-6 py-6 lg:px-10"
+    >
         <PublicHeader :app-name="appName" />
 
         <main

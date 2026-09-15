@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { watchEffect } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { useBackgroundMap } from '@/composables/useBackgroundMap';
 import { locale } from '@/lib/i18n';
 import { home } from '@/routes';
 
@@ -13,16 +13,7 @@ defineProps<{
 const page = usePage();
 const name = page.props.name;
 
-watchEffect(() => {
-    const map = page.props.backgroundMap;
-
-    if (map && typeof document !== 'undefined') {
-        document.documentElement.style.setProperty(
-            '--page-bg-image',
-            `url('${map}')`,
-        );
-    }
-});
+useBackgroundMap();
 </script>
 
 <template>
