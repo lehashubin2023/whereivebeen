@@ -11,7 +11,7 @@ type Props = {
 };
 
 withDefaults(defineProps<Props>(), {
-    ratio: '16 / 10',
+    ratio: '2 / 1',
 });
 
 const failed = ref(false);

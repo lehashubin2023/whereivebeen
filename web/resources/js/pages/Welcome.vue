@@ -79,7 +79,7 @@ const clients = [
                 </Link>
             </div>
 
-            <div class="mt-14 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+            <div class="mt-14 grid gap-8">
                 <ProductShot
                     src="/screenshots/session-map.png"
                     :alt="t('A recorded route drawn on the zone map')"
@@ -91,7 +91,6 @@ const clients = [
                 />
                 <ProductShot
                     src="/screenshots/journey.png"
-                    ratio="4 / 5"
                     :alt="t('Play time, zones and levels over time')"
                     :caption="
                         t(
