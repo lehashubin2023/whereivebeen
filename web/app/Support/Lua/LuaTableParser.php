@@ -5,11 +5,6 @@ namespace App\Support\Lua;
 use App\Exceptions\Lua\LuaLimitExceededException;
 use App\Exceptions\Lua\LuaSyntaxException;
 
-/**
- * Рекурсивный спуск по таблицам Lua. `streamTable()` отдаёт пары наружу и
- * ничего не накапливает — на нём держится постоянный расход памяти при
- * разборе файлов в десятки мегабайт.
- */
 class LuaTableParser
 {
     public function __construct(
@@ -23,9 +18,6 @@ class LuaTableParser
     }
 
     /**
-     * Разбирает значение целиком. Годится только для заведомо мелких
-     * поддеревьев — таблица точек читается через streamTable().
-     *
      * @return array<string|int, mixed>|string|int|float|bool|null
      */
     public function parseValue(int $depth = 0): array|string|int|float|bool|null
@@ -46,9 +38,6 @@ class LuaTableParser
         };
     }
 
-    /**
-     * Пропускает значение, ничего не возвращая.
-     */
     public function skipValue(int $depth = 0): void
     {
         if ($depth > $this->limits->maxDepth) {
@@ -75,10 +64,6 @@ class LuaTableParser
     }
 
     /**
-     * Разбирает тело таблицы; курсор должен стоять сразу после `{`.
-     * Останавливается, потребив `}`. Колбэк обязан потребить значение —
-     * через parseValue(), skipValue() или вложенный streamTable().
-     *
      * @param  callable(string|int, self): void  $onEntry
      */
     public function streamTable(callable $onEntry, int $depth = 0): int
@@ -142,10 +127,6 @@ class LuaTableParser
         return $token;
     }
 
-    /**
-     * Ключ записи: `["name"]`, `[123]`, `name` или ничего — тогда это элемент
-     * массивной части и ключом становится порядковый номер.
-     */
     private function readKey(int &$index): string|int
     {
         $token = $this->lexer->peek();

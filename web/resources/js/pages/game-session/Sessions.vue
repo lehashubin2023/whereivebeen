@@ -14,7 +14,6 @@ interface SessionRow {
     points_count: number;
     session_start_at: string;
     duration: number;
-    zones: string[];
     level_from: number | null;
     level_to: number | null;
 }
@@ -65,15 +64,7 @@ function formatTime(value: string): string {
 }
 
 function title(row: SessionRow): string {
-    if (row.zones.length > 1) {
-        return `${row.zones[0]} → ${row.zones[row.zones.length - 1]}`;
-    }
-
-    if (row.zones.length === 1) {
-        return row.zones[0];
-    }
-
-    return t('Session #:id', { id: row.game_session_id });
+    return row.character || t('Session #:id', { id: row.game_session_id });
 }
 
 function levels(row: SessionRow): string | null {
@@ -88,7 +79,6 @@ function levels(row: SessionRow): string | null {
     return `${row.level_from} → ${row.level_to}`;
 }
 
-/** Заголовок-дата ставится там, где начинается новый день. */
 const grouped = computed(() =>
     props.sessions.data.map((row, index) => {
         const day = new Date(row.session_start_at).toDateString();
@@ -204,7 +194,7 @@ function filterByCharacter(event: Event): void {
                             </template>
                             <template v-if="characters.length > 1">
                                 <span>·</span>
-                                <span>{{ item.row.character }}</span>
+                                <span>{{ item.row.realm }}</span>
                             </template>
                         </span>
                     </div>

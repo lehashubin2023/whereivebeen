@@ -18,10 +18,6 @@ enum EventTypeEnum: int
     case ZONE = 12;
     case GATHER = 13;
 
-    /**
-     * Значение поля `event` в точке, которое пишет аддон
-     * (см. addon/Core.lua, addon/Methods.lua).
-     */
     public function slug(): string
     {
         return match ($this) {

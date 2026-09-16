@@ -69,8 +69,8 @@ class SupportPageTest extends TestCase
     public function test_blank_channels_are_filtered_out()
     {
         config()->set('support', [
-            'boosty' => '',
-            'telegram' => null,
+            'boosty' => 'https://boosty.to/whereivebeen',
+            'telegram' => '   ',
             'crypto' => [
                 'TON' => '   ',
             ],
@@ -79,14 +79,14 @@ class SupportPageTest extends TestCase
         $this->get('/en/support')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('channels.boosty', null)
+                ->where('channels.boosty', 'https://boosty.to/whereivebeen')
                 ->where('channels.telegram', null)
                 ->where('channels.crypto', [])
                 ->etc()
             );
     }
 
-    public function test_the_page_renders_when_nothing_is_configured()
+    public function test_the_page_is_hidden_when_nothing_is_configured()
     {
         config()->set('support', [
             'boosty' => null,
@@ -94,8 +94,29 @@ class SupportPageTest extends TestCase
             'crypto' => [],
         ]);
 
-        $this->get('/en/support')
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->component('Support'));
+        $this->get('/en/support')->assertNotFound();
+        $this->get('/support')->assertNotFound();
+    }
+
+    public function test_a_single_wallet_is_enough_to_keep_the_page()
+    {
+        config()->set('support', [
+            'boosty' => '',
+            'telegram' => null,
+            'crypto' => ['TON' => 'UQxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'],
+        ]);
+
+        $this->get('/en/support')->assertOk();
+    }
+
+    public function test_the_navigation_knows_whether_the_page_exists()
+    {
+        $this->get('/en')
+            ->assertInertia(fn (Assert $page) => $page->where('supportAvailable', true)->etc());
+
+        config()->set('support', ['boosty' => null, 'telegram' => null, 'crypto' => []]);
+
+        $this->get('/en')
+            ->assertInertia(fn (Assert $page) => $page->where('supportAvailable', false)->etc());
     }
 }

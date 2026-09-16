@@ -5,13 +5,6 @@ namespace App\Support\Lua;
 use App\Exceptions\Lua\LuaLimitExceededException;
 use App\Exceptions\Lua\LuaSyntaxException;
 
-/**
- * Токенайзер подмножества Lua, которым WoW сериализует SavedVariables:
- * только литералы и скобки. Продукций для вызовов функций, конкатенации и
- * `setmetatable` нет — файл разбирается, но никогда не исполняется.
- *
- * Читает поток окнами, поэтому расход памяти не зависит от размера файла.
- */
 class LuaLexer
 {
     private const WINDOW = 65536;
@@ -201,10 +194,6 @@ class LuaLexer
         }
     }
 
-    /**
-     * Длинная скобка `[[`, `[=[`, `[==[` — возвращает число знаков равенства
-     * или null, если это обычная `[`.
-     */
     private function longBracketLevel(): ?int
     {
         if ($this->at() !== '[') {
@@ -369,8 +358,6 @@ class LuaLexer
             $raw .= $digits;
         }
 
-        // `-1.#IND`, `1.#INF` и прочие виндовые не-числа: без явного отказа
-        // NAN молча превратился бы в null уже после json_encode.
         if ($this->at() === '#' || ! is_numeric($raw)) {
             throw LuaSyntaxException::badNumber($line, $raw.(string) $this->at());
         }
@@ -414,7 +401,6 @@ class LuaLexer
             throw LuaLimitExceededException::stringLength($this->limits->maxStringLength, $line);
         }
 
-        // Битые байты дошли бы до MySQL и упали там как «Incorrect string value».
         return mb_check_encoding($value, 'UTF-8')
             ? $value
             : mb_convert_encoding($value, 'UTF-8', 'UTF-8');

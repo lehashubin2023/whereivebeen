@@ -2,10 +2,13 @@
 
 namespace App\Actions\Seo;
 
+use App\Actions\Support\ResolveSupportChannels;
 use App\Enums\LocaleEnum;
 
 class BuildSitemap
 {
+    public function __construct(private readonly ResolveSupportChannels $supportChannels) {}
+
     public function exec(): string
     {
         $lines = [
@@ -61,9 +64,11 @@ class BuildSitemap
      */
     private function routes(): array
     {
+        $hidden = $this->supportChannels->available() ? [] : ['support'];
+
         return array_values(array_filter(
             config()->array('seo.indexable'),
-            fn (mixed $name): bool => is_string($name),
+            fn (mixed $name): bool => is_string($name) && ! in_array($name, $hidden, true),
         ));
     }
 

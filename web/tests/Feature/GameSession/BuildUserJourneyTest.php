@@ -75,7 +75,6 @@ class BuildUserJourneyTest extends TestCase
 
         $this->addPoint($session, 1, self::NAGRAND, 0);
         $this->addPoint($session, 2, self::NAGRAND, 1500);
-        // Час без единой точки — это отлучка, а не игра в зоне.
         $this->addPoint($session, 3, self::NAGRAND, 37500);
         $this->addPoint($session, 4, self::SHATTRATH, 38100);
 

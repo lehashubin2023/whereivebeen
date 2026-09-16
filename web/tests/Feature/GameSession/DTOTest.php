@@ -10,15 +10,8 @@ use App\Enums\GameSession\EventTypeEnum;
 use App\Enums\GameSession\ImportStatusEnum;
 use Tests\TestCase;
 
-/**
- * DTO проверяются против реального экспорта аддона (fixtures/game-sessions/valid1.txt)
- * и против точной формы точки, которую пишет addon/Methods.lua и addon/Core.lua.
- */
 class DTOTest extends TestCase
 {
-    /**
-     * Реальный экспорт аддона: JSON-строка → массив.
-     */
     private function addonExport(): array
     {
         return json_decode(
@@ -33,7 +26,6 @@ class DTOTest extends TestCase
 
         $dto = CreateGameSessionDTO::fromArray($export)->toArray();
 
-        // Ключи аддона (char/sessionId/started) → колонки БД
         $this->assertSame($export['char'], $dto['character']);
         $this->assertSame($export['sessionId'], $dto['game_session_id']);
         $this->assertSame($export['started'], $dto['session_start_at']);
@@ -44,14 +36,13 @@ class DTOTest extends TestCase
 
     public function test_create_way_point_dto_maps_addon_point_keys()
     {
-        // Форма точки — как её пишет аддон (addon/Methods.lua: x, y, mapId, t)
         $point = ['x' => 0.5, 'y' => 0.25, 'mapId' => 1422, 't' => 63];
 
         $dto = CreateWayPointDTO::fromPoint($point, gameSessionId: 7, sequence: 3)->toArray();
 
         $this->assertSame(7, $dto['game_session_id']);
-        $this->assertSame(1422, $dto['map_id']);   // mapId → map_id
-        $this->assertSame(630, $dto['time']);       // t → time, децисекунды
+        $this->assertSame(1422, $dto['map_id']);
+        $this->assertSame(630, $dto['time']);
         $this->assertSame(3, $dto['sequence']);
         $this->assertSame(0.5, $dto['x']);
         $this->assertSame(0.25, $dto['y']);
@@ -59,7 +50,6 @@ class DTOTest extends TestCase
 
     public function test_create_event_dto_maps_addon_event_keys()
     {
-        // Все событийные ключи, которые реально эмитит аддон (addon/Methods.lua, addon/Core.lua)
         $point = [
             'x' => 1, 'y' => 2, 'mapId' => 10, 't' => 5,
             'event' => 'loot',
@@ -83,7 +73,6 @@ class DTOTest extends TestCase
 
         $payload = json_decode($dto['payload'], true);
 
-        // camelCase аддона → snake_case payload
         $this->assertSame(60, $payload['level']);
         $this->assertSame('join', $payload['action']);
         $this->assertSame('A Quest', $payload['title']);
@@ -95,7 +84,6 @@ class DTOTest extends TestCase
         $this->assertSame(['Inn'], $payload['places']);
         $this->assertSame(['Thrall'], $payload['joined']);
 
-        // Координаты в payload не дублируются (в схеме event берёт их по seq)
         $this->assertArrayNotHasKey('x', $payload);
         $this->assertArrayNotHasKey('mapId', $payload);
     }

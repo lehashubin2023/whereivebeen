@@ -11,9 +11,6 @@ use Throwable;
 
 class ImportGameSessionProgress implements ImportGameSessionProgressContract
 {
-    /**
-     * `execution_time` — decimal(8,2), выше этого значения запись упадёт.
-     */
     private const MAX_EXECUTION_TIME = 999999.99;
 
     private ImportLog $log;

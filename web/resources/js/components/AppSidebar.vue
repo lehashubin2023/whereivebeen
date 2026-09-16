@@ -78,20 +78,23 @@ const userNavItems: NavItem[] = [
         href: '/issue-report',
         icon: LifeBuoy,
     },
-    {
-        title: t('Support the project'),
-        href: '/support',
-        icon: Heart,
-    },
 ];
+
+const supportNavItem: NavItem = {
+    title: t('Support the project'),
+    href: '/support',
+    icon: Heart,
+};
 
 const isAdmin = computed<boolean>(
     () => page.props.auth.user?.is_admin === true,
 );
 
-const mainNavItems = computed<NavItem[]>(() =>
-    isAdmin.value ? adminNavItems : userNavItems,
-);
+const mainNavItems = computed<NavItem[]>(() => {
+    const items = isAdmin.value ? adminNavItems : userNavItems;
+
+    return page.props.supportAvailable ? [...items, supportNavItem] : items;
+});
 
 const homeHref = computed<string>(() =>
     isAdmin.value ? '/admin/issue-reports' : '/game-session/sessions',

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3';
+import { Form, Head, Link, router } from '@inertiajs/vue3';
 import { ChevronDown, Inbox } from '@lucide/vue';
-import { ref } from 'vue';
+import { useIntervalFn } from '@vueuse/core';
+import { computed, ref, watch } from 'vue';
 import GameSessionController from '@/actions/App/Http/Controllers/GameSessionController';
 import EmptyState from '@/components/EmptyState.vue';
 import FileDropZone from '@/components/import/FileDropZone.vue';
@@ -13,7 +14,12 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { locale, t } from '@/lib/i18n';
 import { importErrorHint } from '@/lib/importErrors';
-import type { ImportBatchRow, ImportRow, ImportStatus } from '@/types';
+import type {
+    ImportBatchRow,
+    ImportBatchState,
+    ImportRow,
+    ImportStatus,
+} from '@/types';
 
 interface ImportsPaginator {
     data: ImportRow[];
@@ -21,7 +27,10 @@ interface ImportsPaginator {
     next_page_url: string | null;
 }
 
-defineProps<{ imports: ImportsPaginator; batches: ImportBatchRow[] }>();
+const props = defineProps<{
+    imports: ImportsPaginator;
+    batches: ImportBatchRow[];
+}>();
 
 defineOptions({
     layout: {
@@ -45,11 +54,20 @@ const statusLabel: Record<ImportStatus, string> = {
     failed: t('Failed'),
 };
 
-const batchStatusLabel: Record<string, string> = {
-    new: t('Queued'),
+const batchStateLabel: Record<ImportBatchState, string> = {
+    queued: t('Queued'),
     parsing: t('Reading file'),
-    dispatched: t('Sessions queued'),
+    importing: t('Importing sessions'),
+    completed: t('Import finished'),
     failed: t('Failed'),
+};
+
+const batchStateClass: Record<ImportBatchState, string> = {
+    queued: 'bg-muted text-muted-foreground border-border',
+    parsing: 'bg-accent text-accent-foreground border-accent',
+    importing: 'bg-accent text-accent-foreground border-accent',
+    completed: 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60',
+    failed: 'bg-destructive/15 text-destructive border-destructive/40',
 };
 
 const skipReasonLabel: Record<string, string> = {
@@ -76,6 +94,26 @@ function unknownMaps(row: ImportRow): number {
 function toggle(id: number): void {
     expanded.value = expanded.value === id ? null : id;
 }
+
+const POLL_MS = 3000;
+
+const working = computed(
+    () =>
+        props.batches.some((batch) => !batch.settled) ||
+        props.imports.data.some(
+            (row) => row.status === 'new' || row.status === 'in_process',
+        ),
+);
+
+const { pause, resume } = useIntervalFn(
+    () => router.reload({ only: ['imports', 'batches'] }),
+    POLL_MS,
+    { immediate: false },
+);
+
+watch(working, (isWorking) => (isWorking ? resume() : pause()), {
+    immediate: true,
+});
 </script>
 
 <template>
@@ -225,11 +263,11 @@ function toggle(id: number): void {
                             {{ batch.filename }}
                         </td>
                         <td class="px-4 py-3">
-                            <Badge variant="outline">
-                                {{
-                                    batchStatusLabel[batch.status] ??
-                                    batch.status
-                                }}
+                            <Badge
+                                variant="outline"
+                                :class="batchStateClass[batch.state]"
+                            >
+                                {{ batchStateLabel[batch.state] }}
                             </Badge>
 
                             <div
@@ -267,6 +305,25 @@ function toggle(id: number): void {
                                     )
                                 }}
                             </span>
+
+                            <p
+                                v-if="batch.state === 'importing'"
+                                class="mt-1 font-mono text-[11px] text-muted-foreground tabular-nums"
+                            >
+                                {{ batch.sessions_finished }} /
+                                {{ batch.sessions_queued }}
+                            </p>
+
+                            <p
+                                v-else-if="batch.sessions_failed"
+                                class="mt-1 font-mono text-[11px] text-destructive tabular-nums"
+                            >
+                                {{
+                                    t(':count failed', {
+                                        count: batch.sessions_failed,
+                                    })
+                                }}
+                            </p>
 
                             <ul
                                 v-if="batch.skipped?.length"

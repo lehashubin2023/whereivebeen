@@ -15,6 +15,8 @@ class SeoTest extends TestCase
         parent::setUp();
 
         $this->withoutVite();
+
+        config()->set('support.boosty', 'https://boosty.to/whereivebeen');
     }
 
     public function test_the_root_url_sends_guests_to_their_language()
@@ -104,6 +106,17 @@ class SeoTest extends TestCase
         }
 
         $response->assertSee('hreflang="x-default"', false);
+    }
+
+    public function test_the_sitemap_drops_the_support_page_when_no_donations_are_configured()
+    {
+        config()->set('support', ['boosty' => null, 'telegram' => null, 'crypto' => []]);
+
+        $response = $this->get('/sitemap.xml');
+
+        $response->assertOk();
+        $response->assertDontSee('<loc>'.route('support', ['locale' => 'en']).'</loc>', false);
+        $response->assertSee('<loc>'.route('faq', ['locale' => 'en']).'</loc>', false);
     }
 
     public function test_robots_keeps_crawlers_away_outside_production()

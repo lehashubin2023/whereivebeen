@@ -5,9 +5,6 @@ namespace App\Support\GameSession\ImportProgress;
 use App\Enums\GameSession\ImportOutcomeEnum;
 use Throwable;
 
-/**
- * No-op реализация: для прямых вызовов экшенов и тестов, где лог не нужен.
- */
 class NullImportGameSessionProgress implements ImportGameSessionProgressContract
 {
     public function process(int $total): void {}

@@ -15,7 +15,6 @@ export type EventSlug =
 
 export interface RoutePoint {
     sequence: number;
-    /** Децисекунды от начала сессии. */
     time: number;
     x: number;
     y: number;
@@ -87,14 +86,20 @@ export interface ImportSkip {
     reason: string;
 }
 
+export type ImportBatchState =
+    'queued' | 'parsing' | 'importing' | 'completed' | 'failed';
+
 export interface ImportBatchRow {
     id: number;
     filename: string;
     file_size: number;
-    status: string;
+    state: ImportBatchState;
+    settled: boolean;
     sessions_found: number;
     sessions_queued: number;
     sessions_skipped: number;
+    sessions_finished: number;
+    sessions_failed: number;
     skipped: ImportSkip[] | null;
     error_code: string | null;
     error_context: Record<string, unknown> | null;

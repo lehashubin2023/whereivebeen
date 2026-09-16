@@ -6,15 +6,8 @@ use App\Exceptions\GameSession\InvalidGameSessionInputException;
 
 class DecodeRawInput
 {
-    /**
-     * Префикс сжатого экспорта аддона (см. addon/Export.lua, WIVBN.EXPORT_PREFIX).
-     */
     public const COMPRESSED_PREFIX = 'WIVB1:';
 
-    /**
-     * Схлопнутые события добавляют уровень вложенности:
-     * root -> points -> point -> items -> item.
-     */
     public const MAX_DEPTH = 6;
 
     public function exec(string $input): array

@@ -11,20 +11,12 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Хроника игры: когда играл, где проводил время, как рос в уровнях и где
- * умирал чаще всего. Считает только то, чего не отвечают плитки со счётчиками.
- */
 class BuildUserJourney
 {
     private const ACTIVITY_DAYS = 90;
 
     private const TOP_ZONES = 8;
 
-    /**
-     * Разрыв между точками, после которого перерыв не считается временем
-     * в зоне: игрок улетел, вышел из игры или просто стоял в оффлайне.
-     */
     private const ZONE_STEP_LIMIT = 600;
 
     public function __construct(private readonly MeasureSessionTime $measureTime) {}
@@ -98,10 +90,6 @@ class BuildUserJourney
     }
 
     /**
-     * Время в зоне — сумма шагов между соседними точками одной карты.
-     * Слишком длинные шаги отбрасываются: это перелёт или отлучка, а не игра
-     * в зоне.
-     *
      * @param  array<int, int>  $ids
      * @return array<int, array{name: string, seconds: int, points: int}>
      */

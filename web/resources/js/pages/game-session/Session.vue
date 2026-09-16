@@ -179,7 +179,7 @@ const visits = computed(() =>
                     :image="selectedZone.image_path"
                     :points="selectedZone.points"
                     :game-session-id="session.id"
-                    height-class="h-[calc(100svh-18rem)] min-h-[22rem]"
+                    height-class="h-[calc(100svh-20rem)] min-h-[22rem]"
                 />
             </div>
         </div>

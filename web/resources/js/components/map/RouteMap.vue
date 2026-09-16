@@ -1,22 +1,12 @@
 <script setup lang="ts">
-import {
-    Maximize2,
-    Minimize2,
-    Minus,
-    Pause,
-    Play,
-    Plus,
-    RotateCcw,
-} from '@lucide/vue';
+import { Maximize2, Minimize2, Minus, Plus, RotateCcw } from '@lucide/vue';
 import {
     onKeyStroke,
     useElementSize,
     useEventListener,
     useFullscreen,
-    usePreferredReducedMotion,
-    useRafFn,
 } from '@vueuse/core';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import EventPopup from '@/components/map/EventPopup.vue';
 import { useSessionEvent } from '@/composables/useSessionEvent';
 import {
@@ -42,9 +32,6 @@ interface PlacedEvent {
 }
 
 const FAN_SPREAD = 1.9;
-
-/** Сколько длится проигрывание маршрута целиком. */
-const PLAYBACK_MS = 18000;
 
 const STATE_COLORS: Record<State, { line: string; dot: string }> = {
     ground: { line: '#b8c8db', dot: '#d3e0ee' },
@@ -78,13 +65,61 @@ const props = withDefaults(
 
 const root = ref<HTMLElement | null>(null);
 const viewport = ref<HTMLElement | null>(null);
-const stage = ref<HTMLElement | null>(null);
 
 const { width: viewportWidth, height: viewportHeight } =
     useElementSize(viewport);
-const { width: stageWidth, height: stageHeight } = useElementSize(stage);
 const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(root);
-const reducedMotion = usePreferredReducedMotion();
+
+const picture = ref<HTMLImageElement | null>(null);
+const natural = ref({ width: 0, height: 0 });
+
+function readNatural(image: HTMLImageElement): void {
+    natural.value = {
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+    };
+}
+
+function onImageLoad(event: Event): void {
+    readNatural(event.target as HTMLImageElement);
+}
+
+onMounted(() => {
+    if (picture.value?.complete) {
+        readNatural(picture.value);
+    }
+});
+
+const fitted = computed(() => {
+    const { width: naturalWidth, height: naturalHeight } = natural.value;
+
+    if (
+        viewportWidth.value === 0 ||
+        viewportHeight.value === 0 ||
+        naturalWidth === 0 ||
+        naturalHeight === 0
+    ) {
+        return { width: 0, height: 0, left: 0, top: 0 };
+    }
+
+    const ratio = Math.min(
+        viewportWidth.value / naturalWidth,
+        viewportHeight.value / naturalHeight,
+    );
+
+    const width = naturalWidth * ratio;
+    const height = naturalHeight * ratio;
+
+    return {
+        width,
+        height,
+        left: (viewportWidth.value - width) / 2,
+        top: (viewportHeight.value - height) / 2,
+    };
+});
+
+const stageWidth = computed(() => fitted.value.width);
+const stageHeight = computed(() => fitted.value.height);
 
 const scale = ref(1);
 const translateX = ref(0);
@@ -101,9 +136,7 @@ const transform = computed(
 const hiddenEvents = ref(new Set<EventSlug>());
 const hiddenStates = ref(new Set<State>());
 
-/** Доля проигранного маршрута по игровому времени, а не по числу точек. */
 const progress = ref(1);
-const playing = ref(false);
 
 const startTime = computed(() => props.points.at(0)?.time ?? 0);
 const endTime = computed(() => props.points.at(-1)?.time ?? 0);
@@ -137,13 +170,14 @@ const visibleCount = computed(() => {
 
 const visiblePoints = computed(() => props.points.slice(0, visibleCount.value));
 
-const scrubbing = computed(() => progress.value < 1);
+const elapsed = computed(() => {
+    const total = clock(Math.round(span.value / 10));
 
-const elapsedLabel = computed(() => {
-    const seconds = Math.round((cursorTime.value - startTime.value) / 10);
-    const total = Math.round(span.value / 10);
-
-    return `${clock(seconds)} / ${clock(total)}`;
+    return {
+        current: clock(Math.round((cursorTime.value - startTime.value) / 10)),
+        total,
+        width: `${total.length}ch`,
+    };
 });
 
 function clock(seconds: number): string {
@@ -157,60 +191,7 @@ function clock(seconds: number): string {
     return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}:${String(rest).padStart(2, '0')}`;
 }
 
-const { pause: pauseRaf, resume: resumeRaf } = useRafFn(
-    ({ delta }) => {
-        progress.value = Math.min(1, progress.value + delta / PLAYBACK_MS);
-
-        if (progress.value >= 1) {
-            stop();
-        }
-    },
-    { immediate: false },
-);
-
-function play(): void {
-    if (props.points.length < 2) {
-        return;
-    }
-
-    if (progress.value >= 1) {
-        progress.value = 0;
-    }
-
-    playing.value = true;
-
-    if (reducedMotion.value === 'reduce') {
-        progress.value = 1;
-        playing.value = false;
-
-        return;
-    }
-
-    resumeRaf();
-}
-
-function stop(): void {
-    playing.value = false;
-    pauseRaf();
-}
-
-function togglePlay(): void {
-    if (playing.value) {
-        stop();
-
-        return;
-    }
-
-    play();
-}
-
-function rewind(): void {
-    stop();
-    progress.value = 1;
-}
-
 function onScrub(event: Event): void {
-    stop();
     progress.value = Number((event.target as HTMLInputElement).value) / 1000;
 }
 
@@ -427,8 +408,8 @@ const POPUP_CLEARANCE = 190;
 
 function screenPosition(placed: PlacedEvent): { x: number; y: number } {
     return {
-        x: translateX.value + placed.x * scale.value,
-        y: translateY.value + placed.y * scale.value,
+        x: translateX.value + (fitted.value.left + placed.x) * scale.value,
+        y: translateY.value + (fitted.value.top + placed.y) * scale.value,
     };
 }
 
@@ -513,7 +494,6 @@ function stepEvent(direction: 1 | -1): void {
     const point = ordered[next];
 
     if (point.time > cursorTime.value) {
-        stop();
         progress.value = 1;
     }
 
@@ -525,7 +505,6 @@ watch(
     () => props.points,
     () => {
         closePopup();
-        stop();
         progress.value = 1;
         hiddenEvents.value = new Set();
         hiddenStates.value = new Set();
@@ -560,7 +539,6 @@ function bindKey(key: string, handler: () => void): void {
     });
 }
 
-bindKey(' ', togglePlay);
 bindKey('ArrowRight', () => stepEvent(1));
 bindKey('ArrowLeft', () => stepEvent(-1));
 bindKey('f', reset);
@@ -573,8 +551,8 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function clampTranslate(): void {
-    const scaledWidth = stageWidth.value * scale.value;
-    const scaledHeight = stageHeight.value * scale.value;
+    const scaledWidth = viewportWidth.value * scale.value;
+    const scaledHeight = viewportHeight.value * scale.value;
 
     translateX.value = clamp(
         translateX.value,
@@ -588,10 +566,7 @@ function clampTranslate(): void {
     );
 }
 
-watch(
-    [scale, stageWidth, stageHeight, viewportWidth, viewportHeight],
-    clampTranslate,
-);
+watch([scale, viewportWidth, viewportHeight], clampTranslate);
 
 function zoomAt(pointerX: number, pointerY: number, factor: number): void {
     const next = clamp(scale.value * factor, MIN_SCALE, MAX_SCALE);
@@ -675,20 +650,26 @@ function reset(): void {
             >
                 <div
                     class="absolute top-0 left-0 origin-top-left"
-                    :style="{ transform }"
+                    :style="{
+                        transform,
+                        width: `${viewportWidth}px`,
+                        height: `${viewportHeight}px`,
+                    }"
                 >
-                    <div
-                        ref="stage"
-                        class="relative"
-                        :style="{ width: `${viewportWidth}px` }"
-                    >
-                        <img
-                            :src="image"
-                            alt=""
-                            draggable="false"
-                            class="block w-full select-none"
-                        />
-                    </div>
+                    <img
+                        ref="picture"
+                        :src="image"
+                        alt=""
+                        draggable="false"
+                        class="absolute block select-none"
+                        :style="{
+                            left: `${fitted.left}px`,
+                            top: `${fitted.top}px`,
+                            width: `${fitted.width}px`,
+                            height: `${fitted.height}px`,
+                        }"
+                        @load="onImageLoad"
+                    />
                 </div>
 
                 <svg
@@ -699,109 +680,117 @@ function reset(): void {
                     <g
                         :transform="`translate(${translateX} ${translateY}) scale(${scale})`"
                     >
-                        <polyline
-                            v-for="(segment, index) in segments"
-                            :key="index"
-                            :points="segment.points"
-                            fill="none"
-                            :stroke="STATE_COLORS[segment.state].line"
-                            stroke-width="2"
-                            stroke-linejoin="round"
-                            stroke-linecap="round"
-                            stroke-opacity="0.9"
-                            vector-effect="non-scaling-stroke"
-                        />
+                        <g
+                            :transform="`translate(${fitted.left} ${fitted.top})`"
+                        >
+                            <polyline
+                                v-for="(segment, index) in segments"
+                                :key="index"
+                                :points="segment.points"
+                                fill="none"
+                                :stroke="STATE_COLORS[segment.state].line"
+                                stroke-width="2"
+                                stroke-linejoin="round"
+                                stroke-linecap="round"
+                                stroke-opacity="0.9"
+                                vector-effect="non-scaling-stroke"
+                            />
 
-                        <circle
-                            v-for="point in routeDots"
-                            :key="point.sequence"
-                            :cx="point.x * stageWidth"
-                            :cy="point.y * stageHeight"
-                            :r="dotRadius"
-                            :fill="STATE_COLORS[point.state].dot"
-                            fill-opacity="0.95"
-                        />
+                            <circle
+                                v-for="point in routeDots"
+                                :key="point.sequence"
+                                :cx="point.x * stageWidth"
+                                :cy="point.y * stageHeight"
+                                :r="dotRadius"
+                                :fill="STATE_COLORS[point.state].dot"
+                                fill-opacity="0.95"
+                            />
 
-                        <circle
-                            v-if="firstPoint"
-                            :cx="firstPoint.x * stageWidth"
-                            :cy="firstPoint.y * stageHeight"
-                            :r="markerRadius"
-                            :fill="TERMINAL_COLORS.start"
-                            :stroke="TERMINAL_COLORS.outline"
-                            stroke-width="1"
-                            vector-effect="non-scaling-stroke"
-                        />
+                            <circle
+                                v-if="firstPoint"
+                                :cx="firstPoint.x * stageWidth"
+                                :cy="firstPoint.y * stageHeight"
+                                :r="markerRadius"
+                                :fill="TERMINAL_COLORS.start"
+                                :stroke="TERMINAL_COLORS.outline"
+                                stroke-width="1"
+                                vector-effect="non-scaling-stroke"
+                            />
 
-                        <circle
-                            v-if="lastPoint && lastPoint !== firstPoint"
-                            :cx="lastPoint.x * stageWidth"
-                            :cy="lastPoint.y * stageHeight"
-                            :r="markerRadius"
-                            :fill="
-                                atEnd
-                                    ? TERMINAL_COLORS.end
-                                    : STATE_COLORS[lastPoint.state].dot
-                            "
-                            :stroke="TERMINAL_COLORS.outline"
-                            stroke-width="1"
-                            vector-effect="non-scaling-stroke"
-                        />
-
-                        <line
-                            v-for="placed in fannedEvents"
-                            :key="`leader-${placed.point.sequence}`"
-                            :x1="placed.anchorX"
-                            :y1="placed.anchorY"
-                            :x2="placed.x"
-                            :y2="placed.y"
-                            :stroke="EVENT_OUTLINE"
-                            stroke-width="1"
-                            stroke-opacity="0.55"
-                            vector-effect="non-scaling-stroke"
-                        />
-
-                        <g class="pointer-events-auto">
-                            <g
-                                v-for="placed in placedEvents"
-                                :key="`event-${placed.point.sequence}`"
-                                class="cursor-pointer"
-                                @pointerdown.stop
-                                @click.stop="selectEvent(placed.point)"
-                                @mouseenter="
-                                    hoveredSequence = placed.point.sequence
+                            <circle
+                                v-if="lastPoint && lastPoint !== firstPoint"
+                                :cx="lastPoint.x * stageWidth"
+                                :cy="lastPoint.y * stageHeight"
+                                :r="markerRadius"
+                                :fill="
+                                    atEnd
+                                        ? TERMINAL_COLORS.end
+                                        : STATE_COLORS[lastPoint.state].dot
                                 "
-                                @mouseleave="hoveredSequence = null"
-                            >
-                                <circle
-                                    v-if="
-                                        selectedSequence ===
-                                        placed.point.sequence
+                                :stroke="TERMINAL_COLORS.outline"
+                                stroke-width="1"
+                                vector-effect="non-scaling-stroke"
+                            />
+
+                            <line
+                                v-for="placed in fannedEvents"
+                                :key="`leader-${placed.point.sequence}`"
+                                :x1="placed.anchorX"
+                                :y1="placed.anchorY"
+                                :x2="placed.x"
+                                :y2="placed.y"
+                                :stroke="EVENT_OUTLINE"
+                                stroke-width="1"
+                                stroke-opacity="0.55"
+                                vector-effect="non-scaling-stroke"
+                            />
+
+                            <g class="pointer-events-auto">
+                                <g
+                                    v-for="placed in placedEvents"
+                                    :key="`event-${placed.point.sequence}`"
+                                    class="cursor-pointer"
+                                    @pointerdown.stop
+                                    @click.stop="selectEvent(placed.point)"
+                                    @mouseenter="
+                                        hoveredSequence = placed.point.sequence
                                     "
-                                    :cx="placed.x"
-                                    :cy="placed.y"
-                                    :r="selectionRadius"
-                                    fill="none"
-                                    :stroke="EVENT_COLORS[placed.point.event!]"
-                                    stroke-width="1.5"
-                                    stroke-opacity="0.9"
-                                    vector-effect="non-scaling-stroke"
-                                />
-                                <circle
-                                    :cx="placed.x"
-                                    :cy="placed.y"
-                                    :r="eventRadius"
-                                    :fill="EVENT_COLORS[placed.point.event!]"
-                                    :stroke="EVENT_OUTLINE"
-                                    stroke-width="1.5"
-                                    vector-effect="non-scaling-stroke"
-                                />
-                                <circle
-                                    :cx="placed.x"
-                                    :cy="placed.y"
-                                    :r="hitRadius"
-                                    fill="transparent"
-                                />
+                                    @mouseleave="hoveredSequence = null"
+                                >
+                                    <circle
+                                        v-if="
+                                            selectedSequence ===
+                                            placed.point.sequence
+                                        "
+                                        :cx="placed.x"
+                                        :cy="placed.y"
+                                        :r="selectionRadius"
+                                        fill="none"
+                                        :stroke="
+                                            EVENT_COLORS[placed.point.event!]
+                                        "
+                                        stroke-width="1.5"
+                                        stroke-opacity="0.9"
+                                        vector-effect="non-scaling-stroke"
+                                    />
+                                    <circle
+                                        :cx="placed.x"
+                                        :cy="placed.y"
+                                        :r="eventRadius"
+                                        :fill="
+                                            EVENT_COLORS[placed.point.event!]
+                                        "
+                                        :stroke="EVENT_OUTLINE"
+                                        stroke-width="1.5"
+                                        vector-effect="non-scaling-stroke"
+                                    />
+                                    <circle
+                                        :cx="placed.x"
+                                        :cy="placed.y"
+                                        :r="hitRadius"
+                                        fill="transparent"
+                                    />
+                                </g>
                             </g>
                         </g>
                     </g>
@@ -878,48 +867,6 @@ function reset(): void {
                             <Maximize2 v-else class="size-4" />
                         </button>
                     </div>
-
-                    <div
-                        v-if="points.length > 1"
-                        class="pointer-events-auto absolute right-5 bottom-5 left-5 flex items-center gap-3 rounded-md border border-border bg-popover/90 px-3 py-2 backdrop-blur"
-                        @pointerdown.stop
-                        @wheel.stop
-                    >
-                        <button
-                            type="button"
-                            class="text-gold flex size-7 shrink-0 items-center justify-center"
-                            :title="playing ? t('Pause') : t('Play route')"
-                            @click="togglePlay"
-                        >
-                            <Pause v-if="playing" class="size-4" />
-                            <Play v-else class="size-4" />
-                        </button>
-
-                        <input
-                            type="range"
-                            min="0"
-                            max="1000"
-                            :value="Math.round(progress * 1000)"
-                            class="h-1 flex-1 cursor-pointer accent-[var(--primary)]"
-                            :aria-label="t('Route timeline')"
-                            @input="onScrub"
-                        />
-
-                        <span
-                            class="shrink-0 font-mono text-[11px] text-muted-foreground tabular-nums"
-                        >
-                            {{ elapsedLabel }}
-                        </span>
-
-                        <button
-                            v-if="scrubbing"
-                            type="button"
-                            class="shrink-0 font-mono text-[11px] text-muted-foreground underline-offset-4 hover:underline"
-                            @click="rewind"
-                        >
-                            {{ t('Whole route') }}
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -927,6 +874,32 @@ function reset(): void {
         <div
             class="wow-panel flex flex-col gap-2 px-4 py-3 text-xs text-muted-foreground"
         >
+            <template v-if="points.length > 1">
+                <div class="flex items-center gap-3">
+                    <input
+                        type="range"
+                        min="0"
+                        max="1000"
+                        :value="Math.round(progress * 1000)"
+                        class="h-1 flex-1 cursor-pointer accent-[var(--primary)]"
+                        :aria-label="t('Route timeline')"
+                        @input="onScrub"
+                    />
+
+                    <span class="shrink-0 font-mono text-[11px] tabular-nums">
+                        <span
+                            class="inline-block text-right"
+                            :style="{ width: elapsed.width }"
+                        >
+                            {{ elapsed.current }}
+                        </span>
+                        / {{ elapsed.total }}
+                    </span>
+                </div>
+
+                <hr class="wow-divider" />
+            </template>
+
             <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
                 <span v-if="firstPoint" class="flex items-center gap-2">
                     <span

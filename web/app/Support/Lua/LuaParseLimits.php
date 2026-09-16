@@ -4,9 +4,6 @@ namespace App\Support\Lua;
 
 final readonly class LuaParseLimits
 {
-    /**
-     * Совпадает с `max:` в ImportSavedVariablesRequest (в килобайтах).
-     */
     public const DEFAULT_MAX_BYTES = 33554432;
 
     public function __construct(

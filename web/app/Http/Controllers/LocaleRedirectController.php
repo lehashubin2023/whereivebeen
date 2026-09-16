@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Support\ResolveSupportChannels;
 use Illuminate\Http\RedirectResponse;
 use Spatie\RouteAttributes\Attributes\Get;
 
@@ -14,8 +15,10 @@ class LocaleRedirectController extends Controller
     }
 
     #[Get('support', name: 'support.redirect')]
-    public function support(): RedirectResponse
+    public function support(ResolveSupportChannels $resolveSupportChannels): RedirectResponse
     {
+        abort_unless($resolveSupportChannels->available(), 404);
+
         return $this->to('support');
     }
 

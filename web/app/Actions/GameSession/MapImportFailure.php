@@ -8,11 +8,6 @@ use Illuminate\Validation\ValidationException;
 use JsonException;
 use Throwable;
 
-/**
- * Превращает любое исключение импорта в пару «код + контекст». В контекст
- * попадают только скаляры: сырое сообщение исключения содержит пути на диске
- * и имена таблиц, показывать его как есть нельзя.
- */
 class MapImportFailure
 {
     private const UNKNOWN_MAP_CONSTRAINT = 'way_points_map_id_foreign';

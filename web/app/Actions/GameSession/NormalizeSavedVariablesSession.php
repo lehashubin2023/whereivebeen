@@ -9,19 +9,8 @@ use App\Support\GameSession\SavedVariables\SessionSpool;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
-/**
- * Собирает из заголовка и спула точек ровно тот JSON, который отдаёт
- * `WIVBN.BuildSessionExport` в аддоне. Благодаря этому импорт файла идёт по
- * тому же `DecodeRawInput` → `GameSessionJsonValidator`, что и вставка строки:
- * второго контура валидации недоверенного ввода не появляется.
- */
 class NormalizeSavedVariablesSession
 {
-    /**
-     * Ключи, которые аддон кладёт в конверт экспорта из собственного состояния.
-     * `version`, `locale`, `addon`, `gameVersion` и `build` в SavedVariables не
-     * хранятся вовсе — они берутся из `GetBuildInfo()` в момент экспорта.
-     */
     private const HEADER_MAP = [
         'schema' => 'schema',
         'continuesFrom' => 'continuesFrom',
@@ -59,9 +48,6 @@ class NormalizeSavedVariablesSession
         return null;
     }
 
-    /**
-     * Пишет конверт в отдельный файл и возвращает путь на диске спула.
-     */
     public function exec(SavedVariablesSessionDTO $session, string $batchUuid): string
     {
         $target = sprintf('%s/%s/%d.export.json', SessionSpool::DIR, $batchUuid, $session->sessionId);

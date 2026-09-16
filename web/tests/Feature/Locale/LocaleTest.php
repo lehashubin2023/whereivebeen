@@ -20,9 +20,6 @@ class LocaleTest extends TestCase
         $this->withoutVite();
     }
 
-    /**
-     * Blade's @json escapes non-ASCII, so compare against the same encoding.
-     */
     private function encoded(string $value): string
     {
         return trim((string) json_encode(

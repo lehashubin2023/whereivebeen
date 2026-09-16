@@ -13,8 +13,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class IssueReportFactory extends Factory
 {
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -26,9 +24,6 @@ class IssueReportFactory extends Factory
         ];
     }
 
-    /**
-     * Indicate that the report has been resolved.
-     */
     public function resolved(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -36,9 +31,6 @@ class IssueReportFactory extends Factory
         ]);
     }
 
-    /**
-     * Attach the report to a specific user.
-     */
     public function forUser(User $user): static
     {
         return $this->state(['user_id' => $user->id]);

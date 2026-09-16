@@ -12,10 +12,6 @@ use App\Models\WayPoint;
 
 class BuildUserStatistics
 {
-    /**
-     * Разбивки длиннее показывать бессмысленно: хвост распределения — единичные
-     * значения, а страница и так листается.
-     */
     private const MAX_ROWS = 100;
 
     private const PLACES = [
@@ -40,6 +36,8 @@ class BuildUserStatistics
 
     /** @var array<string, array<string, array<string, string>>> */
     private array $notes = [];
+
+    public function __construct(private readonly MeasureSessionTime $measureTime) {}
 
     /**
      * @return array<string, mixed>
@@ -100,7 +98,6 @@ class BuildUserStatistics
     {
         $points = 0;
         $maps = 0;
-        $tracked = 0;
 
         if ($sessionIds !== []) {
             $points = WayPoint::query()
@@ -112,13 +109,6 @@ class BuildUserStatistics
                 ->whereNotNull('map_id')
                 ->distinct()
                 ->count('map_id');
-
-            $tracked = (int) round((int) WayPoint::query()
-                ->whereIn('game_session_id', $sessionIds)
-                ->groupBy('game_session_id')
-                ->selectRaw('max(`time`) as duration')
-                ->pluck('duration')
-                ->sum() / 10);
         }
 
         return [
@@ -126,23 +116,8 @@ class BuildUserStatistics
             ['label' => __('Waypoints'), 'value' => (string) $points],
             ['label' => __('Zones visited'), 'value' => (string) $maps],
             ['label' => __('Events'), 'value' => (string) array_sum($this->totals)],
-            ['label' => __('Time played'), 'value' => self::duration(max(0, $tracked - $this->offline()))],
+            ['label' => __('Time played'), 'value' => self::duration(array_sum($this->measureTime->exec($sessionIds)))],
         ];
-    }
-
-    /**
-     * Отрезок сессии между выходом и следующим входом временем игры не считается:
-     * аддон пишет его длину в событие `gap`.
-     */
-    private function offline(): int
-    {
-        $seconds = 0;
-
-        foreach ($this->counters['gap.reason'] ?? [] as $counts) {
-            $seconds += $counts['seconds'] ?? 0;
-        }
-
-        return $seconds;
     }
 
     /**

@@ -13,17 +13,12 @@ class UpdateUserRequest extends FormRequest
 {
     use ProfileValidationRules;
 
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
@@ -36,8 +31,6 @@ class UpdateUserRequest extends FormRequest
     }
 
     /**
-     * Get the additional validation callbacks that should run after validation.
-     *
      * @return array<int, callable>
      */
     public function after(): array

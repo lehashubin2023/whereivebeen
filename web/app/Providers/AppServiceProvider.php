@@ -12,35 +12,20 @@ use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        //
-    }
+    public function register(): void {}
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         $this->configureDefaults();
         $this->configureGates();
     }
 
-    /**
-     * Define authorization gates.
-     */
     protected function configureGates(): void
     {
         Gate::define('view-issue-reports', fn (User $user): bool => $user->isAdmin());
         Gate::define('manage-users', fn (User $user): bool => $user->isAdmin());
     }
 
-    /**
-     * Configure default behaviors for production-ready applications.
-     */
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);

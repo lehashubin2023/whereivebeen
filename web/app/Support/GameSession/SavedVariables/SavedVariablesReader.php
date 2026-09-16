@@ -9,13 +9,6 @@ use App\Support\Lua\LuaParseLimits;
 use App\Support\Lua\LuaTableParser;
 use App\Support\Lua\LuaTokenType;
 
-/**
- * Читает `WhereIveBeen.lua` из SavedVariables за один проход.
- *
- * Сериализатор WoW пишет ключи в порядке `pairs`, то есть произвольном:
- * `points` может идти до `char`. Поэтому точки сразу уезжают в спул на диск,
- * а заголовок копится в памяти и отдаётся наружу на закрывающей скобке сессии.
- */
 class SavedVariablesReader
 {
     public const GLOBAL_NAME = 'WhereIveBeenDB';
@@ -165,9 +158,6 @@ class SavedVariablesReader
     }
 
     /**
-     * Ключ таблицы — это то, на что ссылаются `activeSessions` и
-     * `continuesFrom`; поле `id` внутри лишь дублирует его.
-     *
      * @param  array<string, mixed>  $header
      */
     private function resolveSessionId(string|int $sessionKey, array $header): int

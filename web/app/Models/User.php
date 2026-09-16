@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\LocaleEnum;
 use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
@@ -36,8 +35,6 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
@@ -72,7 +69,6 @@ class User extends Authenticatable
 
     public function canCreateGameSession(): bool
     {
-        // TODO: Going to add payment logic and move limits
         if (self::GAME_SESSIONS_LIMIT <= 0) {
             return false;
         }

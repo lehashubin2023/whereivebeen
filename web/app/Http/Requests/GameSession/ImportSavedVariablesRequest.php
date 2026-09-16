@@ -23,8 +23,6 @@ class ImportSavedVariablesRequest extends FormRequest
                 'required',
                 'file',
                 'max:'.(int) (LuaParseLimits::DEFAULT_MAX_BYTES / 1024),
-                // Не `mimes`: finfo отдаёт для .lua то text/plain, то
-                // application/octet-stream. Настоящая проверка — парсер.
                 'extensions:lua,txt',
             ],
         ];

@@ -7,9 +7,6 @@ use Illuminate\Validation\ValidationException;
 
 class GameSessionJsonValidator
 {
-    /**
-     * Define the validation rules.
-     */
     protected static function rules(): array
     {
         return [
@@ -87,19 +84,13 @@ class GameSessionJsonValidator
         ];
     }
 
-    /**
-     * Define custom error messages (optional).
-     */
     protected static function messages(): array
     {
         return [
-            //
         ];
     }
 
     /**
-     * Validate the array and return the validated data, or throw an exception.
-     *
      * @throws ValidationException
      */
     public static function validate(array $data): array

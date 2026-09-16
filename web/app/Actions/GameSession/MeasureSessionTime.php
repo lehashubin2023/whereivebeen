@@ -4,18 +4,17 @@ namespace App\Actions\GameSession;
 
 use App\Enums\GameSession\EventTypeEnum;
 use App\Models\Event;
-use App\Models\WayPoint;
+use Illuminate\Support\Facades\DB;
 
-/**
- * Длительность сессии — это время от первой до последней точки за вычетом
- * отлучек: аддон продолжает сессию через выходы из игры и пишет длину каждой
- * отлучки в событие `gap`.
- */
 class MeasureSessionTime
 {
+    private const STEP_LIMIT = 600;
+
+    private const GAP_OF_UNKNOWN_LENGTH = -1;
+
     /**
      * @param  array<int, int>  $sessionIds
-     * @return array<int, int> секунды по id сессии
+     * @return array<int, int>
      */
     public function exec(array $sessionIds): array
     {
@@ -23,24 +22,43 @@ class MeasureSessionTime
             return [];
         }
 
-        $tracked = WayPoint::query()
+        $offline = $this->offline($sessionIds);
+        $seconds = [];
+        $previousSession = null;
+        $previousTime = 0;
+
+        DB::table('way_points')
             ->whereIn('game_session_id', $sessionIds)
-            ->selectRaw('game_session_id, max(`time`) as tracked')
-            ->groupBy('game_session_id')
-            ->pluck('tracked', 'game_session_id')
-            ->map(fn ($value) => (int) round((int) $value / 10))
-            ->all();
+            ->select(['game_session_id', 'sequence', 'time'])
+            ->orderBy('game_session_id')
+            ->orderBy('sequence')
+            ->cursor()
+            ->each(function (object $point) use (&$seconds, &$previousSession, &$previousTime, $offline) {
+                $sessionId = (int) $point->game_session_id;
+                $time = (int) $point->time;
 
-        foreach ($this->offline($sessionIds) as $sessionId => $seconds) {
-            $tracked[$sessionId] = max(0, ($tracked[$sessionId] ?? 0) - $seconds);
-        }
+                $seconds[$sessionId] ??= 0;
 
-        return $tracked;
+                if ($previousSession === $sessionId) {
+                    $gap = $offline[$sessionId][(int) $point->sequence] ?? 0;
+
+                    $step = $gap === self::GAP_OF_UNKNOWN_LENGTH
+                        ? 0
+                        : (int) round(($time - $previousTime) / 10) - $gap;
+
+                    $seconds[$sessionId] += max(0, min($step, self::STEP_LIMIT));
+                }
+
+                $previousSession = $sessionId;
+                $previousTime = $time;
+            });
+
+        return $seconds;
     }
 
     /**
      * @param  array<int, int>  $sessionIds
-     * @return array<int, int>
+     * @return array<int, array<int, int>>
      */
     private function offline(array $sessionIds): array
     {
@@ -49,17 +67,15 @@ class MeasureSessionTime
         Event::query()
             ->whereIn('game_session_id', $sessionIds)
             ->where('event_type_id', EventTypeEnum::GAP->value)
-            ->select(['game_session_id', 'payload'])
+            ->select(['game_session_id', 'sequence', 'payload'])
             ->cursor()
             ->each(function (Event $event) use (&$offline) {
                 $payload = $event->getAttribute('payload');
 
-                if (! is_array($payload) || ! isset($payload['seconds'])) {
-                    return;
-                }
-
-                $id = (int) $event->getAttribute('game_session_id');
-                $offline[$id] = ($offline[$id] ?? 0) + (int) $payload['seconds'];
+                $offline[(int) $event->getAttribute('game_session_id')][(int) $event->getAttribute('sequence')]
+                    = is_array($payload) && isset($payload['seconds'])
+                        ? (int) $payload['seconds']
+                        : self::GAP_OF_UNKNOWN_LENGTH;
             });
 
         return $offline;

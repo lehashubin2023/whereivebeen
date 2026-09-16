@@ -5,20 +5,12 @@ namespace App\Support\GameSession;
 use App\Models\Map;
 use App\Models\WayPoint;
 
-/**
- * Аддон видит карты, которых нет в `maps`: инстансы, микро-зоны, карты новых
- * патчей. Точка с таким `mapId` валила весь импорт по внешнему ключу, поэтому
- * неизвестная карта отбрасывается в `null`, а сама точка сохраняется.
- */
 class MapIdFilter
 {
     /**
      * @param  array<int, true>  $known
      */
-    private function __construct(private array $known)
-    {
-        //
-    }
+    private function __construct(private array $known) {}
 
     /**
      * @var array<int, int>

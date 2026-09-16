@@ -12,7 +12,7 @@ class GameSession extends Model
 {
     use HasFactory;
 
-    const MAX_IMPORT_SIZE = 20971520; // 20mb
+    const MAX_IMPORT_SIZE = 20971520;
 
     public $casts = [
         'session_start_at' => 'datetime',

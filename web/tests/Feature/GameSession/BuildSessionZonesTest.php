@@ -110,6 +110,58 @@ class BuildSessionZonesTest extends TestCase
         $this->assertSame([0, 150, 300], array_column($points, 'time'));
     }
 
+    private function addPointWithoutMap(
+        GameSession $session,
+        int $sequence,
+        EventTypeEnum $type,
+        array $payload = [],
+    ): void {
+        WayPoint::query()->create([
+            'game_session_id' => $session->id,
+            'sequence' => $sequence,
+            'map_id' => null,
+            'time' => $sequence,
+            'x' => 0,
+            'y' => 0,
+        ]);
+
+        Event::query()->create([
+            'game_session_id' => $session->id,
+            'sequence' => $sequence,
+            'event_type_id' => $type->value,
+            'payload' => $payload,
+        ]);
+    }
+
+    public function test_a_point_without_a_map_still_moves_the_state(): void
+    {
+        $session = GameSession::factory()->create();
+
+        $this->addPoint($session, 1);
+        $this->addPointWithoutMap($session, 2, EventTypeEnum::MOUNT, ['mounted' => true]);
+        $this->addPoint($session, 3);
+
+        $points = collect((new BuildSessionZones)->exec($session)[0]['points'])
+            ->keyBy('sequence');
+
+        $this->assertFalse($points->has(2));
+        $this->assertSame('mounted', $points[3]['state']);
+    }
+
+    public function test_a_loading_screen_on_a_point_that_is_not_drawn_still_closes_the_visit(): void
+    {
+        $session = GameSession::factory()->create();
+
+        $this->addPoint($session, 1);
+        $this->addPointWithoutMap($session, 2, EventTypeEnum::GAP, ['seconds' => 3600]);
+        $this->addPoint($session, 3);
+
+        $zones = (new BuildSessionZones)->exec($session);
+
+        $this->assertCount(2, $zones);
+        $this->assertTrue($zones[1]['points'][0]['gap']);
+    }
+
     public function test_it_still_tracks_state(): void
     {
         $session = GameSession::factory()->create();
@@ -151,7 +203,6 @@ class BuildSessionZonesTest extends TestCase
 
         $session = GameSession::factory()->create();
 
-        // Полёт вдоль границы: карта дёргается в соседнюю на пару секунд и обратно.
         $this->addPoint($session, 1, null, [], self::MAP_ID, 2469);
         $this->addPoint($session, 2, null, [], self::NEIGHBOUR_MAP_ID, 2493);
         $this->addPoint($session, 3, null, [], self::MAP_ID, 2565);

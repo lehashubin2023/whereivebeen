@@ -13,10 +13,6 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Наполняет базу настоящим маршрутом из файла аддона: нужен, чтобы смотреть
- * карту и статистику на живых данных и снимать с них скриншоты.
- */
 class DemoSeeder extends Seeder
 {
     public const EMAIL = 'demo@whereivebeen.local';

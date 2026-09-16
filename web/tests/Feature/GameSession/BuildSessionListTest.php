@@ -33,7 +33,7 @@ class BuildSessionListTest extends TestCase
         ]);
     }
 
-    public function test_a_session_carries_the_zones_it_started_and_ended_in(): void
+    public function test_a_session_carries_its_length_and_point_count(): void
     {
         $user = User::factory()->create();
         $session = GameSession::factory()->forUser($user)->create();
@@ -44,20 +44,8 @@ class BuildSessionListTest extends TestCase
 
         $row = $this->firstRow($user);
 
-        $this->assertSame(['Hellfire Peninsula', 'Zangarmarsh'], $row['zones']);
         $this->assertSame(120, $row['duration']);
         $this->assertSame(3, $row['points_count']);
-    }
-
-    public function test_a_session_that_never_left_one_zone_names_it_once(): void
-    {
-        $user = User::factory()->create();
-        $session = GameSession::factory()->forUser($user)->create();
-
-        $this->addPoint($session, 1, self::HELLFIRE, 0);
-        $this->addPoint($session, 2, self::HELLFIRE, 300);
-
-        $this->assertSame(['Hellfire Peninsula'], $this->firstRow($user)['zones']);
     }
 
     public function test_time_spent_logged_out_is_not_counted_as_play_time(): void
@@ -71,6 +59,32 @@ class BuildSessionListTest extends TestCase
         $this->addEvent($session, 2, EventTypeEnum::GAP, ['reason' => 'login', 'seconds' => 3000]);
 
         $this->assertSame(600, $this->firstRow($user)['duration']);
+    }
+
+    public function test_an_absence_the_addon_never_marked_is_not_counted_as_play_time(): void
+    {
+        $user = User::factory()->create();
+        $session = GameSession::factory()->forUser($user)->create();
+
+        $this->addPoint($session, 1, self::HELLFIRE, 0);
+        $this->addPoint($session, 2, self::HELLFIRE, 1200);
+        $this->addPoint($session, 3, self::HELLFIRE, 451200);
+        $this->addPoint($session, 4, self::HELLFIRE, 452400);
+
+        $this->assertSame(840, $this->firstRow($user)['duration']);
+    }
+
+    public function test_a_gap_without_a_length_is_not_counted_as_play_time(): void
+    {
+        $user = User::factory()->create();
+        $session = GameSession::factory()->forUser($user)->create();
+
+        $this->addPoint($session, 1, self::HELLFIRE, 0);
+        $this->addPoint($session, 2, self::HELLFIRE, 36000);
+
+        $this->addEvent($session, 2, EventTypeEnum::GAP, ['reason' => 'loading']);
+
+        $this->assertSame(0, $this->firstRow($user)['duration']);
     }
 
     public function test_levels_come_from_the_level_up_events(): void

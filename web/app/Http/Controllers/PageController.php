@@ -44,6 +44,8 @@ class PageController extends Controller
     #[Get('support', name: 'support')]
     public function support(ResolveSupportChannels $resolveSupportChannels): Response
     {
+        abort_unless($resolveSupportChannels->available(), 404);
+
         return Inertia::render('Support', [
             'channels' => $resolveSupportChannels->exec(),
         ]);

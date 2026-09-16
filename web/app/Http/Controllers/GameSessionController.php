@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\GameSession\BuildImportBatchList;
 use App\Actions\GameSession\BuildSessionList;
 use App\Actions\GameSession\BuildSessionZones;
 use App\Actions\GameSession\ShowSessionEvent;
@@ -32,6 +33,7 @@ class GameSessionController extends Controller
     public function __construct(
         private readonly BuildSessionZones $buildSessionZones,
         private readonly BuildSessionList $buildSessionList,
+        private readonly BuildImportBatchList $buildImportBatchList,
         private readonly ShowSessionEvent $showSessionEvent,
     ) {}
 
@@ -56,7 +58,7 @@ class GameSessionController extends Controller
             'status' => ImportBatchStatusEnum::NEW,
         ]);
 
-        $path = (string) $file->store('imports/uploads/'.$user->id, ['disk' => SessionSpool::DISK]);
+        $path = (string) $file->store(SessionSpool::UPLOADS_DIR.'/'.$user->id, ['disk' => SessionSpool::DISK]);
 
         ImportSavedVariablesFileJob::dispatch(SessionSpool::DISK, $path, $user, $batch->id);
 
@@ -64,10 +66,13 @@ class GameSessionController extends Controller
     }
 
     #[Get('imports', name: 'imports')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        /** @var User $user */
+        $user = $request->user();
+
         $imports = ImportLog::query()
-            ->where('user_id', auth()->id())
+            ->where('user_id', $user->id)
             ->latest()
             ->paginate(20)
             ->through(fn (ImportLog $log) => [
@@ -86,28 +91,9 @@ class GameSessionController extends Controller
                 'created_at' => $log->created_at?->toIso8601String(),
             ]);
 
-        $batches = ImportBatch::query()
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->limit(10)
-            ->get()
-            ->map(fn (ImportBatch $batch) => [
-                'id' => $batch->id,
-                'filename' => $batch->filename,
-                'file_size' => $batch->file_size,
-                'status' => $batch->status->value,
-                'sessions_found' => $batch->sessions_found,
-                'sessions_queued' => $batch->sessions_queued,
-                'sessions_skipped' => $batch->sessions_skipped,
-                'skipped' => $batch->skipped,
-                'error_code' => $batch->error_code,
-                'error_context' => $batch->error_context,
-                'created_at' => $batch->created_at?->toIso8601String(),
-            ]);
-
         return Inertia::render('game-session/Imports', [
             'imports' => $imports,
-            'batches' => $batches,
+            'batches' => $this->buildImportBatchList->exec($user),
         ]);
     }
 

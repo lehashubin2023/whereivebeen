@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import LocaleSwitch from '@/components/LocaleSwitch.vue';
 import { locale, t } from '@/lib/i18n';
@@ -10,6 +10,8 @@ type Props = {
 };
 
 defineProps<Props>();
+
+const page = usePage();
 </script>
 
 <template>
@@ -30,7 +32,11 @@ defineProps<Props>();
             <Link :href="faq({ locale })" class="wow-btn-ghost">
                 {{ t('FAQ') }}
             </Link>
-            <Link :href="support({ locale })" class="wow-btn-ghost">
+            <Link
+                v-if="page.props.supportAvailable"
+                :href="support({ locale })"
+                class="wow-btn-ghost"
+            >
                 {{ t('Support') }}
             </Link>
             <Link :href="login()" class="wow-btn-ghost">

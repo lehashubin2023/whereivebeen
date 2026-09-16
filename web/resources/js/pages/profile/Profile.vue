@@ -59,7 +59,7 @@ function changeLocale(value: unknown): void {
 
     <h1 class="sr-only">{{ t('Profile') }}</h1>
 
-    <div class="flex flex-col space-y-6">
+    <div class="flex flex-col space-y-3">
         <Heading
             variant="small"
             :title="t('Profile')"
@@ -72,15 +72,15 @@ function changeLocale(value: unknown): void {
             v-slot="{ errors, processing }"
         >
             <div class="grid gap-2">
-                <Label for="email">{{ t('Email address') }}</Label>
                 <Input
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     name="email"
                     :default-value="user.email"
                     required
                     autocomplete="username"
+                    :aria-label="t('Email address')"
                     :placeholder="t('Email address')"
                 />
                 <InputError class="mt-2" :message="errors.email" />
@@ -97,7 +97,7 @@ function changeLocale(value: unknown): void {
         </Form>
     </div>
 
-    <div class="space-y-6">
+    <div class="space-y-3">
         <Heading
             variant="small"
             :title="t('Language')"
@@ -105,7 +105,6 @@ function changeLocale(value: unknown): void {
         />
 
         <div class="grid max-w-xs gap-2">
-            <Label for="locale">{{ t('Language') }}</Label>
             <Select :default-value="locale" @update:model-value="changeLocale">
                 <SelectTrigger id="locale" data-test="locale-select">
                     <SelectValue />

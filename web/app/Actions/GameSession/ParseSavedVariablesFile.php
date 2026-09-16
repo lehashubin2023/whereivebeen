@@ -13,11 +13,6 @@ use App\Support\GameSession\SavedVariables\SessionSpool;
 use App\Support\Lua\LuaParseLimits;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Разбирает файл SavedVariables и ставит в очередь по джобе на каждую пригодную
- * сессию: так у каждой появляется собственная строка журнала и собственный
- * прогресс, а разбор файла не упирается в таймаут одной большой задачи.
- */
 class ParseSavedVariablesFile
 {
     private const MAX_REPORTED_SKIPS = 50;

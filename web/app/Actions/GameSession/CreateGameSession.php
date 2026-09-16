@@ -34,8 +34,6 @@ class CreateGameSession
     }
 
     /**
-     * Повторный импорт той же сессии перезаписывает маршрут, сохраняя id записи.
-     *
      * @param  array<string, mixed>  $data
      */
     private function replace(GameSession $session, array $data): GameSession

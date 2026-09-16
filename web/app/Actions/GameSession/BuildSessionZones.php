@@ -12,11 +12,6 @@ use Illuminate\Support\Collection as SupportCollection;
 
 class BuildSessionZones
 {
-    /**
-     * Отлучка на другую карту, после которой посещение считается закрытым, а
-     * возвращение — новым. Короткие отлучки — это дребезг границы зон
-     * (`GetBestMapForUnit` на границе прыгает туда-обратно за секунды).
-     */
     private const GAP_SECONDS = 60;
 
     private bool $mounted = false;
@@ -30,7 +25,6 @@ class BuildSessionZones
     {
         $points = WayPoint::query()
             ->where('way_points.game_session_id', $gameSession->id)
-            ->whereNotNull('map_id')
             ->leftJoin('events', function (JoinClause $join) {
                 $join->on('events.game_session_id', '=', 'way_points.game_session_id')
                     ->on('events.sequence', '=', 'way_points.sequence');
@@ -53,24 +47,50 @@ class BuildSessionZones
         $points->each(fn (WayPoint $point) => $point->setAttribute('state', $this->defineState($point)));
 
         $maps = $this->renderableMaps($points);
-        $visible = $points
-            ->filter(fn (WayPoint $point) => $maps->has((int) $point->getAttribute('map_id')))
-            ->values();
 
-        return $this->buildZones($this->splitIntoVisits($visible), $maps, $gameSession);
+        return $this->buildZones(
+            $this->splitIntoVisits($this->keepRenderable($points, $maps)),
+            $maps,
+            $gameSession
+        );
     }
 
     /**
-     * Карты без картинки на маршрут не попадают, поэтому их точки выбрасываются
-     * до нарезки — иначе пролёт над такой картой рвал бы посещение надвое.
-     *
+     * @param  Collection<int, WayPoint>  $points
+     * @param  SupportCollection<int, Map>  $maps
+     * @return Collection<int, WayPoint>
+     */
+    private function keepRenderable(Collection $points, SupportCollection $maps): Collection
+    {
+        $visible = [];
+        $leftWorld = false;
+
+        foreach ($points as $point) {
+            $isGap = $point->getAttribute('event_type_id') === EventTypeEnum::GAP->value;
+
+            if (! $maps->has((int) $point->getAttribute('map_id'))) {
+                $leftWorld = $leftWorld || $isGap;
+
+                continue;
+            }
+
+            $point->setAttribute('left_world', $isGap || $leftWorld);
+            $leftWorld = false;
+
+            $visible[] = $point;
+        }
+
+        return new Collection($visible);
+    }
+
+    /**
      * @param  Collection<int, WayPoint>  $points
      * @return SupportCollection<int, Map>
      */
     private function renderableMaps(Collection $points): SupportCollection
     {
         return Map::query()
-            ->whereIn('id', $points->pluck('map_id')->unique()->all())
+            ->whereIn('id', $points->pluck('map_id')->filter()->unique()->all())
             ->get()
             ->filter(fn (Map $map) => file_exists(
                 public_path(ltrim((string) $map->getAttribute('image_path'), '/')),
@@ -79,11 +99,6 @@ class BuildSessionZones
     }
 
     /**
-     * Режет маршрут на посещения: пришёл на карту, походил, ушёл — одно посещение,
-     * вернулся позже — следующее. Возврат в пределах `GAP_SECONDS` дописывается
-     * в открытое посещение, иначе дребезг границы плодил бы обрывки. Загрузочный
-     * экран закрывает посещение всегда: игрок ушёл из мира.
-     *
      * @param  Collection<int, WayPoint>  $points
      * @return array<int, array{map_id: int, last_time: int, points: array<int, WayPoint>}>
      */
@@ -99,7 +114,7 @@ class BuildSessionZones
         foreach ($points as $point) {
             $mapId = (int) $point->getAttribute('map_id');
             $time = (int) $point->getAttribute('time');
-            $left = $point->getAttribute('event_type_id') === EventTypeEnum::GAP->value;
+            $left = (bool) $point->getAttribute('left_world');
 
             if ($left || $previousMapId !== $mapId) {
                 $open = $left ? null : ($openByMap[$mapId] ?? null);

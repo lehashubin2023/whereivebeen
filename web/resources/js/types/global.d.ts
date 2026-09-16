@@ -1,7 +1,6 @@
 import type { Auth } from '@/types/auth';
 import type { PageMeta } from '@/types/seo';
 
-// Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
     interface ImportMetaEnv {
         readonly VITE_APP_NAME: string;
@@ -22,6 +21,7 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             backgroundMap: string;
             meta: PageMeta;
+            supportAvailable: boolean;
             [key: string]: unknown;
         };
     }

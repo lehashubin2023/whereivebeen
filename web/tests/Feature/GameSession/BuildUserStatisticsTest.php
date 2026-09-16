@@ -222,18 +222,34 @@ class BuildUserStatisticsTest extends TestCase
         $first = GameSession::factory()->forUser($user)->create();
         $second = GameSession::factory()->forUser($user)->create();
 
+        $this->addEvent($first, EventTypeEnum::DEATH, [], 0);
         $this->addEvent($first, EventTypeEnum::RESURRECT, [], 1800);
-        $this->addEvent($second, EventTypeEnum::GAP, ['reason' => 'login', 'seconds' => 60], 600);
+        $this->addEvent($second, EventTypeEnum::VISIT, [], 0);
+        $this->addEvent($second, EventTypeEnum::GAP, ['reason' => 'login', 'seconds' => 60], 1200);
 
         $overview = collect($this->build($user)['overview'])
             ->pluck('value', 'label')
             ->all();
 
         $this->assertSame('2', $overview['Sessions']);
-        $this->assertSame('2', $overview['Waypoints']);
+        $this->assertSame('4', $overview['Waypoints']);
         $this->assertSame('1', $overview['Zones visited']);
-        $this->assertSame('2', $overview['Events']);
-        $this->assertSame('3m', $overview['Time played']);
+        $this->assertSame('4', $overview['Events']);
+        $this->assertSame('4m', $overview['Time played']);
+    }
+
+    public function test_time_played_is_the_sum_of_the_session_durations(): void
+    {
+        $user = User::factory()->create();
+        $session = GameSession::factory()->forUser($user)->create();
+
+        $this->addEvent($session, EventTypeEnum::VISIT, [], 0);
+        $this->addEvent($session, EventTypeEnum::VISIT, [], 1200);
+        $this->addEvent($session, EventTypeEnum::VISIT, [], 451200);
+
+        $overview = collect($this->build($user)['overview'])->pluck('value', 'label')->all();
+
+        $this->assertSame('12m', $overview['Time played']);
     }
 
     public function test_it_ignores_sessions_of_other_users(): void

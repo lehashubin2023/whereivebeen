@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('way_points', function (Blueprint $table) {
@@ -27,9 +24,6 @@ return new class extends Migration
                 ->unsigned();
             $table->smallInteger('y')
                 ->unsigned();
-            // $table->tinyInteger('state')
-            //     ->unsigned()
-            //     ->default(0);
 
             $table->primary(['game_session_id', 'sequence']);
 
@@ -41,9 +35,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('way_points');

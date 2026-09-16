@@ -12,8 +12,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class GameSessionFactory extends Factory
 {
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -28,9 +26,6 @@ class GameSessionFactory extends Factory
         ];
     }
 
-    /**
-     * Привязать сессию к конкретному пользователю.
-     */
     public function forUser(User $user): static
     {
         return $this->state(['user_id' => $user->id]);

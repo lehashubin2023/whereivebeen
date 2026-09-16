@@ -5,15 +5,13 @@ namespace App\Support\GameSession\SavedVariables;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
-/**
- * Точки сессии складываются на диск построчным JSON: файл аддона может весить
- * десятки мегабайт, и держать его разобранным в памяти нельзя.
- */
 class SessionSpool
 {
     public const DISK = 'local';
 
     public const DIR = 'imports/spool';
+
+    public const UPLOADS_DIR = 'imports/uploads';
 
     /**
      * @var resource|null

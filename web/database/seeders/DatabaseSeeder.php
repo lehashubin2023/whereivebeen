@@ -10,15 +10,10 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         $this->call(EventTypeSeeder::class);
         $this->call(MapSeeder::class);
-
-        // User::factory(10)->create();
 
         User::factory()
             ->setPassword(config('admin.default_password'))

@@ -16,6 +16,15 @@ class ResolveSupportChannels
         ];
     }
 
+    public function available(): bool
+    {
+        $channels = $this->exec();
+
+        return $channels['boosty'] !== null
+            || $channels['telegram'] !== null
+            || $channels['crypto'] !== [];
+    }
+
     private function link(string $key): ?string
     {
         $value = config($key);

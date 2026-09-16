@@ -8,7 +8,4 @@ use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(['name'])]
 #[WithoutTimestamps]
-class EventType extends Model
-{
-    //
-}
+class EventType extends Model {}

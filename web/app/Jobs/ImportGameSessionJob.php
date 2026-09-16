@@ -17,18 +17,12 @@ class ImportGameSessionJob implements ShouldQueue
 {
     use Queueable;
 
-    /**
-     * Create a new job instance.
-     */
     public function __construct(
         public string|ImportSourceContract $rawGameSessionInput,
         public User $user,
         public ?int $importBatchId = null
     ) {}
 
-    /**
-     * Execute the job.
-     */
     public function handle(ImportGameSession $importer, MapImportFailure $failures): void
     {
         $source = $this->source();
