@@ -23,8 +23,8 @@ defineOptions({
 });
 
 const statusClass: Record<IssueReportStatus, string> = {
-    new: 'bg-muted text-muted-foreground border-border',
-    resolved: 'bg-emerald-900/40 text-emerald-300 border-emerald-700/50',
+    new: 'text-gold',
+    resolved: 'text-emerald-400',
 };
 
 const statusLabel: Record<IssueReportStatus, string> = {
@@ -114,7 +114,7 @@ function formatDate(value: string | null): string {
                         </td>
                         <td class="px-4 py-3">
                             <Badge
-                                variant="outline"
+                                variant="status"
                                 :class="statusClass[row.status]"
                             >
                                 {{ statusLabel[row.status] }}

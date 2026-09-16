@@ -152,6 +152,15 @@
         scrollbar-color: var(--border) transparent;
         scrollbar-width: thin;
     }
+    button:not(:disabled),
+    [role='button']:not([aria-disabled='true']),
+    label[for],
+    summary,
+    select:not(:disabled),
+    [type='checkbox']:not(:disabled),
+    [type='radio']:not(:disabled) {
+        cursor: pointer;
+    }
 }
 
 @layer components {

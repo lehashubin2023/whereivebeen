@@ -41,10 +41,10 @@ defineOptions({
 const expanded = ref<number | null>(null);
 
 const statusClass: Record<ImportStatus, string> = {
-    new: 'bg-muted text-muted-foreground border-border',
-    in_process: 'bg-accent text-accent-foreground border-accent',
-    completed: 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60',
-    failed: 'bg-destructive/15 text-destructive border-destructive/40',
+    new: 'text-muted-foreground',
+    in_process: 'text-gold',
+    completed: 'text-emerald-400',
+    failed: 'text-destructive',
 };
 
 const statusLabel: Record<ImportStatus, string> = {
@@ -63,11 +63,11 @@ const batchStateLabel: Record<ImportBatchState, string> = {
 };
 
 const batchStateClass: Record<ImportBatchState, string> = {
-    queued: 'bg-muted text-muted-foreground border-border',
-    parsing: 'bg-accent text-accent-foreground border-accent',
-    importing: 'bg-accent text-accent-foreground border-accent',
-    completed: 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60',
-    failed: 'bg-destructive/15 text-destructive border-destructive/40',
+    queued: 'text-muted-foreground',
+    parsing: 'text-gold',
+    importing: 'text-gold',
+    completed: 'text-emerald-400',
+    failed: 'text-destructive',
 };
 
 const skipReasonLabel: Record<string, string> = {
@@ -264,7 +264,7 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
                         </td>
                         <td class="px-4 py-3">
                             <Badge
-                                variant="outline"
+                                variant="status"
                                 :class="batchStateClass[batch.state]"
                             >
                                 {{ batchStateLabel[batch.state] }}
@@ -391,7 +391,7 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
                         </td>
                         <td class="px-4 py-3">
                             <Badge
-                                variant="outline"
+                                variant="status"
                                 :class="statusClass[row.status]"
                             >
                                 {{ statusLabel[row.status] }}

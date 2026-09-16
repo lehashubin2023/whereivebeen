@@ -97,11 +97,11 @@ function formatDate(value: string | null): string {
                         </td>
                         <td class="px-4 py-3">
                             <Badge
-                                variant="outline"
+                                variant="status"
                                 :class="
                                     row.is_admin
-                                        ? 'text-gold border-border bg-muted'
-                                        : 'border-border bg-muted text-muted-foreground'
+                                        ? 'text-gold'
+                                        : 'text-muted-foreground'
                                 "
                             >
                                 {{ row.is_admin ? t('Admin') : t('User') }}
