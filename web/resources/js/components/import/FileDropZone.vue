@@ -6,22 +6,18 @@ import { t } from '@/lib/i18n';
 type Props = {
     name: string;
     accept?: string;
-    maxSizeMb?: number;
+    maxSizeMb: number;
+    invalid?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
     accept: '.lua,.txt',
-    maxSizeMb: 32,
+    invalid: false,
 });
 
 const input = ref<HTMLInputElement | null>(null);
 const dragging = ref(false);
 const selected = ref<File | null>(null);
-const localError = ref<string | null>(null);
-
-const extensions = computed(() =>
-    props.accept.split(',').map((item) => item.trim().replace(/^\./, '')),
-);
 
 const sizeLabel = computed(() => {
     if (!selected.value) {
@@ -35,46 +31,15 @@ const sizeLabel = computed(() => {
         : `${Math.max(1, Math.round(kb))} KB`;
 });
 
-function validate(file: File): string | null {
-    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
-
-    if (!extensions.value.includes(extension)) {
-        return t('Pick a .lua file — this one is .:extension.', {
-            extension: extension || '?',
-        });
+const borderClass = computed(() => {
+    if (props.invalid) {
+        return 'border-destructive';
     }
 
-    if (file.size > props.maxSizeMb * 1024 * 1024) {
-        return t('The file is larger than :size MB.', {
-            size: props.maxSizeMb,
-        });
-    }
-
-    if (file.size === 0) {
-        return t('The file is empty.');
-    }
-
-    return null;
-}
-
-function assign(file: File | null): void {
-    if (!file) {
-        return;
-    }
-
-    const problem = validate(file);
-
-    if (problem) {
-        localError.value = problem;
-        selected.value = null;
-        clearInput();
-
-        return;
-    }
-
-    localError.value = null;
-    selected.value = file;
-}
+    return dragging.value
+        ? 'border-primary bg-accent'
+        : 'border-border hover:border-primary/60';
+});
 
 function clearInput(): void {
     if (input.value) {
@@ -93,16 +58,15 @@ function onDrop(event: DragEvent): void {
         input.value.files = transfer.files;
     }
 
-    assign(file);
+    selected.value = file;
 }
 
 function onChange(event: Event): void {
-    assign((event.target as HTMLInputElement).files?.[0] ?? null);
+    selected.value = (event.target as HTMLInputElement).files?.[0] ?? null;
 }
 
 function reset(): void {
     selected.value = null;
-    localError.value = null;
     clearInput();
 }
 
@@ -113,11 +77,7 @@ defineExpose({ reset });
     <div class="flex flex-col gap-2">
         <label
             class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed px-6 py-8 text-center transition-colors"
-            :class="
-                dragging
-                    ? 'border-primary bg-accent'
-                    : 'border-border hover:border-primary/60'
-            "
+            :class="borderClass"
             @dragover.prevent="dragging = true"
             @dragenter.prevent="dragging = true"
             @dragleave.prevent="dragging = false"
@@ -155,9 +115,5 @@ defineExpose({ reset });
         >
             {{ t('Pick another file') }}
         </button>
-
-        <p v-if="localError" class="text-xs text-destructive">
-            {{ localError }}
-        </p>
     </div>
 </template>

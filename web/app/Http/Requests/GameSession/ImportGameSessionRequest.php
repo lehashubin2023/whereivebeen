@@ -22,4 +22,15 @@ class ImportGameSessionRequest extends FormRequest
             'game_session' => ['required', 'string', 'max:'.GameSession::MAX_IMPORT_SIZE],
         ];
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'game_session.required' => __('Paste the session exported from the addon first.'),
+            'game_session.max' => __('This session is too large to import.'),
+        ];
+    }
 }

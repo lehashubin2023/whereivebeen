@@ -77,7 +77,7 @@ class ProfileController extends Controller
         return redirect('/');
     }
 
-    #[Put(uri: 'password', name: 'password.update', middleware: ['verified', 'throttle:6,1'])]
+    #[Put(uri: 'password', name: 'password.update', middleware: ['verified', 'throttle:password-update'])]
     public function updatePassword(PasswordUpdateRequest $request): RedirectResponse
     {
         $request->user()->update([

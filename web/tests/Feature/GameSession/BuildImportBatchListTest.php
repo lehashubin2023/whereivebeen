@@ -42,7 +42,7 @@ class BuildImportBatchListTest extends TestCase
         $user = User::factory()->create();
         $this->batch($user, ImportBatchStatusEnum::NEW);
 
-        $rows = app(BuildImportBatchList::class)->exec($user);
+        $rows = app(BuildImportBatchList::class)->exec($user)->items();
 
         $this->assertSame(ImportBatchStateEnum::QUEUED->value, $rows[0]['state']);
         $this->assertFalse($rows[0]['settled']);
@@ -56,7 +56,7 @@ class BuildImportBatchListTest extends TestCase
         $this->log($user, $batch, ImportStatusEnum::COMPLETED);
         $this->log($user, $batch, ImportStatusEnum::IN_PROCESS);
 
-        $rows = app(BuildImportBatchList::class)->exec($user);
+        $rows = app(BuildImportBatchList::class)->exec($user)->items();
 
         $this->assertSame(ImportBatchStateEnum::IMPORTING->value, $rows[0]['state']);
         $this->assertSame(1, $rows[0]['sessions_finished']);
@@ -71,7 +71,7 @@ class BuildImportBatchListTest extends TestCase
         $this->log($user, $batch, ImportStatusEnum::COMPLETED);
         $this->log($user, $batch, ImportStatusEnum::FAILED);
 
-        $rows = app(BuildImportBatchList::class)->exec($user);
+        $rows = app(BuildImportBatchList::class)->exec($user)->items();
 
         $this->assertSame(ImportBatchStateEnum::COMPLETED->value, $rows[0]['state']);
         $this->assertSame(2, $rows[0]['sessions_finished']);
@@ -84,7 +84,7 @@ class BuildImportBatchListTest extends TestCase
         $user = User::factory()->create();
         $this->batch($user, ImportBatchStatusEnum::DISPATCHED, 0);
 
-        $rows = app(BuildImportBatchList::class)->exec($user);
+        $rows = app(BuildImportBatchList::class)->exec($user)->items();
 
         $this->assertSame(ImportBatchStateEnum::COMPLETED->value, $rows[0]['state']);
     }
@@ -94,7 +94,7 @@ class BuildImportBatchListTest extends TestCase
         $user = User::factory()->create();
         $this->batch($user, ImportBatchStatusEnum::FAILED, 0);
 
-        $rows = app(BuildImportBatchList::class)->exec($user);
+        $rows = app(BuildImportBatchList::class)->exec($user)->items();
 
         $this->assertSame(ImportBatchStateEnum::FAILED->value, $rows[0]['state']);
         $this->assertTrue($rows[0]['settled']);
@@ -105,7 +105,7 @@ class BuildImportBatchListTest extends TestCase
         $user = User::factory()->create();
         $this->batch(User::factory()->create(), ImportBatchStatusEnum::DISPATCHED, 1);
 
-        $this->assertSame([], app(BuildImportBatchList::class)->exec($user));
+        $this->assertSame([], app(BuildImportBatchList::class)->exec($user)->items());
     }
 
     public function test_logs_of_another_batch_do_not_count(): void
@@ -117,7 +117,7 @@ class BuildImportBatchListTest extends TestCase
         $this->log($user, $other, ImportStatusEnum::COMPLETED);
         $this->log($user, $batch, ImportStatusEnum::COMPLETED);
 
-        $rows = collect(app(BuildImportBatchList::class)->exec($user))->keyBy('id');
+        $rows = collect(app(BuildImportBatchList::class)->exec($user)->items())->keyBy('id');
 
         $this->assertSame(ImportBatchStateEnum::IMPORTING->value, $rows[$batch->id]['state']);
         $this->assertSame(ImportBatchStateEnum::COMPLETED->value, $rows[$other->id]['state']);

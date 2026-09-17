@@ -7,53 +7,58 @@ use App\Enums\GameSession\ImportStatusEnum;
 use App\Models\ImportBatch;
 use App\Models\ImportLog;
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 class BuildImportBatchList
 {
-    private const LIMIT = 10;
+    public const PAGE_NAME = 'files_page';
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return LengthAwarePaginator<int, array<string, mixed>>
      */
-    public function exec(User $user): array
+    public function exec(User $user): LengthAwarePaginator
     {
         $batches = ImportBatch::query()
             ->where('user_id', $user->id)
             ->latest()
-            ->limit(self::LIMIT)
-            ->get();
+            ->paginate(
+                perPage: (int) config('pagination.per_page'),
+                pageName: self::PAGE_NAME,
+            )
+            ->withQueryString();
 
-        $progress = $this->progress($batches->pluck('id')->all());
+        $progress = $this->progress(collect($batches->items())->pluck('id')->all());
 
-        return $batches
-            ->map(function (ImportBatch $batch) use ($progress) {
-                $counts = $progress[$batch->id] ?? ['finished' => 0, 'failed' => 0];
+        /** @var LengthAwarePaginator<int, array<string, mixed>> $rows */
+        $rows = $batches->through(function (ImportBatch $batch) use ($progress) {
+            $counts = $progress[$batch->id] ?? ['finished' => 0, 'failed' => 0];
 
-                $state = ImportBatchStateEnum::resolve(
-                    $batch->status,
-                    (int) $batch->sessions_queued,
-                    $counts['finished'],
-                );
+            $state = ImportBatchStateEnum::resolve(
+                $batch->status,
+                (int) $batch->sessions_queued,
+                $counts['finished'],
+            );
 
-                return [
-                    'id' => $batch->id,
-                    'filename' => $batch->filename,
-                    'file_size' => $batch->file_size,
-                    'state' => $state->value,
-                    'settled' => $state->isSettled(),
-                    'sessions_found' => $batch->sessions_found,
-                    'sessions_queued' => $batch->sessions_queued,
-                    'sessions_skipped' => $batch->sessions_skipped,
-                    'sessions_finished' => $counts['finished'],
-                    'sessions_failed' => $counts['failed'],
-                    'skipped' => $batch->skipped,
-                    'error_code' => $batch->error_code,
-                    'error_context' => $batch->error_context,
-                    'created_at' => $batch->created_at?->toIso8601String(),
-                ];
-            })
-            ->all();
+            return [
+                'id' => $batch->id,
+                'filename' => $batch->filename,
+                'file_size' => $batch->file_size,
+                'state' => $state->value,
+                'settled' => $state->isSettled(),
+                'sessions_found' => $batch->sessions_found,
+                'sessions_queued' => $batch->sessions_queued,
+                'sessions_skipped' => $batch->sessions_skipped,
+                'sessions_finished' => $counts['finished'],
+                'sessions_failed' => $counts['failed'],
+                'skipped' => $batch->skipped,
+                'error_code' => $batch->error_code,
+                'error_context' => $batch->error_context,
+                'created_at' => $batch->created_at?->toIso8601String(),
+            ];
+        });
+
+        return $rows;
     }
 
     /**

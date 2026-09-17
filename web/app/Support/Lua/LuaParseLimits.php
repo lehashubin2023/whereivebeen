@@ -4,7 +4,7 @@ namespace App\Support\Lua;
 
 final readonly class LuaParseLimits
 {
-    public const DEFAULT_MAX_BYTES = 33554432;
+    public const DEFAULT_MAX_BYTES = 16777216;
 
     public function __construct(
         public int $maxBytes = self::DEFAULT_MAX_BYTES,

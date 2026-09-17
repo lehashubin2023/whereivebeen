@@ -1,3 +1,5 @@
+import type { Paginator } from './ui';
+
 export type RouteState = 'ground' | 'mounted' | 'flying';
 
 export type EventSlug =
@@ -105,3 +107,9 @@ export interface ImportBatchRow {
     error_context: Record<string, unknown> | null;
     created_at: string | null;
 }
+
+export type ImportsPaginator = Paginator<ImportRow>;
+
+export type ImportBatchesPaginator = Paginator<ImportBatchRow>;
+
+export type ImportTab = 'sessions' | 'files';

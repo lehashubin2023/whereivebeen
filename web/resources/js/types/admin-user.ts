@@ -1,3 +1,5 @@
+import type { Paginator } from './ui';
+
 export interface AdminUserRow {
     id: number;
     email: string;
@@ -7,11 +9,7 @@ export interface AdminUserRow {
     created_at: string | null;
 }
 
-export interface AdminUsersPaginator {
-    data: AdminUserRow[];
-    prev_page_url: string | null;
-    next_page_url: string | null;
-}
+export type AdminUsersPaginator = Paginator<AdminUserRow>;
 
 export interface AdminUserForm {
     id: number;

@@ -41,7 +41,7 @@ class AdminUserController extends Controller
             ->when($search !== '', fn ($query) => $query->where('email', 'like', '%'.$search.'%'))
             ->withCount('gameSessions')
             ->latest('id')
-            ->paginate(20)
+            ->paginate((int) config('pagination.per_page'))
             ->withQueryString()
             ->through(fn (User $user) => [
                 'id' => $user->id,

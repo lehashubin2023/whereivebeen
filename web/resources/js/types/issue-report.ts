@@ -1,3 +1,5 @@
+import type { Paginator } from './ui';
+
 export type IssueReportStatus = 'new' | 'resolved';
 
 export interface IssueReportRow {
@@ -8,8 +10,4 @@ export interface IssueReportRow {
     created_at: string | null;
 }
 
-export interface IssueReportsPaginator {
-    data: IssueReportRow[];
-    prev_page_url: string | null;
-    next_page_url: string | null;
-}
+export type IssueReportsPaginator = Paginator<IssueReportRow>;

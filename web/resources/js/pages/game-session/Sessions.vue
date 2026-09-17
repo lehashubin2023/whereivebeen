@@ -2,8 +2,10 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ChevronRight } from '@lucide/vue';
 import { computed } from 'vue';
+import Pagination from '@/components/Pagination.vue';
 import SetupChecklist from '@/components/SetupChecklist.vue';
 import { locale, t } from '@/lib/i18n';
+import type { Paginator } from '@/types';
 
 interface SessionRow {
     id: number;
@@ -24,11 +26,7 @@ interface CharacterOption {
     sessions: number;
 }
 
-interface SessionsPaginator {
-    data: SessionRow[];
-    prev_page_url: string | null;
-    next_page_url: string | null;
-}
+type SessionsPaginator = Paginator<SessionRow>;
 
 const props = defineProps<{
     sessions: SessionsPaginator;
@@ -208,25 +206,6 @@ function filterByCharacter(event: Event): void {
 
         <SetupChecklist v-else />
 
-        <div
-            v-if="sessions.prev_page_url || sessions.next_page_url"
-            class="mt-4 flex justify-between"
-        >
-            <Link
-                v-if="sessions.prev_page_url"
-                :href="sessions.prev_page_url"
-                class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
-            >
-                {{ t('Previous') }}
-            </Link>
-            <span v-else />
-            <Link
-                v-if="sessions.next_page_url"
-                :href="sessions.next_page_url"
-                class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
-            >
-                {{ t('Next') }}
-            </Link>
-        </div>
+        <Pagination :paginator="sessions" />
     </div>
 </template>

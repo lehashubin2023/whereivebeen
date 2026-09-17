@@ -28,7 +28,7 @@ class IssueReportController extends Controller
         return Inertia::render('issue-report/Create');
     }
 
-    #[Post(uri: '', name: 'store', middleware: 'throttle:10,1')]
+    #[Post(uri: '', name: 'store', middleware: 'throttle:issue-report')]
     public function store(StoreIssueReportRequest $request): RedirectResponse
     {
         /** @var User $user */

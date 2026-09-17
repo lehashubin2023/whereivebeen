@@ -32,7 +32,7 @@ class AdminIssueReportController extends Controller
             ->with('user')
             ->when($status, fn ($query) => $query->where('status', $status))
             ->latest()
-            ->paginate(20)
+            ->paginate((int) config('pagination.per_page'))
             ->withQueryString()
             ->through(fn (IssueReport $report) => [
                 'id' => $report->id,

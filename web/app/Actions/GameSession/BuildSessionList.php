@@ -10,8 +10,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class BuildSessionList
 {
-    private const PER_PAGE = 20;
-
     public function __construct(private readonly MeasureSessionTime $measureTime) {}
 
     /**
@@ -25,7 +23,8 @@ class BuildSessionList
             ->when($realm !== null, fn ($query) => $query->where('realm', $realm))
             ->withCount('wayPoints')
             ->latest('session_start_at')
-            ->paginate(self::PER_PAGE);
+            ->paginate((int) config('pagination.per_page'))
+            ->withQueryString();
 
         $ids = collect($sessions->items())->pluck('id')->all();
 

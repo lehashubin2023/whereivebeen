@@ -52,6 +52,15 @@ class ImportSavedVariablesFileTest extends TestCase
             ->assertSessionHasErrors('file');
     }
 
+    public function test_an_upload_without_a_file_is_rejected(): void
+    {
+        Storage::fake(SessionSpool::DISK);
+
+        $this->actingAs(User::factory()->create())
+            ->post('/game-session/import-file', [])
+            ->assertSessionHasErrors('file');
+    }
+
     public function test_foreign_extensions_are_rejected(): void
     {
         Storage::fake(SessionSpool::DISK);
@@ -77,7 +86,7 @@ class ImportSavedVariablesFileTest extends TestCase
                     file_get_contents($this->getFixturesPath('/whereivebeen/WhereIveBeen.lua')),
                 ),
             ])
-            ->assertRedirect('/game-session/imports');
+            ->assertRedirect('/game-session/imports?tab=files');
 
         Queue::assertPushed(ImportSavedVariablesFileJob::class);
 
@@ -86,6 +95,29 @@ class ImportSavedVariablesFileTest extends TestCase
         $this->assertSame($user->id, $batch->user_id);
         $this->assertSame('WhereIveBeen.lua', $batch->filename);
         $this->assertSame(ImportBatchStatusEnum::NEW, $batch->status);
+    }
+
+    public function test_a_second_upload_inside_the_window_is_throttled(): void
+    {
+        Storage::fake(SessionSpool::DISK);
+        Queue::fake();
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/game-session/import-file', [
+                'file' => UploadedFile::fake()->createWithContent('WhereIveBeen.lua', 'WhereIveBeenDB = {}'),
+            ])
+            ->assertRedirect('/game-session/imports?tab=files');
+
+        $this->actingAs($user)
+            ->postJson('/game-session/import-file', [
+                'file' => UploadedFile::fake()->createWithContent('WhereIveBeen.lua', 'WhereIveBeenDB = {}'),
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('file');
+
+        $this->assertDatabaseCount('import_batches', 1);
     }
 
     public function test_the_parser_queues_one_job_per_usable_session(): void

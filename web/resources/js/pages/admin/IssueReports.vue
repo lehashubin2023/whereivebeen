@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import AdminIssueReportController from '@/actions/App/Http/Controllers/AdminIssueReportController';
+import Pagination from '@/components/Pagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { locale, t } from '@/lib/i18n';
@@ -161,25 +162,6 @@ function formatDate(value: string | null): string {
             <p class="text-muted-foreground">{{ t('No reports yet.') }}</p>
         </div>
 
-        <div
-            v-if="reports.prev_page_url || reports.next_page_url"
-            class="mt-4 flex justify-between"
-        >
-            <Link
-                v-if="reports.prev_page_url"
-                :href="reports.prev_page_url"
-                class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
-            >
-                {{ t('Previous') }}
-            </Link>
-            <span v-else />
-            <Link
-                v-if="reports.next_page_url"
-                :href="reports.next_page_url"
-                class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
-            >
-                {{ t('Next') }}
-            </Link>
-        </div>
+        <Pagination :paginator="reports" />
     </div>
 </template>

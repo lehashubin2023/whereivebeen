@@ -1,35 +1,33 @@
 <script setup lang="ts">
 import { Form, Head, Link, router } from '@inertiajs/vue3';
-import { ChevronDown, Inbox } from '@lucide/vue';
+import { ChevronDown, FileUp, Inbox } from '@lucide/vue';
 import { useIntervalFn } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 import GameSessionController from '@/actions/App/Http/Controllers/GameSessionController';
 import EmptyState from '@/components/EmptyState.vue';
 import FileDropZone from '@/components/import/FileDropZone.vue';
 import InputError from '@/components/InputError.vue';
+import Pagination from '@/components/Pagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { locale, t } from '@/lib/i18n';
 import { importErrorHint } from '@/lib/importErrors';
 import type {
-    ImportBatchRow,
+    ImportBatchesPaginator,
     ImportBatchState,
     ImportRow,
+    ImportsPaginator,
     ImportStatus,
+    ImportTab,
 } from '@/types';
-
-interface ImportsPaginator {
-    data: ImportRow[];
-    prev_page_url: string | null;
-    next_page_url: string | null;
-}
 
 const props = defineProps<{
     imports: ImportsPaginator;
-    batches: ImportBatchRow[];
+    batches: ImportBatchesPaginator;
+    tab: ImportTab;
+    fileLimitMb: number;
 }>();
 
 defineOptions({
@@ -39,6 +37,17 @@ defineOptions({
 });
 
 const expanded = ref<number | null>(null);
+const sessionInput = ref('');
+const dropZone = ref<InstanceType<typeof FileDropZone> | null>(null);
+
+const tabs: { key: ImportTab; label: string }[] = [
+    { key: 'sessions', label: t('Sessions') },
+    { key: 'files', label: t('Files') },
+];
+
+function tabHref(key: ImportTab): string {
+    return GameSessionController.index.url({ query: { tab: key } });
+}
 
 const statusClass: Record<ImportStatus, string> = {
     new: 'text-muted-foreground',
@@ -78,11 +87,6 @@ const skipReasonLabel: Record<string, string> = {
     too_large: t('Too large to import'),
 };
 
-const outcomeLabel: Record<string, string> = {
-    created: t('Added'),
-    replaced: t('Replaced'),
-};
-
 function formatDate(value: string | null): string {
     return value ? new Date(value).toLocaleString(locale) : '—';
 }
@@ -99,7 +103,7 @@ const POLL_MS = 3000;
 
 const working = computed(
     () =>
-        props.batches.some((batch) => !batch.settled) ||
+        props.batches.data.some((batch) => !batch.settled) ||
         props.imports.data.some(
             (row) => row.status === 'new' || row.status === 'in_process',
         ),
@@ -122,8 +126,28 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
     <div class="flex flex-1 flex-col p-4 md:p-8">
         <h1 class="sr-only">{{ t('Imports') }}</h1>
 
-        <div class="mb-6 grid gap-4 lg:grid-cols-2">
-            <div class="wow-panel flex flex-col p-6">
+        <nav
+            class="mb-6 flex gap-1 self-start rounded-md border border-border/60 p-1"
+        >
+            <Link
+                v-for="item in tabs"
+                :key="item.key"
+                :href="tabHref(item.key)"
+                preserve-scroll
+                class="rounded px-4 py-1.5 text-sm transition-colors"
+                :class="
+                    tab === item.key
+                        ? 'bg-muted font-medium text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                "
+                :data-test="`imports-tab-${item.key}`"
+            >
+                {{ item.label }}
+            </Link>
+        </nav>
+
+        <template v-if="tab === 'sessions'">
+            <div class="wow-panel mb-6 flex flex-col p-6">
                 <h2 class="font-semibold tracking-wide text-foreground">
                     {{ t('Paste a session') }}
                 </h2>
@@ -138,19 +162,17 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
 
                 <Form
                     v-bind="GameSessionController.importMethod.form()"
-                    :reset-on-success="['game_session']"
                     v-slot="{ errors, processing }"
                     class="flex flex-1 flex-col gap-4"
+                    @success="sessionInput = ''"
                 >
                     <div class="grid flex-1 gap-2">
-                        <Label for="game_session">{{
-                            t('Session data')
-                        }}</Label>
                         <Textarea
                             id="game_session"
+                            v-model="sessionInput"
                             name="game_session"
-                            required
                             rows="8"
+                            :aria-invalid="Boolean(errors.game_session)"
                             :placeholder="
                                 t('Paste the exported session, e.g. WIVB1:…')
                             "
@@ -171,7 +193,142 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
                 </Form>
             </div>
 
-            <div class="wow-panel flex flex-col p-6">
+            <div v-if="imports.data.length" class="wow-panel overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead
+                        class="border-b border-border/70 text-left text-muted-foreground"
+                    >
+                        <tr>
+                            <th class="px-4 py-3 font-medium">
+                                {{ t('Session') }}
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ t('Status') }}
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ t('Points') }}
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ t('Time') }}
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ t('Created') }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            v-for="row in imports.data"
+                            :key="row.id"
+                            class="border-b border-border/40 align-top last:border-0"
+                        >
+                            <td class="px-4 py-3">
+                                <Link
+                                    v-if="row.game_session_id"
+                                    :href="`/game-session/sessions/${row.game_session_id}`"
+                                    class="text-gold underline-offset-4 hover:underline"
+                                >
+                                    {{ row.game_session_id }}
+                                </Link>
+                                <span v-else>—</span>
+
+                                <p
+                                    v-if="row.outcome === 'replaced'"
+                                    class="mt-1 font-mono text-[11px] text-muted-foreground"
+                                >
+                                    {{ t('Replaced') }}
+                                </p>
+                            </td>
+                            <td class="px-4 py-3">
+                                <Badge
+                                    variant="status"
+                                    :class="statusClass[row.status]"
+                                >
+                                    {{ statusLabel[row.status] }}
+                                </Badge>
+
+                                <div
+                                    v-if="row.error_code"
+                                    class="mt-2 max-w-sm text-xs"
+                                >
+                                    <p class="text-destructive">
+                                        {{
+                                            importErrorHint(
+                                                row.error_code,
+                                                row.error_context,
+                                            )?.title
+                                        }}
+                                    </p>
+                                    <p class="text-muted-foreground">
+                                        {{
+                                            importErrorHint(
+                                                row.error_code,
+                                                row.error_context,
+                                            )?.hint
+                                        }}
+                                    </p>
+
+                                    <button
+                                        v-if="row.error_message"
+                                        type="button"
+                                        class="mt-1 inline-flex items-center gap-1 text-muted-foreground underline-offset-4 hover:underline"
+                                        @click="toggle(row.id)"
+                                    >
+                                        <ChevronDown
+                                            class="size-3 transition-transform"
+                                            :class="
+                                                expanded === row.id
+                                                    ? 'rotate-180'
+                                                    : ''
+                                            "
+                                        />
+                                        {{ t('Technical details') }}
+                                    </button>
+
+                                    <pre
+                                        v-if="expanded === row.id"
+                                        class="mt-1 overflow-x-auto rounded border border-border/60 bg-muted/40 p-2 font-mono text-[11px] whitespace-pre-wrap text-muted-foreground"
+                                        >{{ row.error_message }}</pre>
+                                </div>
+
+                                <p
+                                    v-if="unknownMaps(row)"
+                                    class="mt-2 max-w-sm text-xs text-muted-foreground"
+                                >
+                                    {{
+                                        t(
+                                            ':count zones are not on the site yet — the route was saved, but those maps cannot be drawn.',
+                                            { count: unknownMaps(row) },
+                                        )
+                                    }}
+                                </p>
+                            </td>
+                            <td class="px-4 py-3 tabular-nums">
+                                {{ row.points_done }} / {{ row.points_total }}
+                            </td>
+                            <td class="px-4 py-3 tabular-nums">
+                                {{ `${row.execution_time}${t('s')}` }}
+                            </td>
+                            <td class="px-4 py-3 text-muted-foreground">
+                                {{ formatDate(row.created_at) }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <EmptyState
+                v-else
+                :icon="Inbox"
+                :title="t('No imports yet.')"
+                :description="t('Paste a session above to import it.')"
+            />
+
+            <Pagination :paginator="imports" />
+        </template>
+
+        <template v-else>
+            <div class="wow-panel mb-6 flex flex-col p-6">
                 <h2 class="font-semibold tracking-wide text-foreground">
                     {{ t('Import every session at once') }}
                 </h2>
@@ -209,11 +366,18 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
 
                 <Form
                     v-bind="GameSessionController.importFile.form()"
+                    :reset-on-success="['file']"
                     v-slot="{ errors, processing }"
                     class="flex flex-1 flex-col justify-end gap-4"
+                    @success="dropZone?.reset()"
                 >
                     <div class="grid gap-2">
-                        <FileDropZone name="file" />
+                        <FileDropZone
+                            ref="dropZone"
+                            name="file"
+                            :max-size-mb="fileLimitMb"
+                            :invalid="Boolean(errors.file)"
+                        />
                         <InputError :message="errors.file" />
                     </div>
 
@@ -229,272 +393,136 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
                     </Button>
                 </Form>
             </div>
-        </div>
 
-        <div v-if="batches.length" class="wow-panel mb-6 overflow-x-auto">
-            <h2
-                class="border-b border-border/70 px-4 py-3 font-semibold tracking-wide text-foreground"
-            >
-                {{ t('Uploaded files') }}
-            </h2>
-
-            <table class="w-full text-sm">
-                <thead
-                    class="border-b border-border/70 text-left text-muted-foreground"
-                >
-                    <tr>
-                        <th class="px-4 py-3 font-medium">{{ t('File') }}</th>
-                        <th class="px-4 py-3 font-medium">{{ t('Status') }}</th>
-                        <th class="px-4 py-3 font-medium">
-                            {{ t('Sessions') }}
-                        </th>
-                        <th class="px-4 py-3 font-medium">
-                            {{ t('Created') }}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="batch in batches"
-                        :key="batch.id"
-                        class="border-b border-border/40 align-top last:border-0"
+            <div v-if="batches.data.length" class="wow-panel overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead
+                        class="border-b border-border/70 text-left text-muted-foreground"
                     >
-                        <td class="px-4 py-3 font-mono text-xs">
-                            {{ batch.filename }}
-                        </td>
-                        <td class="px-4 py-3">
-                            <Badge
-                                variant="status"
-                                :class="batchStateClass[batch.state]"
-                            >
-                                {{ batchStateLabel[batch.state] }}
-                            </Badge>
+                        <tr>
+                            <th class="px-4 py-3 font-medium">
+                                {{ t('File') }}
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ t('Status') }}
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ t('Found') }}
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ t('Queued') }}
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ t('Skipped') }}
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                {{ t('Created') }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            v-for="batch in batches.data"
+                            :key="batch.id"
+                            class="border-b border-border/40 align-top last:border-0"
+                        >
+                            <td class="px-4 py-3 font-mono text-xs">
+                                {{ batch.filename }}
+                            </td>
+                            <td class="px-4 py-3">
+                                <Badge
+                                    variant="status"
+                                    :class="batchStateClass[batch.state]"
+                                >
+                                    {{ batchStateLabel[batch.state] }}
+                                </Badge>
 
-                            <div
-                                v-if="batch.error_code"
-                                class="mt-2 max-w-xs text-xs"
-                            >
-                                <p class="text-destructive">
-                                    {{
-                                        importErrorHint(
-                                            batch.error_code,
-                                            batch.error_context,
-                                        )?.title
-                                    }}
-                                </p>
-                                <p class="text-muted-foreground">
-                                    {{
-                                        importErrorHint(
-                                            batch.error_code,
-                                            batch.error_context,
-                                        )?.hint
-                                    }}
-                                </p>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3">
-                            <span class="tabular-nums">
-                                {{
-                                    t(
-                                        ':found found · :queued queued · :skipped skipped',
-                                        {
-                                            found: batch.sessions_found,
-                                            queued: batch.sessions_queued,
-                                            skipped: batch.sessions_skipped,
-                                        },
-                                    )
-                                }}
-                            </span>
-
-                            <p
-                                v-if="batch.state === 'importing'"
-                                class="mt-1 font-mono text-[11px] text-muted-foreground tabular-nums"
-                            >
-                                {{ batch.sessions_finished }} /
+                                <div
+                                    v-if="batch.error_code"
+                                    class="mt-2 max-w-xs text-xs"
+                                >
+                                    <p class="text-destructive">
+                                        {{
+                                            importErrorHint(
+                                                batch.error_code,
+                                                batch.error_context,
+                                            )?.title
+                                        }}
+                                    </p>
+                                    <p class="text-muted-foreground">
+                                        {{
+                                            importErrorHint(
+                                                batch.error_code,
+                                                batch.error_context,
+                                            )?.hint
+                                        }}
+                                    </p>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 tabular-nums">
+                                {{ batch.sessions_found }}
+                            </td>
+                            <td class="px-4 py-3 tabular-nums">
                                 {{ batch.sessions_queued }}
-                            </p>
 
-                            <p
-                                v-else-if="batch.sessions_failed"
-                                class="mt-1 font-mono text-[11px] text-destructive tabular-nums"
-                            >
-                                {{
-                                    t(':count failed', {
-                                        count: batch.sessions_failed,
-                                    })
-                                }}
-                            </p>
-
-                            <ul
-                                v-if="batch.skipped?.length"
-                                class="mt-2 space-y-1 text-xs text-muted-foreground"
-                            >
-                                <li
-                                    v-for="skip in batch.skipped"
-                                    :key="skip.session_id"
+                                <p
+                                    v-if="batch.state === 'importing'"
+                                    class="mt-1 font-mono text-[11px] text-muted-foreground tabular-nums"
                                 >
-                                    {{ skip.character ?? t('Unnamed') }} ·
-                                    {{
-                                        skipReasonLabel[skip.reason] ??
-                                        skip.reason
-                                    }}
-                                </li>
-                            </ul>
-                        </td>
-                        <td class="px-4 py-3 text-muted-foreground">
-                            {{ formatDate(batch.created_at) }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div v-if="imports.data.length" class="wow-panel overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead
-                    class="border-b border-border/70 text-left text-muted-foreground"
-                >
-                    <tr>
-                        <th class="px-4 py-3 font-medium">
-                            {{ t('Session') }}
-                        </th>
-                        <th class="px-4 py-3 font-medium">{{ t('Status') }}</th>
-                        <th class="px-4 py-3 font-medium">{{ t('Points') }}</th>
-                        <th class="px-4 py-3 font-medium">{{ t('Time') }}</th>
-                        <th class="px-4 py-3 font-medium">
-                            {{ t('Created') }}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="row in imports.data"
-                        :key="row.id"
-                        class="border-b border-border/40 align-top last:border-0"
-                    >
-                        <td class="px-4 py-3">
-                            <Link
-                                v-if="row.game_session_id"
-                                :href="`/game-session/sessions/${row.game_session_id}`"
-                                class="text-gold underline-offset-4 hover:underline"
-                            >
-                                {{ row.game_session_id }}
-                            </Link>
-                            <span v-else>—</span>
-
-                            <p
-                                v-if="row.outcome"
-                                class="mt-1 font-mono text-[11px] text-muted-foreground"
-                            >
-                                {{ outcomeLabel[row.outcome] ?? row.outcome }}
-                            </p>
-                        </td>
-                        <td class="px-4 py-3">
-                            <Badge
-                                variant="status"
-                                :class="statusClass[row.status]"
-                            >
-                                {{ statusLabel[row.status] }}
-                            </Badge>
-
-                            <div
-                                v-if="row.error_code"
-                                class="mt-2 max-w-sm text-xs"
-                            >
-                                <p class="text-destructive">
-                                    {{
-                                        importErrorHint(
-                                            row.error_code,
-                                            row.error_context,
-                                        )?.title
-                                    }}
-                                </p>
-                                <p class="text-muted-foreground">
-                                    {{
-                                        importErrorHint(
-                                            row.error_code,
-                                            row.error_context,
-                                        )?.hint
-                                    }}
+                                    {{ batch.sessions_finished }} /
+                                    {{ batch.sessions_queued }}
                                 </p>
 
-                                <button
-                                    v-if="row.error_message"
-                                    type="button"
-                                    class="mt-1 inline-flex items-center gap-1 text-muted-foreground underline-offset-4 hover:underline"
-                                    @click="toggle(row.id)"
+                                <p
+                                    v-else-if="batch.sessions_failed"
+                                    class="mt-1 font-mono text-[11px] text-destructive tabular-nums"
                                 >
-                                    <ChevronDown
-                                        class="size-3 transition-transform"
-                                        :class="
-                                            expanded === row.id
-                                                ? 'rotate-180'
-                                                : ''
-                                        "
-                                    />
-                                    {{ t('Technical details') }}
-                                </button>
+                                    {{
+                                        t(':count failed', {
+                                            count: batch.sessions_failed,
+                                        })
+                                    }}
+                                </p>
+                            </td>
+                            <td class="px-4 py-3 tabular-nums">
+                                {{ batch.sessions_skipped }}
 
-                                <pre
-                                    v-if="expanded === row.id"
-                                    class="mt-1 overflow-x-auto rounded border border-border/60 bg-muted/40 p-2 font-mono text-[11px] whitespace-pre-wrap text-muted-foreground"
-                                    >{{ row.error_message }}</pre>
-                            </div>
+                                <ul
+                                    v-if="batch.skipped?.length"
+                                    class="mt-2 space-y-1 text-xs text-muted-foreground"
+                                >
+                                    <li
+                                        v-for="skip in batch.skipped"
+                                        :key="skip.session_id"
+                                    >
+                                        {{ skip.character ?? t('Unnamed') }} ·
+                                        {{
+                                            skipReasonLabel[skip.reason] ??
+                                            skip.reason
+                                        }}
+                                    </li>
+                                </ul>
+                            </td>
+                            <td class="px-4 py-3 text-muted-foreground">
+                                {{ formatDate(batch.created_at) }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-                            <p
-                                v-if="unknownMaps(row)"
-                                class="mt-2 max-w-sm text-xs text-muted-foreground"
-                            >
-                                {{
-                                    t(
-                                        ':count zones are not on the site yet — the route was saved, but those maps cannot be drawn.',
-                                        { count: unknownMaps(row) },
-                                    )
-                                }}
-                            </p>
-                        </td>
-                        <td class="px-4 py-3 tabular-nums">
-                            {{ row.points_done }} / {{ row.points_total }}
-                        </td>
-                        <td class="px-4 py-3 tabular-nums">
-                            {{ `${row.execution_time}${t('s')}` }}
-                        </td>
-                        <td class="px-4 py-3 text-muted-foreground">
-                            {{ formatDate(row.created_at) }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+            <EmptyState
+                v-else
+                :icon="FileUp"
+                :title="t('No files uploaded yet.')"
+                :description="
+                    t(
+                        'Upload the addon save file above to import every session in it.',
+                    )
+                "
+            />
 
-        <EmptyState
-            v-else
-            :icon="Inbox"
-            :title="t('No imports yet.')"
-            :description="
-                t('Paste a session above or upload the addon save file.')
-            "
-        />
-
-        <div
-            v-if="imports.prev_page_url || imports.next_page_url"
-            class="mt-4 flex justify-between"
-        >
-            <Link
-                v-if="imports.prev_page_url"
-                :href="imports.prev_page_url"
-                class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
-            >
-                {{ t('Previous') }}
-            </Link>
-            <span v-else />
-            <Link
-                v-if="imports.next_page_url"
-                :href="imports.next_page_url"
-                class="rounded-md border border-border/60 px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
-            >
-                {{ t('Next') }}
-            </Link>
-        </div>
+            <Pagination :paginator="batches" />
+        </template>
     </div>
 </template>

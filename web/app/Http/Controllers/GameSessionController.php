@@ -7,6 +7,7 @@ use App\Actions\GameSession\BuildSessionList;
 use App\Actions\GameSession\BuildSessionZones;
 use App\Actions\GameSession\ShowSessionEvent;
 use App\Enums\GameSession\ImportBatchStatusEnum;
+use App\Enums\GameSession\ImportTabEnum;
 use App\Http\Requests\GameSession\ImportGameSessionRequest;
 use App\Http\Requests\GameSession\ImportSavedVariablesRequest;
 use App\Jobs\ImportGameSessionJob;
@@ -16,6 +17,7 @@ use App\Models\ImportBatch;
 use App\Models\ImportLog;
 use App\Models\User;
 use App\Support\GameSession\SavedVariables\SessionSpool;
+use App\Support\Lua\LuaParseLimits;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,6 +32,8 @@ use Spatie\RouteAttributes\Attributes\Post;
 #[Group(prefix: 'game-session', as: 'game-session.')]
 class GameSessionController extends Controller
 {
+    private const IMPORTS_PAGE_NAME = 'imports_page';
+
     public function __construct(
         private readonly BuildSessionZones $buildSessionZones,
         private readonly BuildSessionList $buildSessionList,
@@ -37,15 +41,15 @@ class GameSessionController extends Controller
         private readonly ShowSessionEvent $showSessionEvent,
     ) {}
 
-    #[Post('import', name: 'import.store')]
+    #[Post('import', name: 'import.store', middleware: 'throttle:import-session')]
     public function import(ImportGameSessionRequest $request): RedirectResponse
     {
         ImportGameSessionJob::dispatch($request->game_session, $request->user());
 
-        return to_route('game-session.imports');
+        return to_route('game-session.imports', ['tab' => ImportTabEnum::SESSIONS->value]);
     }
 
-    #[Post('import-file', name: 'import.file')]
+    #[Post('import-file', name: 'import.file', middleware: 'throttle:import-file')]
     public function importFile(ImportSavedVariablesRequest $request): RedirectResponse
     {
         $file = $request->file('file');
@@ -62,7 +66,7 @@ class GameSessionController extends Controller
 
         ImportSavedVariablesFileJob::dispatch(SessionSpool::DISK, $path, $user, $batch->id);
 
-        return to_route('game-session.imports');
+        return to_route('game-session.imports', ['tab' => ImportTabEnum::FILES->value]);
     }
 
     #[Get('imports', name: 'imports')]
@@ -74,7 +78,11 @@ class GameSessionController extends Controller
         $imports = ImportLog::query()
             ->where('user_id', $user->id)
             ->latest()
-            ->paginate(20)
+            ->paginate(
+                perPage: (int) config('pagination.per_page'),
+                pageName: self::IMPORTS_PAGE_NAME,
+            )
+            ->withQueryString()
             ->through(fn (ImportLog $log) => [
                 'id' => $log->id,
                 'status' => $log->status->value,
@@ -94,6 +102,8 @@ class GameSessionController extends Controller
         return Inertia::render('game-session/Imports', [
             'imports' => $imports,
             'batches' => $this->buildImportBatchList->exec($user),
+            'tab' => ImportTabEnum::resolve($request->query('tab'))->value,
+            'fileLimitMb' => (int) (LuaParseLimits::DEFAULT_MAX_BYTES / 1024 / 1024),
         ]);
     }
 
