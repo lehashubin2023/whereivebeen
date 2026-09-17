@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Skull } from '@lucide/vue';
 import { computed } from 'vue';
-import { locale, t } from '@/lib/i18n';
+import { formatShortDate as shortDate } from '@/lib/datetime';
+import { t } from '@/lib/i18n';
 import type { Journey } from '@/types';
 
 const props = defineProps<{ journey: Journey }>();
@@ -39,20 +40,13 @@ function duration(seconds: number): string {
 
     return `${Math.floor(minutes / 60)}${t('h')} ${minutes % 60}${t('m')}`;
 }
-
-function shortDate(date: string): string {
-    return new Date(date).toLocaleDateString(locale, {
-        day: 'numeric',
-        month: 'short',
-    });
-}
 </script>
 
 <template>
     <div class="grid gap-3 lg:grid-cols-3">
         <section class="wow-panel flex flex-col gap-3 p-4 lg:col-span-2">
             <div class="flex items-baseline justify-between gap-3">
-                <h2 class="font-semibold tracking-wide text-foreground">
+                <h2 class="font-display text-lg tracking-wide text-foreground">
                     {{ t('Time in game') }}
                 </h2>
                 <span class="font-mono text-[11px] text-muted-foreground">
@@ -107,7 +101,7 @@ function shortDate(date: string): string {
         </section>
 
         <section class="wow-panel flex flex-col gap-3 p-4">
-            <h2 class="font-semibold tracking-wide text-foreground">
+            <h2 class="font-display text-lg tracking-wide text-foreground">
                 {{ t('Levels gained') }}
             </h2>
 
@@ -168,7 +162,7 @@ function shortDate(date: string): string {
             v-if="journey.zones.length"
             class="wow-panel flex flex-col gap-3 p-4 lg:col-span-3"
         >
-            <h2 class="font-semibold tracking-wide text-foreground">
+            <h2 class="font-display text-lg tracking-wide text-foreground">
                 {{ t('Where the time went') }}
             </h2>
 

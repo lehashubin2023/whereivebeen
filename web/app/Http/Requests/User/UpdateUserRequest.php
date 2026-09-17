@@ -15,7 +15,7 @@ class UpdateUserRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('update', $this->managedUser()) ?? false;
     }
 
     /**
@@ -37,16 +37,13 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                if ($this->managedUser()->id !== $this->user()?->id) {
+                if ($this->managedUser()->isMainAdmin()) {
+                    $this->validateMainAdmin($validator);
+
                     return;
                 }
 
-                if (! $this->boolean('is_admin')) {
-                    $validator->errors()->add(
-                        'is_admin',
-                        __('You cannot remove your own administrator access.'),
-                    );
-                }
+                $this->validateAccountType($validator);
             },
         ];
     }
@@ -57,5 +54,49 @@ class UpdateUserRequest extends FormRequest
         $user = $this->route('managedUser');
 
         return $user;
+    }
+
+    private function validateMainAdmin(Validator $validator): void
+    {
+        $target = $this->managedUser();
+
+        if (strcasecmp((string) $this->input('email'), $target->email) !== 0) {
+            $validator->errors()->add(
+                'email',
+                __('The main administrator email cannot be changed.'),
+            );
+        }
+
+        if (! $this->boolean('is_admin')) {
+            $validator->errors()->add(
+                'is_admin',
+                __('The main administrator account type cannot be changed.'),
+            );
+        }
+    }
+
+    private function validateAccountType(Validator $validator): void
+    {
+        $target = $this->managedUser();
+
+        if ($this->boolean('is_admin') === $target->isAdmin()) {
+            return;
+        }
+
+        if ($this->user()?->is($target) === true) {
+            $validator->errors()->add(
+                'is_admin',
+                __('You cannot change your own account type.'),
+            );
+
+            return;
+        }
+
+        if ($this->user()?->can('manageAdmins', User::class) !== true) {
+            $validator->errors()->add(
+                'is_admin',
+                __('Only the main administrator can manage administrator access.'),
+            );
+        }
     }
 }

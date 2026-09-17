@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import AdminUserController from '@/actions/App/Http/Controllers/AdminUserController';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
@@ -14,6 +15,7 @@ import type { AdminUserForm } from '@/types/admin-user';
 const props = defineProps<{
     user: AdminUserForm;
     isSelf: boolean;
+    canAssignAdmin: boolean;
     passwordRules: string;
 }>();
 
@@ -21,6 +23,30 @@ defineOptions({
     layout: {
         breadcrumbs: [{ title: t('Users'), href: '/admin/users' }],
     },
+});
+
+const canEditEmail = computed(() => !props.user.is_main_admin);
+
+const canEditRole = computed(
+    () => props.canAssignAdmin && !props.user.is_main_admin && !props.isSelf,
+);
+
+const roleHint = computed(() => {
+    if (props.user.is_main_admin) {
+        return t('The main administrator account type cannot be changed.');
+    }
+
+    if (props.isSelf) {
+        return t('You cannot change your own account type.');
+    }
+
+    if (!props.canAssignAdmin) {
+        return t(
+            'Only the main administrator can manage administrator access.',
+        );
+    }
+
+    return null;
 });
 </script>
 
@@ -48,10 +74,19 @@ defineOptions({
                         id="email"
                         type="email"
                         name="email"
-                        required
                         autocomplete="off"
                         :default-value="props.user.email"
+                        :readonly="!canEditEmail"
+                        :aria-invalid="Boolean(errors.email)"
                     />
+                    <p
+                        v-if="!canEditEmail"
+                        class="text-xs text-muted-foreground"
+                    >
+                        {{
+                            t('The main administrator email cannot be changed.')
+                        }}
+                    </p>
                     <InputError :message="errors.email" />
                 </div>
 
@@ -87,18 +122,18 @@ defineOptions({
                         name="is_admin"
                         value="1"
                         :default-value="props.user.is_admin"
-                        :disabled="props.isSelf"
+                        :disabled="!canEditRole"
                     />
                     <Label for="is_admin">{{ t('Administrator') }}</Label>
                 </div>
-                <p v-if="props.isSelf" class="text-xs text-muted-foreground">
-                    {{ t('You cannot remove your own administrator access.') }}
+                <p v-if="roleHint" class="text-xs text-muted-foreground">
+                    {{ roleHint }}
                 </p>
                 <input
-                    v-if="props.isSelf"
+                    v-if="!canEditRole"
                     type="hidden"
                     name="is_admin"
-                    value="1"
+                    :value="props.user.is_admin ? '1' : '0'"
                 />
                 <InputError :message="errors.is_admin" />
 

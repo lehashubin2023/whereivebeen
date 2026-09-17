@@ -83,7 +83,7 @@ onUnmounted(() => clearTimeout(resetTimer));
                 v-if="channels.boosty"
                 class="wow-panel flex flex-col gap-3 p-6"
             >
-                <h2 class="font-semibold tracking-wide text-foreground">
+                <h2 class="font-display text-lg tracking-wide text-foreground">
                     Boosty
                 </h2>
                 <p class="text-sm text-muted-foreground">
@@ -111,7 +111,7 @@ onUnmounted(() => clearTimeout(resetTimer));
                 v-if="channels.telegram"
                 class="wow-panel flex flex-col gap-3 p-6"
             >
-                <h2 class="font-semibold tracking-wide text-foreground">
+                <h2 class="font-display text-lg tracking-wide text-foreground">
                     {{ t('Telegram Stars') }}
                 </h2>
                 <p class="text-sm text-muted-foreground">
@@ -139,7 +139,7 @@ onUnmounted(() => clearTimeout(resetTimer));
                 v-if="channels.crypto.length"
                 class="wow-panel flex flex-col gap-3 p-6"
             >
-                <h2 class="font-semibold tracking-wide text-foreground">
+                <h2 class="font-display text-lg tracking-wide text-foreground">
                     {{ t('Crypto') }}
                 </h2>
                 <p class="text-sm text-muted-foreground">

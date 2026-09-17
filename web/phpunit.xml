@@ -31,6 +31,7 @@
         <env name="DB_PASSWORD" value="password"/>
         <env name="DB_URL" value=""/>
         <env name="IMPORT_LOG_CONNECTION" value="mysql"/>
+        <env name="MAIN_ADMIN_EMAIL" value="main@admin.test"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

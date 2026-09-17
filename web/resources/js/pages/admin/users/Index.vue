@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3';
+import { Form, Head, Link, usePage } from '@inertiajs/vue3';
 import { Pencil } from '@lucide/vue';
+import { computed, ref } from 'vue';
 import AdminUserController from '@/actions/App/Http/Controllers/AdminUserController';
+import InputError from '@/components/InputError.vue';
 import Pagination from '@/components/Pagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,10 +18,12 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { locale, t } from '@/lib/i18n';
-import type { AdminUsersPaginator } from '@/types/admin-user';
+import { Label } from '@/components/ui/label';
+import { formatDateTime } from '@/lib/datetime';
+import { t } from '@/lib/i18n';
+import type { AdminUserRow, AdminUsersPaginator } from '@/types/admin-user';
 
-defineProps<{
+const props = defineProps<{
     users: AdminUsersPaginator;
     search: string | null;
     currentUserId: number;
@@ -31,8 +35,18 @@ defineOptions({
     },
 });
 
-function formatDate(value: string | null): string {
-    return value ? new Date(value).toLocaleString(locale) : '—';
+const page = usePage();
+
+const query = ref(props.search ?? '');
+
+const searchError = computed(() => page.props.errors?.search);
+
+function roleLabel(row: AdminUserRow): string {
+    if (row.is_main_admin) {
+        return t('Main admin');
+    }
+
+    return row.is_admin ? t('Admin') : t('User');
 }
 </script>
 
@@ -42,18 +56,34 @@ function formatDate(value: string | null): string {
     <div class="flex flex-1 flex-col p-4 md:p-8">
         <h1 class="sr-only">{{ t('Users') }}</h1>
 
-        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <form method="get" action="/admin/users" class="flex gap-2">
-                <Input
-                    type="search"
-                    name="search"
-                    :default-value="search ?? ''"
-                    :placeholder="t('Search by email')"
-                    class="w-64"
-                />
-                <Button type="submit" variant="outline">
-                    {{ t('Search') }}
-                </Button>
+        <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+            <form
+                method="get"
+                action="/admin/users"
+                class="flex flex-col gap-1"
+            >
+                <div class="flex gap-2">
+                    <Input
+                        v-model="query"
+                        type="search"
+                        name="search"
+                        :placeholder="t('Search by email')"
+                        :aria-invalid="Boolean(searchError)"
+                        class="w-64"
+                    />
+                    <Button
+                        type="submit"
+                        variant="outline"
+                        :disabled="!query.trim()"
+                        data-test="search-users-button"
+                    >
+                        {{ t('Search') }}
+                    </Button>
+                    <Button v-if="search" as-child variant="ghost">
+                        <Link href="/admin/users">{{ t('Reset') }}</Link>
+                    </Button>
+                </div>
+                <InputError :message="searchError" />
             </form>
 
             <Button as-child>
@@ -105,7 +135,7 @@ function formatDate(value: string | null): string {
                                         : 'text-muted-foreground'
                                 "
                             >
-                                {{ row.is_admin ? t('Admin') : t('User') }}
+                                {{ roleLabel(row) }}
                             </Badge>
                         </td>
                         <td class="px-4 py-3">{{ row.sessions_count }}</td>
@@ -113,11 +143,12 @@ function formatDate(value: string | null): string {
                             {{ row.email_verified_at ? t('Yes') : t('No') }}
                         </td>
                         <td class="px-4 py-3 text-muted-foreground">
-                            {{ formatDate(row.created_at) }}
+                            {{ formatDateTime(row.created_at) }}
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-2">
                                 <Button
+                                    v-if="row.can_edit"
                                     as-child
                                     variant="outline"
                                     size="sm"
@@ -129,7 +160,7 @@ function formatDate(value: string | null): string {
                                     </Link>
                                 </Button>
 
-                                <Dialog v-if="row.id !== currentUserId">
+                                <Dialog v-if="row.can_delete">
                                     <DialogTrigger as-child>
                                         <Button
                                             variant="destructive"
@@ -148,7 +179,7 @@ function formatDate(value: string | null): string {
                                             "
                                             :options="{ preserveScroll: true }"
                                             class="space-y-6"
-                                            v-slot="{ processing }"
+                                            v-slot="{ errors, processing }"
                                         >
                                             <DialogHeader class="space-y-3">
                                                 <DialogTitle>
@@ -166,6 +197,35 @@ function formatDate(value: string | null): string {
                                                     }}
                                                 </DialogDescription>
                                             </DialogHeader>
+
+                                            <div class="grid gap-2">
+                                                <Label
+                                                    :for="`confirmation-${row.id}`"
+                                                >
+                                                    {{
+                                                        t(
+                                                            'Type the email of the user to confirm the deletion.',
+                                                        )
+                                                    }}
+                                                </Label>
+                                                <Input
+                                                    :id="`confirmation-${row.id}`"
+                                                    name="confirmation"
+                                                    autocomplete="off"
+                                                    :placeholder="row.email"
+                                                    :aria-invalid="
+                                                        Boolean(
+                                                            errors.confirmation,
+                                                        )
+                                                    "
+                                                    :data-test="`confirmation-${row.id}`"
+                                                />
+                                                <InputError
+                                                    :message="
+                                                        errors.confirmation
+                                                    "
+                                                />
+                                            </div>
 
                                             <DialogFooter class="gap-2">
                                                 <DialogClose as-child>

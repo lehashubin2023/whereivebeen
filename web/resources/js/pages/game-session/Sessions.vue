@@ -4,7 +4,8 @@ import { ChevronRight } from '@lucide/vue';
 import { computed } from 'vue';
 import Pagination from '@/components/Pagination.vue';
 import SetupChecklist from '@/components/SetupChecklist.vue';
-import { locale, t } from '@/lib/i18n';
+import { formatLongDate, formatShortTime } from '@/lib/datetime';
+import { t } from '@/lib/i18n';
 import type { Paginator } from '@/types';
 
 interface SessionRow {
@@ -16,8 +17,6 @@ interface SessionRow {
     points_count: number;
     session_start_at: string;
     duration: number;
-    level_from: number | null;
-    level_to: number | null;
 }
 
 interface CharacterOption {
@@ -54,27 +53,8 @@ function formatDuration(seconds: number): string {
     return `${Math.floor(minutes / 60)}${t('h')} ${minutes % 60}${t('m')}`;
 }
 
-function formatTime(value: string): string {
-    return new Date(value).toLocaleTimeString(locale, {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-}
-
 function title(row: SessionRow): string {
     return row.character || t('Session #:id', { id: row.game_session_id });
-}
-
-function levels(row: SessionRow): string | null {
-    if (row.level_from === null && row.level_to === null) {
-        return null;
-    }
-
-    if (row.level_from === row.level_to || row.level_to === null) {
-        return t('Level :level', { level: String(row.level_from) });
-    }
-
-    return `${row.level_from} → ${row.level_to}`;
 }
 
 const grouped = computed(() =>
@@ -88,10 +68,7 @@ const grouped = computed(() =>
                 previous &&
                 new Date(previous.session_start_at).toDateString() === day
                     ? null
-                    : new Date(row.session_start_at).toLocaleDateString(
-                          locale,
-                          { day: 'numeric', month: 'long', year: 'numeric' },
-                      ),
+                    : formatLongDate(row.session_start_at),
         };
     }),
 );
@@ -162,17 +139,25 @@ function filterByCharacter(event: Event): void {
                     class="wow-panel group flex items-center gap-4 px-4 py-3 transition-colors hover:border-primary/50"
                 >
                     <div class="flex min-w-0 flex-1 flex-col gap-1">
-                        <span
-                            class="group-hover:text-gold truncate font-medium text-foreground"
-                        >
-                            {{ title(item.row) }}
+                        <span class="flex min-w-0 items-baseline gap-2">
+                            <span
+                                class="group-hover:text-gold truncate font-medium text-foreground"
+                            >
+                                {{ title(item.row) }}
+                            </span>
+                            <span
+                                v-if="item.row.realm"
+                                class="shrink-0 font-mono text-[11px] text-muted-foreground"
+                            >
+                                {{ item.row.realm }}
+                            </span>
                         </span>
 
                         <span
                             class="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[11px] text-muted-foreground"
                         >
                             <span>{{
-                                formatTime(item.row.session_start_at)
+                                formatShortTime(item.row.session_start_at)
                             }}</span>
                             <span>·</span>
                             <span>{{ formatDuration(item.row.duration) }}</span>
@@ -184,16 +169,6 @@ function filterByCharacter(event: Event): void {
                                     })
                                 }}
                             </span>
-                            <template v-if="levels(item.row)">
-                                <span>·</span>
-                                <span class="text-gold">{{
-                                    levels(item.row)
-                                }}</span>
-                            </template>
-                            <template v-if="characters.length > 1">
-                                <span>·</span>
-                                <span>{{ item.row.realm }}</span>
-                            </template>
                         </span>
                     </div>
 

@@ -23,6 +23,7 @@ import type { LocaleOption } from '@/types';
 type Props = {
     passwordRules: string;
     locales: LocaleOption[];
+    isMainAdmin: boolean;
 };
 
 const props = defineProps<Props>();
@@ -78,11 +79,18 @@ function changeLocale(value: unknown): void {
                     class="block w-full"
                     name="email"
                     :default-value="user.email"
-                    required
                     autocomplete="username"
                     :aria-label="t('Email address')"
                     :placeholder="t('Email address')"
+                    :readonly="props.isMainAdmin"
+                    :aria-invalid="Boolean(errors.email)"
                 />
+                <p
+                    v-if="props.isMainAdmin"
+                    class="text-xs text-muted-foreground"
+                >
+                    {{ t('The main administrator email cannot be changed.') }}
+                </p>
                 <InputError class="mt-2" :message="errors.email" />
             </div>
 
@@ -200,5 +208,5 @@ function changeLocale(value: unknown): void {
         </Form>
     </div>
 
-    <DeleteUser />
+    <DeleteUser v-if="!props.isMainAdmin" />
 </template>

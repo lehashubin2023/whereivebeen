@@ -39,7 +39,7 @@ useBackgroundMap();
                 <div class="wow-panel w-full p-6">
                     <div class="mb-4 space-y-2 text-center">
                         <h1
-                            class="font-display text-xl font-semibold tracking-wide text-foreground"
+                            class="font-display text-xl tracking-wide text-foreground"
                         >
                             {{ title }}
                         </h1>

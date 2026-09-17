@@ -12,7 +12,7 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     {
         Gate::define('viewHorizon', function (?User $user): bool {
             return in_array($user?->email, [
-                config('admin.default_email'),
+                config('admin.main_email'),
             ], true);
         });
     }

@@ -39,7 +39,6 @@ defineOptions({
                     autofocus
                     id="email"
                     type="email"
-                    required
                     :tabindex="1"
                     autocomplete="email"
                     name="email"
@@ -52,7 +51,6 @@ defineOptions({
                 <Label for="password">{{ t('Password') }}</Label>
                 <PasswordInput
                     id="password"
-                    required
                     :tabindex="2"
                     autocomplete="new-password"
                     name="password"
@@ -68,7 +66,6 @@ defineOptions({
                 </Label>
                 <PasswordInput
                     id="password_confirmation"
-                    required
                     :tabindex="3"
                     autocomplete="new-password"
                     name="password_confirmation"

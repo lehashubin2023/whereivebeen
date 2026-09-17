@@ -3,6 +3,7 @@ import { X } from '@lucide/vue';
 import type { Component } from 'vue';
 import { computed } from 'vue';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatTime } from '@/lib/datetime';
 import { EVENT_COLORS, EVENT_ICONS } from '@/lib/eventStyles';
 import { t } from '@/lib/i18n';
 import type { SessionEvent } from '@/types';
@@ -22,10 +23,6 @@ const icon = computed<Component | null>(() =>
 const accent = computed(() =>
     props.event ? EVENT_COLORS[props.event.type] : null,
 );
-
-function formatTime(value: string | null): string {
-    return value ? new Date(value).toLocaleTimeString() : '';
-}
 </script>
 
 <template>
@@ -66,7 +63,7 @@ function formatTime(value: string | null): string {
                 v-if="event.time"
                 class="mt-0.5 text-center text-xs text-muted-foreground"
             >
-                {{ formatTime(event.time) }}
+                {{ formatTime(event.time, '') }}
             </p>
 
             <dl v-if="event.details.length" class="mt-3 flex flex-col gap-1">

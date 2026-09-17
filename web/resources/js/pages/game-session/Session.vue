@@ -4,7 +4,12 @@ import { Compass, MapPin } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import EmptyState from '@/components/EmptyState.vue';
 import RouteMap from '@/components/map/RouteMap.vue';
-import { locale, t } from '@/lib/i18n';
+import {
+    formatDateTime,
+    formatShortDate,
+    formatShortTime,
+} from '@/lib/datetime';
+import { t } from '@/lib/i18n';
 
 import type { SessionInfo, Zone } from '@/types';
 
@@ -22,19 +27,11 @@ defineOptions({
     },
 });
 
-const title = computed(() => {
-    const first = props.zones.at(0)?.name;
-    const last = props.zones.at(-1)?.name;
-
-    if (first === undefined) {
-        return (
-            props.session.character ||
-            t('Session #:id', { id: props.session.game_session_id })
-        );
-    }
-
-    return first === last ? first : `${first} → ${last}`;
-});
+const title = computed(
+    () =>
+        props.session.character ||
+        t('Session #:id', { id: props.session.game_session_id }),
+);
 
 const selectedZoneKey = ref<string | null>(props.zones[0]?.key ?? null);
 
@@ -53,17 +50,6 @@ const selectedZone = computed(
         props.zones[0] ??
         null,
 );
-
-function formatDate(value: string | null): string {
-    return value ? new Date(value).toLocaleString(locale) : '—';
-}
-
-function formatTime(value: string): string {
-    return new Date(value).toLocaleTimeString(locale, {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-}
 
 function formatDuration(seconds: number): string {
     if (seconds < 60) {
@@ -89,10 +75,7 @@ const visits = computed(() =>
             day:
                 previous && new Date(previous.time).toDateString() === day
                     ? null
-                    : new Date(zone.time).toLocaleDateString(locale, {
-                          month: 'short',
-                          day: 'numeric',
-                      }),
+                    : formatShortDate(zone.time),
         };
     }),
 );
@@ -106,7 +89,7 @@ const visits = computed(() =>
 
         <div class="flex flex-wrap items-end justify-between gap-3">
             <p class="text-sm text-muted-foreground">
-                <span class="font-semibold tracking-wide text-foreground">
+                <span class="font-display tracking-wide text-foreground">
                     {{ title }}
                 </span>
                 <span v-if="session.realm"> · {{ session.realm }}</span>
@@ -124,7 +107,7 @@ const visits = computed(() =>
                 >
                 ·
                 {{
-                    formatDate(
+                    formatDateTime(
                         selectedZone
                             ? selectedZone.time
                             : session.session_start_at,
@@ -137,21 +120,21 @@ const visits = computed(() =>
             v-if="selectedZone"
             class="flex min-h-0 flex-1 flex-col gap-3 lg:flex-row"
         >
-            <aside class="shrink-0 lg:w-60">
+            <aside class="relative shrink-0 lg:w-60">
                 <div
-                    class="wow-panel flex max-h-[30vh] flex-col gap-1 overflow-y-auto p-2 lg:max-h-full"
+                    class="wow-panel flex max-h-[30vh] flex-col gap-1 overflow-y-auto p-2 lg:absolute lg:inset-0 lg:max-h-none"
                 >
                     <template v-for="visit in visits" :key="visit.zone.key">
                         <p
                             v-if="visit.day"
-                            class="px-2 pt-2 pb-1 font-mono text-[11px] tracking-wide text-muted-foreground uppercase"
+                            class="shrink-0 px-2 pt-2 pb-1 font-mono text-[11px] tracking-wide text-muted-foreground uppercase"
                         >
                             {{ visit.day }}
                         </p>
 
                         <button
                             type="button"
-                            class="flex items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors"
+                            class="flex shrink-0 items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors"
                             :class="
                                 visit.zone.key === selectedZoneKey
                                     ? 'text-gold bg-accent'
@@ -166,7 +149,7 @@ const visits = computed(() =>
                             <span
                                 class="shrink-0 text-xs tabular-nums opacity-70"
                             >
-                                {{ formatTime(visit.zone.time) }}
+                                {{ formatShortTime(visit.zone.time) }}
                             </span>
                         </button>
                     </template>

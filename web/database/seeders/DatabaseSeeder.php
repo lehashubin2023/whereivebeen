@@ -16,9 +16,9 @@ class DatabaseSeeder extends Seeder
         $this->call(MapSeeder::class);
 
         User::factory()
-            ->setPassword(config('admin.default_password'))
+            ->setPassword(config('admin.main_password'))
             ->create([
-                'email' => config('admin.default_email'),
+                'email' => config('admin.main_email'),
                 'is_admin' => true,
             ]);
         User::factory()

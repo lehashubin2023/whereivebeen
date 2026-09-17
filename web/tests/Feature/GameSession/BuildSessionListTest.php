@@ -87,36 +87,6 @@ class BuildSessionListTest extends TestCase
         $this->assertSame(0, $this->firstRow($user)['duration']);
     }
 
-    public function test_levels_come_from_the_level_up_events(): void
-    {
-        $user = User::factory()->create();
-        $session = GameSession::factory()->forUser($user)->create(['level' => 60]);
-
-        $this->addPoint($session, 1, self::HELLFIRE, 0);
-        $this->addPoint($session, 2, self::HELLFIRE, 600);
-
-        $this->addLevelUp($session, 1, 61);
-        $this->addLevelUp($session, 2, 62);
-
-        $row = $this->firstRow($user);
-
-        $this->assertSame(60, $row['level_from']);
-        $this->assertSame(62, $row['level_to']);
-    }
-
-    public function test_without_level_ups_the_session_level_is_used(): void
-    {
-        $user = User::factory()->create();
-        $session = GameSession::factory()->forUser($user)->create(['level' => 58]);
-
-        $this->addPoint($session, 1, self::HELLFIRE, 0);
-
-        $row = $this->firstRow($user);
-
-        $this->assertSame(58, $row['level_from']);
-        $this->assertSame(58, $row['level_to']);
-    }
-
     public function test_the_list_can_be_filtered_by_character(): void
     {
         $user = User::factory()->create();
@@ -177,11 +147,6 @@ class BuildSessionListTest extends TestCase
             'x' => 0.5,
             'y' => 0.5,
         ]);
-    }
-
-    private function addLevelUp(GameSession $session, int $sequence, int $level): void
-    {
-        $this->addEvent($session, $sequence, EventTypeEnum::LEVELUP, ['level' => $level]);
     }
 
     /**

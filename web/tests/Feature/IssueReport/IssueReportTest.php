@@ -71,6 +71,39 @@ class IssueReportTest extends TestCase
             ->assertJsonValidationErrors('message');
     }
 
+    public function test_report_message_must_fit_the_limit()
+    {
+        $this->actingAs($this->user)
+            ->postJson('/issue-report', ['message' => str_repeat('a', 501)])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('message');
+
+        $this->assertDatabaseCount('issue_reports', 0);
+    }
+
+    public function test_report_message_of_exactly_the_limit_is_accepted()
+    {
+        $this->actingAs($this->user)
+            ->post('/issue-report', ['message' => str_repeat('a', 500)])
+            ->assertRedirect('/issue-report');
+
+        $this->assertDatabaseCount('issue_reports', 1);
+    }
+
+    public function test_only_one_report_can_be_sent_per_five_minutes()
+    {
+        $this->actingAs($this->user)
+            ->post('/issue-report', ['message' => 'The map does not load for my session.'])
+            ->assertRedirect('/issue-report');
+
+        $this->actingAs($this->user)
+            ->postJson('/issue-report', ['message' => 'And here is another problem right away.'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('message');
+
+        $this->assertDatabaseCount('issue_reports', 1);
+    }
+
     public function test_non_admin_cannot_open_admin_page()
     {
         $this->actingAs($this->user)

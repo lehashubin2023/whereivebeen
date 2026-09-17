@@ -85,7 +85,7 @@ const selectedGroup = computed(
 
             <div class="flex flex-1 flex-col gap-4">
                 <p class="text-sm text-muted-foreground">
-                    <span class="font-semibold tracking-wide text-foreground">
+                    <span class="font-display tracking-wide text-foreground">
                         {{ selectedGroup.label }}
                     </span>
                     ·
@@ -105,7 +105,7 @@ const selectedGroup = computed(
                             class="flex items-baseline justify-between gap-2 border-b border-border/70 px-4 py-3"
                         >
                             <h2
-                                class="font-semibold tracking-wide text-foreground"
+                                class="font-display text-lg tracking-wide text-foreground"
                             >
                                 {{ table.title }}
                             </h2>

@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
+import { ChevronDown } from '@lucide/vue';
+import { ref } from 'vue';
 import AdminIssueReportController from '@/actions/App/Http/Controllers/AdminIssueReportController';
 import Pagination from '@/components/Pagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { locale, t } from '@/lib/i18n';
+import { formatDateTime } from '@/lib/datetime';
+import { t } from '@/lib/i18n';
 import type {
     IssueReportStatus,
     IssueReportsPaginator,
@@ -57,8 +60,20 @@ function actionLabel(status: IssueReportStatus): string {
     return status === 'new' ? t('Mark resolved') : t('Reopen');
 }
 
-function formatDate(value: string | null): string {
-    return value ? new Date(value).toLocaleString(locale) : '—';
+const MESSAGE_PREVIEW_LENGTH = 100;
+
+const expanded = ref<number | null>(null);
+
+function isTruncated(message: string): boolean {
+    return message.length > MESSAGE_PREVIEW_LENGTH;
+}
+
+function messagePreview(message: string): string {
+    return `${message.slice(0, MESSAGE_PREVIEW_LENGTH).trimEnd()}…`;
+}
+
+function toggle(id: number): void {
+    expanded.value = expanded.value === id ? null : id;
 }
 </script>
 
@@ -105,13 +120,36 @@ function formatDate(value: string | null): string {
                     <tr
                         v-for="row in reports.data"
                         :key="row.id"
-                        class="border-b border-border/40 last:border-0"
+                        class="border-b border-border/40 align-top last:border-0"
                     >
                         <td class="px-4 py-3 text-muted-foreground">
                             {{ row.user_email ?? '—' }}
                         </td>
-                        <td class="max-w-md px-4 py-3 whitespace-pre-wrap">
-                            {{ row.message }}
+                        <td class="max-w-md px-4 py-3 align-top">
+                            <p class="whitespace-pre-wrap">
+                                {{
+                                    expanded === row.id ||
+                                    !isTruncated(row.message)
+                                        ? row.message
+                                        : messagePreview(row.message)
+                                }}
+                            </p>
+
+                            <button
+                                v-if="isTruncated(row.message)"
+                                type="button"
+                                class="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:underline"
+                                :data-test="`toggle-message-${row.id}`"
+                                @click="toggle(row.id)"
+                            >
+                                <ChevronDown
+                                    class="size-3 transition-transform"
+                                    :class="
+                                        expanded === row.id ? 'rotate-180' : ''
+                                    "
+                                />
+                                {{ t('Full message') }}
+                            </button>
                         </td>
                         <td class="px-4 py-3">
                             <Badge
@@ -122,7 +160,7 @@ function formatDate(value: string | null): string {
                             </Badge>
                         </td>
                         <td class="px-4 py-3 text-muted-foreground">
-                            {{ formatDate(row.created_at) }}
+                            {{ formatDateTime(row.created_at) }}
                         </td>
                         <td class="px-4 py-3 text-right">
                             <Form

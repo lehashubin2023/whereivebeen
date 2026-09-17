@@ -10,6 +10,11 @@ class ProfileDeleteRequest extends FormRequest
 {
     use PasswordValidationRules;
 
+    public function authorize(): bool
+    {
+        return $this->user()?->isMainAdmin() === false;
+    }
+
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

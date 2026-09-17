@@ -18,7 +18,7 @@ class StoreIssueReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'message' => ['required', 'string', 'min:10', 'max:5000'],
+            'message' => ['required', 'string', 'min:10', 'max:500'],
         ];
     }
 }

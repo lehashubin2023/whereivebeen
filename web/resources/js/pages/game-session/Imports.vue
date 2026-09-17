@@ -12,7 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
-import { locale, t } from '@/lib/i18n';
+import { formatDateTime } from '@/lib/datetime';
+import { t } from '@/lib/i18n';
 import { importErrorHint } from '@/lib/importErrors';
 import type {
     ImportBatchesPaginator,
@@ -87,10 +88,6 @@ const skipReasonLabel: Record<string, string> = {
     too_large: t('Too large to import'),
 };
 
-function formatDate(value: string | null): string {
-    return value ? new Date(value).toLocaleString(locale) : '—';
-}
-
 function unknownMaps(row: ImportRow): number {
     return Object.keys(row.warnings?.unknown_maps ?? {}).length;
 }
@@ -148,7 +145,7 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
 
         <template v-if="tab === 'sessions'">
             <div class="wow-panel mb-6 flex flex-col p-6">
-                <h2 class="font-semibold tracking-wide text-foreground">
+                <h2 class="font-display text-lg tracking-wide text-foreground">
                     {{ t('Paste a session') }}
                 </h2>
                 <hr class="wow-divider my-4" />
@@ -310,7 +307,7 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
                                 {{ `${row.execution_time}${t('s')}` }}
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">
-                                {{ formatDate(row.created_at) }}
+                                {{ formatDateTime(row.created_at) }}
                             </td>
                         </tr>
                     </tbody>
@@ -329,7 +326,7 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
 
         <template v-else>
             <div class="wow-panel mb-6 flex flex-col p-6">
-                <h2 class="font-semibold tracking-wide text-foreground">
+                <h2 class="font-display text-lg tracking-wide text-foreground">
                     {{ t('Import every session at once') }}
                 </h2>
                 <hr class="wow-divider my-4" />
@@ -383,7 +380,6 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
 
                     <Button
                         type="submit"
-                        variant="outline"
                         class="w-full"
                         :disabled="processing"
                         data-test="import-file-button"
@@ -504,7 +500,7 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
                                 </ul>
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">
-                                {{ formatDate(batch.created_at) }}
+                                {{ formatDateTime(batch.created_at) }}
                             </td>
                         </tr>
                     </tbody>

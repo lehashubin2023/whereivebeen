@@ -12,6 +12,7 @@ import { t } from '@/lib/i18n';
 
 defineProps<{
     passwordRules: string;
+    canAssignAdmin: boolean;
 }>();
 
 defineOptions({
@@ -49,7 +50,6 @@ defineOptions({
                         id="email"
                         type="email"
                         name="email"
-                        required
                         autocomplete="off"
                         placeholder="email@example.com"
                     />
@@ -61,7 +61,6 @@ defineOptions({
                     <PasswordInput
                         id="password"
                         name="password"
-                        required
                         autocomplete="new-password"
                         :placeholder="t('Password')"
                         :passwordrules="passwordRules"
@@ -76,7 +75,6 @@ defineOptions({
                     <PasswordInput
                         id="password_confirmation"
                         name="password_confirmation"
-                        required
                         autocomplete="new-password"
                         :placeholder="t('Confirm password')"
                         :passwordrules="passwordRules"
@@ -84,11 +82,13 @@ defineOptions({
                     <InputError :message="errors.password_confirmation" />
                 </div>
 
-                <div class="flex items-center gap-2">
-                    <Checkbox id="is_admin" name="is_admin" value="1" />
-                    <Label for="is_admin">{{ t('Administrator') }}</Label>
-                </div>
-                <InputError :message="errors.is_admin" />
+                <template v-if="canAssignAdmin">
+                    <div class="flex items-center gap-2">
+                        <Checkbox id="is_admin" name="is_admin" value="1" />
+                        <Label for="is_admin">{{ t('Administrator') }}</Label>
+                    </div>
+                    <InputError :message="errors.is_admin" />
+                </template>
 
                 <div class="mt-2 flex items-center gap-3">
                     <Button

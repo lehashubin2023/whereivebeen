@@ -7,11 +7,13 @@ use App\Actions\User\DeleteUser;
 use App\Actions\User\UpdateUser;
 use App\DTOs\User\CreateUserDTO;
 use App\DTOs\User\UpdateUserDTO;
+use App\Http\Requests\User\DeleteUserRequest;
+use App\Http\Requests\User\IndexUserRequest;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -33,12 +35,15 @@ class AdminUserController extends Controller
     ) {}
 
     #[Get(uri: '', name: 'index')]
-    public function index(Request $request): Response
+    public function index(IndexUserRequest $request): Response
     {
-        $search = trim((string) $request->query('search'));
+        /** @var User $actor */
+        $actor = $request->user();
+
+        $search = $request->search();
 
         $users = User::query()
-            ->when($search !== '', fn ($query) => $query->where('email', 'like', '%'.$search.'%'))
+            ->when($search !== null, fn ($query) => $query->where('email', 'like', '%'.$search.'%'))
             ->withCount('gameSessions')
             ->latest('id')
             ->paginate((int) config('pagination.per_page'))
@@ -47,23 +52,29 @@ class AdminUserController extends Controller
                 'id' => $user->id,
                 'email' => $user->email,
                 'is_admin' => $user->isAdmin(),
+                'is_main_admin' => $user->isMainAdmin(),
                 'sessions_count' => $user->game_sessions_count,
                 'email_verified_at' => $user->email_verified_at?->toIso8601String(),
                 'created_at' => $user->created_at?->toIso8601String(),
+                'can_edit' => $actor->can('update', $user),
+                'can_delete' => $actor->can('delete', $user),
             ]);
 
         return Inertia::render('admin/users/Index', [
             'users' => $users,
-            'search' => $search !== '' ? $search : null,
-            'currentUserId' => auth()->id(),
+            'search' => $search,
+            'currentUserId' => $actor->id,
         ]);
     }
 
     #[Get(uri: 'create', name: 'create')]
     public function create(): Response
     {
+        Gate::authorize('create', User::class);
+
         return Inertia::render('admin/users/Create', [
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
+            'canAssignAdmin' => Gate::allows('manageAdmins', User::class),
         ]);
     }
 
@@ -83,13 +94,17 @@ class AdminUserController extends Controller
     #[Get(uri: '{managedUser}/edit', name: 'edit')]
     public function edit(User $managedUser): Response
     {
+        Gate::authorize('update', $managedUser);
+
         return Inertia::render('admin/users/Edit', [
             'user' => [
                 'id' => $managedUser->id,
                 'email' => $managedUser->email,
                 'is_admin' => $managedUser->isAdmin(),
+                'is_main_admin' => $managedUser->isMainAdmin(),
             ],
             'isSelf' => $managedUser->id === auth()->id(),
+            'canAssignAdmin' => Gate::allows('manageAdmins', User::class),
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]);
     }
@@ -108,10 +123,8 @@ class AdminUserController extends Controller
     }
 
     #[Delete(uri: '{managedUser}', name: 'destroy')]
-    public function destroy(User $managedUser): RedirectResponse
+    public function destroy(DeleteUserRequest $request, User $managedUser): RedirectResponse
     {
-        abort_if($managedUser->id === auth()->id(), 403);
-
         $this->deleteUser->exec($managedUser);
 
         Inertia::flash('toast', [

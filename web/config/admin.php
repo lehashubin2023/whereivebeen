@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'default_email' => env('ADMIN_DEFAULT_EMAIL', 'admin@admin.com'),
+    'main_email' => env('MAIN_ADMIN_EMAIL', 'admin@admin.com'),
 
-    'default_password' => env('ADMIN_DEFAULT_PASSWORD', 'password'),
+    'main_password' => env('MAIN_ADMIN_PASSWORD', 'password'),
 ];

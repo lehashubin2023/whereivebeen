@@ -33,6 +33,7 @@ class ProfileController extends Controller
             'status' => $request->session()->get('status'),
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
             'locales' => LocaleEnum::options(),
+            'isMainAdmin' => $request->user()?->isMainAdmin() ?? false,
         ]);
     }
 

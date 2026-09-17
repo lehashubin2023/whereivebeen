@@ -2,20 +2,16 @@
 
 namespace App\Http\Requests\User;
 
-use App\Concerns\PasswordValidationRules;
-use App\Concerns\ProfileValidationRules;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreUserRequest extends FormRequest
+class DeleteUserRequest extends FormRequest
 {
-    use PasswordValidationRules, ProfileValidationRules;
-
     public function authorize(): bool
     {
-        return $this->user()?->can('create', User::class) ?? false;
+        return $this->user()?->can('delete', $this->managedUser()) ?? false;
     }
 
     /**
@@ -24,9 +20,7 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            ...$this->profileRules(),
-            'password' => $this->passwordRules(),
-            'is_admin' => ['nullable', 'boolean'],
+            'confirmation' => ['required', 'string', 'max:255'],
         ];
     }
 
@@ -37,17 +31,25 @@ class StoreUserRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                if (! $this->boolean('is_admin')) {
+                if ($validator->errors()->has('confirmation')) {
                     return;
                 }
 
-                if ($this->user()?->can('manageAdmins', User::class) !== true) {
+                if (strcasecmp((string) $this->input('confirmation'), $this->managedUser()->email) !== 0) {
                     $validator->errors()->add(
-                        'is_admin',
-                        __('Only the main administrator can manage administrator access.'),
+                        'confirmation',
+                        __('Type the email of the user to confirm the deletion.'),
                     );
                 }
             },
         ];
+    }
+
+    public function managedUser(): User
+    {
+        /** @var User $user */
+        $user = $this->route('managedUser');
+
+        return $user;
     }
 }

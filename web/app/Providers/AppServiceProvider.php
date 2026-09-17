@@ -42,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
             ->by($this->throttleKey($request))
             ->response($this->throttled('file')));
 
-        RateLimiter::for('issue-report', fn (Request $request) => Limit::perMinute(10)
+        RateLimiter::for('issue-report', fn (Request $request) => Limit::perMinutes(5, 1)
             ->by($this->throttleKey($request))
             ->response($this->throttled('message')));
 
@@ -81,10 +81,16 @@ class AppServiceProvider extends ServiceProvider
          * @param  array<string, mixed>  $headers
          */
         $respond = function (Request $request, array $headers) use ($field): never {
+            $seconds = (int) ($headers['Retry-After'] ?? 60);
+
             throw ValidationException::withMessages([
-                $field => __('Too many attempts. Try again in :seconds seconds.', [
-                    'seconds' => (int) ($headers['Retry-After'] ?? 60),
-                ]),
+                $field => $seconds >= 60
+                    ? __('Too many attempts. Try again in :minutes minutes.', [
+                        'minutes' => (int) ceil($seconds / 60),
+                    ])
+                    : __('Too many attempts. Try again in :seconds seconds.', [
+                        'seconds' => $seconds,
+                    ]),
             ]);
         };
 

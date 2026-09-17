@@ -65,6 +65,15 @@ class User extends Authenticatable
         return (bool) $this->is_admin;
     }
 
+    public function isMainAdmin(): bool
+    {
+        $email = config('admin.main_email');
+
+        return is_string($email)
+            && $email !== ''
+            && strcasecmp($this->email, $email) === 0;
+    }
+
     public const GAME_SESSIONS_LIMIT = 0;
 
     public function canCreateGameSession(): bool

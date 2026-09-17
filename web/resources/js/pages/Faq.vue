@@ -56,7 +56,7 @@ useBackgroundMap();
                 :key="item.question"
                 class="wow-panel flex flex-col gap-2 p-6"
             >
-                <h2 class="font-semibold tracking-wide text-foreground">
+                <h2 class="font-display text-lg tracking-wide text-foreground">
                     {{ item.question }}
                 </h2>
                 <p class="text-sm leading-relaxed text-muted-foreground">

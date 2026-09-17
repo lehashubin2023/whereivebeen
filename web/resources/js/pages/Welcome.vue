@@ -116,7 +116,9 @@ const clients = [
                     >
                         {{ t('Step :number', { number: index + 1 }) }}
                     </span>
-                    <h2 class="font-semibold tracking-wide text-foreground">
+                    <h2
+                        class="font-display text-lg tracking-wide text-foreground"
+                    >
                         {{ step.title }}
                     </h2>
                     <p class="text-sm text-muted-foreground">{{ step.text }}</p>
