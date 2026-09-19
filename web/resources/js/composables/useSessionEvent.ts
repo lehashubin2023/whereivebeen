@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { sessionEvent } from '@/actions/App/Http/Controllers/GameSessionController';
+import { sessionEvent } from '@/actions/App/Http/Controllers/GameSession/GameSessionController';
 import type { SessionEvent } from '@/types';
 
 export function useSessionEvent() {

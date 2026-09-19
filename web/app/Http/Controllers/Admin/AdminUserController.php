@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Actions\User\CreateUser;
 use App\Actions\User\DeleteUser;
 use App\Actions\User\UpdateUser;
 use App\DTOs\User\CreateUserDTO;
 use App\DTOs\User\UpdateUserDTO;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\User\DeleteUserRequest;
 use App\Http\Requests\User\IndexUserRequest;
 use App\Http\Requests\User\StoreUserRequest;

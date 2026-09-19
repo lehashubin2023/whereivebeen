@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import AdminUserController from '@/actions/App/Http/Controllers/AdminUserController';
+import AdminUserController from '@/actions/App/Http/Controllers/Admin/AdminUserController';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import { Button } from '@/components/ui/button';

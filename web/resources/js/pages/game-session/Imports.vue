@@ -3,7 +3,7 @@ import { Form, Head, Link, router } from '@inertiajs/vue3';
 import { ChevronDown, FileUp, Inbox } from '@lucide/vue';
 import { useIntervalFn } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
-import GameSessionController from '@/actions/App/Http/Controllers/GameSessionController';
+import ImportController from '@/actions/App/Http/Controllers/GameSession/ImportController';
 import EmptyState from '@/components/EmptyState.vue';
 import FileDropZone from '@/components/import/FileDropZone.vue';
 import InputError from '@/components/InputError.vue';
@@ -47,7 +47,7 @@ const tabs: { key: ImportTab; label: string }[] = [
 ];
 
 function tabHref(key: ImportTab): string {
-    return GameSessionController.index.url({ query: { tab: key } });
+    return ImportController.index.url({ query: { tab: key } });
 }
 
 const statusClass: Record<ImportStatus, string> = {
@@ -158,7 +158,7 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
                 </p>
 
                 <Form
-                    v-bind="GameSessionController.importMethod.form()"
+                    v-bind="ImportController.store.form()"
                     v-slot="{ errors, processing }"
                     class="flex flex-1 flex-col gap-4"
                     @success="sessionInput = ''"
@@ -362,7 +362,7 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
                 </div>
 
                 <Form
-                    v-bind="GameSessionController.importFile.form()"
+                    v-bind="ImportController.storeFile.form()"
                     :reset-on-success="['file']"
                     v-slot="{ errors, processing }"
                     class="flex flex-1 flex-col justify-end gap-4"

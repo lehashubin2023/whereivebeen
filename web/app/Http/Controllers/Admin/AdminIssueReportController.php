@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Actions\IssueReport\UpdateIssueReportStatus;
 use App\Enums\IssueReport\IssueReportStatusEnum;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\IssueReport\UpdateIssueReportStatusRequest;
 use App\Models\IssueReport;
 use Illuminate\Http\RedirectResponse;

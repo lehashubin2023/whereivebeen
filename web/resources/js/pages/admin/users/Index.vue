@@ -2,7 +2,7 @@
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
 import { Pencil } from '@lucide/vue';
 import { computed, ref } from 'vue';
-import AdminUserController from '@/actions/App/Http/Controllers/AdminUserController';
+import AdminUserController from '@/actions/App/Http/Controllers/Admin/AdminUserController';
 import InputError from '@/components/InputError.vue';
 import Pagination from '@/components/Pagination.vue';
 import { Badge } from '@/components/ui/badge';

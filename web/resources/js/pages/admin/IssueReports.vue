@@ -2,7 +2,7 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ChevronDown } from '@lucide/vue';
 import { ref } from 'vue';
-import AdminIssueReportController from '@/actions/App/Http/Controllers/AdminIssueReportController';
+import AdminIssueReportController from '@/actions/App/Http/Controllers/Admin/AdminIssueReportController';
 import Pagination from '@/components/Pagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
