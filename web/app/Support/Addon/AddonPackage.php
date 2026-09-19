@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Actions\Addon;
+namespace App\Support\Addon;
 
-use App\Concerns\AddonPackagePaths;
 use App\Exceptions\Addon\AddonSourceNotFoundException;
 use App\Exceptions\Addon\InvalidAddonTocException;
 use FilesystemIterator;
@@ -11,24 +10,81 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 use ZipArchive;
 
-class PackageAddon
+class AddonPackage
 {
-    use AddonPackagePaths;
+    public function name(): string
+    {
+        $name = config('addon.name');
+
+        return is_string($name) ? $name : 'WhereIveBeen';
+    }
+
+    public function directory(): string
+    {
+        $directory = config('addon.directory');
+
+        return is_string($directory) ? trim($directory, '/') : 'downloads';
+    }
+
+    public function source(): string
+    {
+        $source = config('addon.source');
+
+        return is_string($source) ? $source : base_path('../addon');
+    }
+
+    public function archiveName(string $version): string
+    {
+        return sprintf('%s-%s.zip', $this->name(), $version);
+    }
+
+    public function archivePath(string $version): string
+    {
+        return public_path($this->directory().'/'.$this->archiveName($version));
+    }
+
+    public function archivePattern(): string
+    {
+        return public_path($this->directory().'/'.$this->name().'-*.zip');
+    }
+
+    public function versionFromName(string $file): ?string
+    {
+        $pattern = '/^'.preg_quote($this->name(), '/').'-(.+)\.zip$/';
+
+        return preg_match($pattern, $file, $matches) === 1 ? $matches[1] : null;
+    }
+
+    public function latestArchive(): ?string
+    {
+        $archives = glob($this->archivePattern()) ?: [];
+
+        if ($archives === []) {
+            return null;
+        }
+
+        usort($archives, fn (string $a, string $b) => version_compare(
+            (string) $this->versionFromName(basename($a)),
+            (string) $this->versionFromName(basename($b))
+        ));
+
+        return end($archives);
+    }
 
     /**
      * @throws AddonSourceNotFoundException
      * @throws InvalidAddonTocException
      */
-    public function exec(string $source, ?string $version = null): string
+    public function package(?string $source = null, ?string $version = null): string
     {
-        $source = rtrim($source, '/\\');
+        $source = rtrim($source ?? $this->source(), '/\\');
 
         if (! is_dir($source)) {
             throw new AddonSourceNotFoundException("Addon source directory not found: {$source}");
         }
 
         $version ??= $this->readVersion($source);
-        $target = $this->addonArchivePath($version);
+        $target = $this->archivePath($version);
 
         $this->prepareDirectory();
 
@@ -39,7 +95,7 @@ class PackageAddon
         }
 
         foreach ($this->files($source) as $relativePath => $file) {
-            $zip->addFile($file->getPathname(), $this->addonName().'/'.$relativePath);
+            $zip->addFile($file->getPathname(), $this->name().'/'.$relativePath);
         }
 
         $zip->close();
@@ -52,7 +108,7 @@ class PackageAddon
      */
     private function readVersion(string $source): string
     {
-        $toc = $source.'/'.$this->addonName().'.toc';
+        $toc = $source.'/'.$this->name().'.toc';
 
         if (! is_file($toc)) {
             throw new InvalidAddonTocException("Addon .toc file not found: {$toc}");
@@ -94,13 +150,13 @@ class PackageAddon
 
     private function prepareDirectory(): void
     {
-        $directory = public_path($this->addonDirectory());
+        $directory = public_path($this->directory());
 
         if (! is_dir($directory)) {
             mkdir($directory, 0755, true);
         }
 
-        foreach (glob($this->addonArchivePattern()) ?: [] as $archive) {
+        foreach (glob($this->archivePattern()) ?: [] as $archive) {
             unlink($archive);
         }
     }

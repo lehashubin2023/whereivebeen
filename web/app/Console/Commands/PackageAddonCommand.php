@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Actions\Addon\PackageAddon;
 use App\Exceptions\Addon\AddonSourceNotFoundException;
 use App\Exceptions\Addon\InvalidAddonTocException;
+use App\Support\Addon\AddonPackage;
 use Illuminate\Console\Command;
 
 class PackageAddonCommand extends Command
@@ -15,14 +15,14 @@ class PackageAddonCommand extends Command
 
     protected $description = 'Package the WoW addon into a zip archive served from public/';
 
-    public function handle(PackageAddon $packageAddon): int
+    public function handle(AddonPackage $addon): int
     {
         $source = $this->option('source');
         $version = $this->option('addon-version');
 
         try {
-            $archive = $packageAddon->exec(
-                is_string($source) && $source !== '' ? $source : $this->configuredSource(),
+            $archive = $addon->package(
+                is_string($source) && $source !== '' ? $source : null,
                 is_string($version) && $version !== '' ? $version : null
             );
         } catch (AddonSourceNotFoundException|InvalidAddonTocException $e) {
@@ -38,12 +38,5 @@ class PackageAddonCommand extends Command
         ));
 
         return self::SUCCESS;
-    }
-
-    private function configuredSource(): string
-    {
-        $source = config('addon.source');
-
-        return is_string($source) ? $source : base_path('../addon');
     }
 }

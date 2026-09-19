@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Addon;
 
-use App\Actions\Addon\PackageAddon;
 use App\Actions\Addon\ResolveAddonDownload;
 use App\Exceptions\Addon\AddonSourceNotFoundException;
 use App\Exceptions\Addon\InvalidAddonTocException;
+use App\Support\Addon\AddonPackage;
 use Tests\TestCase;
 use ZipArchive;
 
@@ -41,7 +41,7 @@ class PackageAddonTest extends TestCase
 
     public function test_it_packages_the_addon_under_the_required_folder_name()
     {
-        $archive = (new PackageAddon)->exec($this->source);
+        $archive = (new AddonPackage)->package($this->source);
 
         $this->assertSame(public_path($this->directory.'/WhereIveBeen-2.7.zip'), $archive);
         $this->assertFileExists($archive);
@@ -53,8 +53,8 @@ class PackageAddonTest extends TestCase
 
     public function test_it_accepts_a_version_override_and_drops_previous_archives()
     {
-        (new PackageAddon)->exec($this->source);
-        (new PackageAddon)->exec($this->source, '3.0');
+        (new AddonPackage)->package($this->source);
+        (new AddonPackage)->package($this->source, '3.0');
 
         $this->assertFileDoesNotExist(public_path($this->directory.'/WhereIveBeen-2.7.zip'));
         $this->assertFileExists(public_path($this->directory.'/WhereIveBeen-3.0.zip'));
@@ -64,7 +64,7 @@ class PackageAddonTest extends TestCase
     {
         $this->expectException(AddonSourceNotFoundException::class);
 
-        (new PackageAddon)->exec($this->source.'-nope');
+        (new AddonPackage)->package($this->source.'-nope');
     }
 
     public function test_it_fails_when_the_toc_has_no_version()
@@ -73,7 +73,7 @@ class PackageAddonTest extends TestCase
 
         $this->expectException(InvalidAddonTocException::class);
 
-        (new PackageAddon)->exec($this->source);
+        (new AddonPackage)->package($this->source);
     }
 
     public function test_the_command_packages_the_addon()
@@ -92,9 +92,9 @@ class PackageAddonTest extends TestCase
 
     public function test_resolver_reports_the_packaged_archive()
     {
-        (new PackageAddon)->exec($this->source);
+        (new AddonPackage)->package($this->source);
 
-        $download = (new ResolveAddonDownload)->exec();
+        $download = (new ResolveAddonDownload(new AddonPackage))->exec();
 
         $this->assertTrue($download['available']);
         $this->assertSame('2.7', $download['version']);
@@ -109,12 +109,12 @@ class PackageAddonTest extends TestCase
         touch(public_path($this->directory.'/WhereIveBeen-1.9.zip'));
         touch(public_path($this->directory.'/WhereIveBeen-1.10.zip'));
 
-        $this->assertSame('1.10', (new ResolveAddonDownload)->exec()['version']);
+        $this->assertSame('1.10', (new ResolveAddonDownload(new AddonPackage))->exec()['version']);
     }
 
     public function test_resolver_reports_a_missing_archive()
     {
-        $download = (new ResolveAddonDownload)->exec();
+        $download = (new ResolveAddonDownload(new AddonPackage))->exec();
 
         $this->assertFalse($download['available']);
         $this->assertNull($download['version']);

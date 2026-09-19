@@ -2,18 +2,20 @@
 
 namespace App\Actions\Addon;
 
-use App\Concerns\AddonPackagePaths;
+use App\Support\Addon\AddonPackage;
 
 class ResolveAddonDownload
 {
-    use AddonPackagePaths;
+    public function __construct(
+        private readonly AddonPackage $addon,
+    ) {}
 
     /**
      * @return array{available: bool, version: string|null, file: string|null, url: string|null, size: int|null}
      */
     public function exec(): array
     {
-        $archive = $this->latestArchive();
+        $archive = $this->addon->latestArchive();
 
         if ($archive === null) {
             return [
@@ -30,33 +32,10 @@ class ResolveAddonDownload
 
         return [
             'available' => true,
-            'version' => $this->versionFromName($file),
+            'version' => $this->addon->versionFromName($file),
             'file' => $file,
-            'url' => '/'.$this->addonDirectory().'/'.$file,
+            'url' => '/'.$this->addon->directory().'/'.$file,
             'size' => $size === false ? null : $size,
         ];
-    }
-
-    private function latestArchive(): ?string
-    {
-        $archives = glob($this->addonArchivePattern()) ?: [];
-
-        if ($archives === []) {
-            return null;
-        }
-
-        usort($archives, fn (string $a, string $b) => version_compare(
-            (string) $this->versionFromName(basename($a)),
-            (string) $this->versionFromName(basename($b))
-        ));
-
-        return end($archives);
-    }
-
-    private function versionFromName(string $file): ?string
-    {
-        $pattern = '/^'.preg_quote($this->addonName(), '/').'-(.+)\.zip$/';
-
-        return preg_match($pattern, $file, $matches) === 1 ? $matches[1] : null;
     }
 }
