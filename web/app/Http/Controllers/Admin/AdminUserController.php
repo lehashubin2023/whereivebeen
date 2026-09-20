@@ -25,7 +25,7 @@ use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Patch;
 use Spatie\RouteAttributes\Attributes\Post;
 
-#[Middleware(['auth', 'can:manage-users'])]
+#[Middleware(['auth', 'admin'])]
 #[Group(prefix: 'admin/users', as: 'admin.users.')]
 class AdminUserController extends Controller
 {

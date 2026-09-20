@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\User;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -10,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -23,16 +21,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
-        $this->configureGates();
         $this->configureRateLimiting();
 
         Model::shouldBeStrict(! app()->isProduction());
-    }
-
-    protected function configureGates(): void
-    {
-        Gate::define('view-issue-reports', fn (User $user): bool => $user->isAdmin());
-        Gate::define('manage-users', fn (User $user): bool => $user->isAdmin());
     }
 
     protected function configureRateLimiting(): void
