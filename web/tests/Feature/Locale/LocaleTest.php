@@ -70,29 +70,23 @@ class LocaleTest extends TestCase
         $response->assertDontSee($this->encoded('Сессии'), false);
     }
 
-    public function test_the_url_prefix_picks_the_language()
+    public function test_the_remembered_language_wins_over_the_browser_language()
     {
-        $response = $this->withHeader('Accept-Language', 'en-US,en;q=0.9')->get('/ru');
-
-        $response->assertOk();
-        $response->assertSee('window.__locale = "ru"', false);
-        $response->assertCookie(HandleLocale::COOKIE, 'ru', false);
-    }
-
-    public function test_the_remembered_language_carries_over_to_pages_without_a_prefix()
-    {
-        $response = $this->withUnencryptedCookie(HandleLocale::COOKIE, 'ru')->get('/login');
+        $response = $this->withUnencryptedCookie(HandleLocale::COOKIE, 'ru')
+            ->withHeader('Accept-Language', 'en-US,en;q=0.9')
+            ->get('/login');
 
         $response->assertOk();
         $response->assertSee('window.__locale = "ru"', false);
     }
 
-    public function test_the_url_prefix_wins_over_the_user_setting()
+    public function test_the_user_setting_wins_over_the_cookie()
     {
-        $user = User::factory()->create(['locale' => LocaleEnum::RU]);
+        $user = User::factory()->create(['locale' => LocaleEnum::EN]);
 
         $this->actingAs($user)
-            ->get('/en/faq')
+            ->withUnencryptedCookie(HandleLocale::COOKIE, 'ru')
+            ->get('/profile')
             ->assertOk()
             ->assertSee('window.__locale = "en"', false);
     }
@@ -120,8 +114,10 @@ class LocaleTest extends TestCase
         $user = User::factory()->create(['locale' => LocaleEnum::EN]);
 
         $this->actingAs($user)
-            ->patch('/profile/locale', ['locale' => 'ru'])
-            ->assertRedirect('/profile');
+            ->from('/profile')
+            ->patch('/locale', ['locale' => 'ru'])
+            ->assertRedirect('/profile')
+            ->assertCookie(HandleLocale::COOKIE, 'ru', false);
 
         $this->assertSame(LocaleEnum::RU, $user->refresh()->locale);
     }
@@ -131,17 +127,19 @@ class LocaleTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->patchJson('/profile/locale', ['locale' => 'de'])
+            ->patchJson('/locale', ['locale' => 'de'])
             ->assertStatus(422)
             ->assertJsonValidationErrors('locale');
 
         $this->assertSame(LocaleEnum::EN, $user->refresh()->locale);
     }
 
-    public function test_guests_cannot_change_the_language()
+    public function test_guests_change_the_language_through_a_cookie()
     {
-        $this->patch('/profile/locale', ['locale' => 'ru'])
-            ->assertRedirect('/login');
+        $this->from('/')
+            ->patch('/locale', ['locale' => 'ru'])
+            ->assertRedirect('/')
+            ->assertCookie(HandleLocale::COOKIE, 'ru', false);
     }
 
     public function test_admins_can_change_their_language_too()
@@ -149,7 +147,8 @@ class LocaleTest extends TestCase
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
-            ->patch('/profile/locale', ['locale' => 'ru'])
+            ->from('/profile')
+            ->patch('/locale', ['locale' => 'ru'])
             ->assertRedirect('/profile');
 
         $this->assertSame(LocaleEnum::RU, $admin->refresh()->locale);

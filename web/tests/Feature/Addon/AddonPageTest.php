@@ -23,7 +23,7 @@ class AddonPageTest extends TestCase
 
     public function test_guest_sees_the_landing_page()
     {
-        $this->get('/en')
+        $this->get('/')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Welcome')
@@ -34,7 +34,7 @@ class AddonPageTest extends TestCase
     public function test_authenticated_user_is_redirected_from_the_landing_page()
     {
         $this->actingAs($this->user)
-            ->get('/en')
+            ->get('/')
             ->assertRedirect('/game-session/sessions');
     }
 

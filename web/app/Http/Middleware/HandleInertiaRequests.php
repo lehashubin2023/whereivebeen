@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Actions\Seo\BuildPageMeta;
 use App\Actions\Support\ResolveSupportChannels;
+use App\Enums\LocaleEnum;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -39,6 +40,8 @@ class HandleInertiaRequests extends Middleware
             'backgroundMap' => $this->randomMapUrl(),
             'meta' => $this->buildPageMeta->exec($request)->toArray(),
             'supportAvailable' => $this->supportChannels->available(),
+            'locale' => app()->getLocale(),
+            'locales' => LocaleEnum::options(),
         ];
     }
 

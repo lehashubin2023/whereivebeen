@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Seo;
 
+use App\Http\Middleware\HandleLocale;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,54 +20,33 @@ class SeoTest extends TestCase
         config()->set('support.boosty', 'https://boosty.to/whereivebeen');
     }
 
-    public function test_the_root_url_sends_guests_to_their_language()
+    public function test_the_public_page_carries_a_canonical_link()
     {
-        $this->get('/')->assertRedirect('/en');
-
-        $this->withHeader('Accept-Language', 'ru-RU,ru;q=0.9')
-            ->get('/')
-            ->assertRedirect('/ru');
-    }
-
-    public function test_unprefixed_pages_redirect_to_a_localized_url()
-    {
-        $this->get('/support')->assertRedirect('/en/support');
-        $this->get('/faq')->assertRedirect('/en/faq');
-    }
-
-    public function test_an_unknown_locale_is_not_a_page()
-    {
-        $this->get('/de')->assertNotFound();
-    }
-
-    public function test_the_localized_page_carries_a_canonical_and_hreflang_links()
-    {
-        $response = $this->get('/ru');
+        $response = $this->get('/');
 
         $response->assertOk();
-        $response->assertSee('<link rel="canonical" href="'.route('home', ['locale' => 'ru']).'">', false);
-        $response->assertSee('hreflang="en" href="'.route('home', ['locale' => 'en']).'"', false);
-        $response->assertSee('hreflang="ru" href="'.route('home', ['locale' => 'ru']).'"', false);
-        $response->assertSee('hreflang="x-default" href="'.route('home', ['locale' => 'en']).'"', false);
+        $response->assertSee('<link rel="canonical" href="'.route('home').'">', false);
+        $response->assertDontSee('rel="alternate"', false);
     }
 
     public function test_titles_are_translated_and_end_with_the_project_name()
     {
         $name = config()->string('app.name');
 
-        $this->get('/en')
+        $this->get('/')
             ->assertSee('<title>'.trans('seo.home.title', [], 'en').' - '.$name.'</title>', false);
 
-        $this->get('/en/faq')
+        $this->get('/faq')
             ->assertSee('<title>Addon FAQ - '.$name.'</title>', false);
 
-        $this->get('/ru/faq')
+        $this->withUnencryptedCookie(HandleLocale::COOKIE, 'ru')
+            ->get('/faq')
             ->assertSee('<title>'.e(trans('seo.faq.title', [], 'ru')).' - '.$name.'</title>', false);
     }
 
     public function test_the_landing_page_ships_social_tags()
     {
-        $response = $this->get('/en');
+        $response = $this->get('/');
 
         $response->assertSee('property="og:title"', false);
         $response->assertSee('property="og:image"', false);
@@ -85,14 +65,14 @@ class SeoTest extends TestCase
 
     public function test_the_faq_page_lists_questions_and_ships_its_schema()
     {
-        $response = $this->get('/en/faq');
+        $response = $this->get('/faq');
 
         $response->assertOk();
         $response->assertSee('"@type":"FAQPage"', false);
         $response->assertSee(e('Which World of Warcraft clients are supported?'), false);
     }
 
-    public function test_the_sitemap_lists_every_public_page_in_both_languages()
+    public function test_the_sitemap_lists_every_public_page()
     {
         $response = $this->get('/sitemap.xml');
 
@@ -100,12 +80,8 @@ class SeoTest extends TestCase
         $response->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
 
         foreach (['home', 'faq', 'support'] as $route) {
-            foreach (['en', 'ru'] as $locale) {
-                $response->assertSee('<loc>'.route($route, ['locale' => $locale]).'</loc>', false);
-            }
+            $response->assertSee('<loc>'.route($route).'</loc>', false);
         }
-
-        $response->assertSee('hreflang="x-default"', false);
     }
 
     public function test_the_sitemap_drops_the_support_page_when_no_donations_are_configured()
@@ -115,8 +91,8 @@ class SeoTest extends TestCase
         $response = $this->get('/sitemap.xml');
 
         $response->assertOk();
-        $response->assertDontSee('<loc>'.route('support', ['locale' => 'en']).'</loc>', false);
-        $response->assertSee('<loc>'.route('faq', ['locale' => 'en']).'</loc>', false);
+        $response->assertDontSee('<loc>'.route('support').'</loc>', false);
+        $response->assertSee('<loc>'.route('faq').'</loc>', false);
     }
 
     public function test_robots_keeps_crawlers_away_outside_production()

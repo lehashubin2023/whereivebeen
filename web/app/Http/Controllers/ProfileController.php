@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\LocaleEnum;
-use App\Http\Requests\Profile\LocaleUpdateRequest;
 use App\Http\Requests\Profile\PasswordUpdateRequest;
 use App\Http\Requests\Profile\ProfileDeleteRequest;
 use App\Http\Requests\Profile\ProfileUpdateRequest;
@@ -32,19 +30,8 @@ class ProfileController extends Controller
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
-            'locales' => LocaleEnum::options(),
             'isMainAdmin' => $request->user()?->isMainAdmin() ?? false,
         ]);
-    }
-
-    #[Patch(uri: 'locale', name: 'locale.update')]
-    public function updateLocale(LocaleUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->update([
-            'locale' => $request->locale(),
-        ]);
-
-        return to_route('profile.edit');
     }
 
     #[Patch(uri: '', name: 'update')]

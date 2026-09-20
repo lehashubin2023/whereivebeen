@@ -3,7 +3,6 @@
 namespace App\Actions\Seo;
 
 use App\Actions\Support\ResolveSupportChannels;
-use App\Enums\LocaleEnum;
 
 class BuildSitemap
 {
@@ -13,17 +12,12 @@ class BuildSitemap
     {
         $lines = [
             '<?xml version="1.0" encoding="UTF-8"?>',
-            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
         ];
 
         foreach ($this->urls() as $url) {
             $lines[] = '    <url>';
-            $lines[] = '        <loc>'.$this->escape($url['loc']).'</loc>';
-
-            foreach ($url['alternates'] as $hreflang => $href) {
-                $lines[] = '        <xhtml:link rel="alternate" hreflang="'.$this->escape($hreflang).'" href="'.$this->escape($href).'"/>';
-            }
-
+            $lines[] = '        <loc>'.$this->escape($url).'</loc>';
             $lines[] = '    </url>';
         }
 
@@ -33,30 +27,11 @@ class BuildSitemap
     }
 
     /**
-     * @return array<int, array{loc: string, alternates: array<string, string>}>
+     * @return array<int, string>
      */
     public function urls(): array
     {
-        $urls = [];
-
-        foreach ($this->routes() as $route) {
-            $alternates = [];
-
-            foreach (LocaleEnum::cases() as $locale) {
-                $alternates[$locale->value] = route($route, ['locale' => $locale->value]);
-            }
-
-            $alternates['x-default'] = route($route, ['locale' => LocaleEnum::default()->value]);
-
-            foreach (LocaleEnum::cases() as $locale) {
-                $urls[] = [
-                    'loc' => $alternates[$locale->value],
-                    'alternates' => $alternates,
-                ];
-            }
-        }
-
-        return $urls;
+        return array_map(fn (string $route): string => route($route), $this->routes());
     }
 
     /**

@@ -2,7 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import LocaleSwitch from '@/components/LocaleSwitch.vue';
-import { locale, t } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
 import { faq, home, login, register, support } from '@/routes';
 
 type Props = {
@@ -18,7 +18,7 @@ const page = usePage();
     <header
         class="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-4"
     >
-        <Link :href="home({ locale })" class="flex items-center gap-3">
+        <Link :href="home()" class="flex items-center gap-3">
             <AppLogoIcon class="text-gold size-9" />
             <span
                 class="font-mono text-sm font-medium tracking-[0.2em] text-foreground uppercase"
@@ -29,12 +29,12 @@ const page = usePage();
 
         <nav class="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             <LocaleSwitch />
-            <Link :href="faq({ locale })" class="wow-btn-ghost">
+            <Link :href="faq()" class="wow-btn-ghost">
                 {{ t('FAQ') }}
             </Link>
             <Link
                 v-if="page.props.supportAvailable"
-                :href="support({ locale })"
+                :href="support()"
                 class="wow-btn-ghost"
             >
                 {{ t('Support') }}

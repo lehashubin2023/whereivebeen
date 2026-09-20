@@ -2,7 +2,6 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { useBackgroundMap } from '@/composables/useBackgroundMap';
-import { locale } from '@/lib/i18n';
 import { home } from '@/routes';
 
 defineProps<{
@@ -23,7 +22,7 @@ useBackgroundMap();
         <div class="w-full max-w-sm">
             <div class="flex flex-col items-center gap-6">
                 <Link
-                    :href="home({ locale })"
+                    :href="home()"
                     class="flex flex-col items-center gap-3 font-medium"
                 >
                     <div class="flex h-14 w-14 items-center justify-center">

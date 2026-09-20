@@ -6,7 +6,6 @@ use App\Enums\LocaleEnum;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -27,23 +26,11 @@ class HandleLocale
         View::share('ogLocale', $locale->tag());
         View::share('translations', $this->translations($locale));
 
-        $fromUrl = $this->fromUrl($request);
-
-        if ($fromUrl instanceof LocaleEnum && $request->cookie(self::COOKIE) !== $fromUrl->value) {
-            Cookie::queue(self::COOKIE, $fromUrl->value, 60 * 24 * 365);
-        }
-
         return $next($request);
     }
 
     private function resolve(Request $request): LocaleEnum
     {
-        $fromUrl = $this->fromUrl($request);
-
-        if ($fromUrl instanceof LocaleEnum) {
-            return $fromUrl;
-        }
-
         $user = $request->user();
 
         if ($user instanceof User) {
@@ -51,13 +38,6 @@ class HandleLocale
         }
 
         return $this->fromCookie($request) ?? $this->preferred($request);
-    }
-
-    private function fromUrl(Request $request): ?LocaleEnum
-    {
-        $locale = $request->route('locale');
-
-        return is_string($locale) ? LocaleEnum::tryFrom($locale) : null;
     }
 
     private function fromCookie(Request $request): ?LocaleEnum

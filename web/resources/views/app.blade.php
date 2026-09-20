@@ -22,10 +22,6 @@
             <meta name="robots" content="noindex, nofollow">
         @else
             <link rel="canonical" href="{{ $meta['canonical'] ?? url()->current() }}">
-
-            @foreach ($meta['alternates'] ?? [] as $hreflang => $href)
-                <link rel="alternate" hreflang="{{ $hreflang }}" href="{{ $href }}">
-            @endforeach
         @endif
 
         <meta property="og:type" content="website">

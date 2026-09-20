@@ -10,9 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Get;
-use Spatie\RouteAttributes\Attributes\Group;
 
-#[Group(prefix: '{locale}', where: ['locale' => 'en|ru'])]
 class PageController extends Controller
 {
     #[Get('', name: 'home')]

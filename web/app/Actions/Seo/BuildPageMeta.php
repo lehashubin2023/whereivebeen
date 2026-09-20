@@ -22,12 +22,9 @@ class BuildPageMeta
         return new PageMetaData(
             title: $this->title($copy['title']),
             description: $copy['description'],
-            canonical: $route !== null
-                ? route($route, ['locale' => $locale->value])
-                : $request->url(),
+            canonical: $route !== null ? route($route) : $request->url(),
             image: url(config()->string('seo.og_image')),
             locale: $locale->value,
-            alternates: $route !== null ? $this->alternates($route) : [],
             noindex: $route === null,
             schema: $route !== null ? $this->schema($route, $copy) : null,
         );
@@ -84,22 +81,6 @@ class BuildPageMeta
     }
 
     /**
-     * @return array<string, string>
-     */
-    private function alternates(string $route): array
-    {
-        $alternates = [];
-
-        foreach (LocaleEnum::cases() as $locale) {
-            $alternates[$locale->value] = route($route, ['locale' => $locale->value]);
-        }
-
-        $alternates['x-default'] = route($route, ['locale' => LocaleEnum::default()->value]);
-
-        return $alternates;
-    }
-
-    /**
      * @param  array{title: string, description: string}  $copy
      * @return array<string, mixed>|null
      */
@@ -113,7 +94,7 @@ class BuildPageMeta
                 'description' => $copy['description'],
                 'applicationCategory' => 'GameApplication',
                 'operatingSystem' => 'World of Warcraft',
-                'url' => route('home', ['locale' => app()->getLocale()]),
+                'url' => route('home'),
                 'offers' => [
                     '@type' => 'Offer',
                     'price' => '0',

@@ -36,11 +36,6 @@ enum LocaleEnum: string
         return array_map(fn (self $locale): string => $locale->value, self::cases());
     }
 
-    public static function pattern(): string
-    {
-        return implode('|', self::values());
-    }
-
     /**
      * @return array<int, array{value: string, label: string}>
      */

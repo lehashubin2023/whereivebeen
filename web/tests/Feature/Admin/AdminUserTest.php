@@ -300,14 +300,14 @@ class AdminUserTest extends TestCase
     public function test_admin_landing_page_redirects_to_reports()
     {
         $this->actingAs($this->admin)
-            ->get('/en')
+            ->get('/')
             ->assertRedirect('/admin/issue-reports');
     }
 
     public function test_regular_user_landing_page_redirects_to_sessions()
     {
         $this->actingAs($this->user)
-            ->get('/en')
+            ->get('/')
             ->assertRedirect('/game-session/sessions');
     }
 }

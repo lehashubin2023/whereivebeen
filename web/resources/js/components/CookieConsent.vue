@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import { locale, t } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
 import { faq } from '@/routes';
 
 const COOKIE_NAME = 'cookie_consent';
@@ -43,7 +43,7 @@ function accept(): void {
                 </p>
 
                 <div class="flex shrink-0 items-center gap-2 sm:ml-auto">
-                    <Link :href="faq({ locale })" class="wow-btn-ghost">
+                    <Link :href="faq()" class="wow-btn-ghost">
                         {{ t('Details') }}
                     </Link>
                     <button type="button" class="wow-btn" @click="accept">

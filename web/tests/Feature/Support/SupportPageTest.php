@@ -29,7 +29,7 @@ class SupportPageTest extends TestCase
 
     public function test_guests_can_open_the_support_page()
     {
-        $this->get('/en/support')
+        $this->get('/support')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Support')
@@ -40,7 +40,7 @@ class SupportPageTest extends TestCase
     public function test_authenticated_users_can_open_the_support_page()
     {
         $this->actingAs(User::factory()->create())
-            ->get('/en/support')
+            ->get('/support')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Support'));
     }
@@ -48,14 +48,14 @@ class SupportPageTest extends TestCase
     public function test_admins_can_open_the_support_page()
     {
         $this->actingAs(User::factory()->admin()->create())
-            ->get('/en/support')
+            ->get('/support')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Support'));
     }
 
     public function test_configured_channels_reach_the_page()
     {
-        $this->get('/en/support')
+        $this->get('/support')
             ->assertInertia(fn (Assert $page) => $page
                 ->where('channels.boosty', 'https://boosty.to/whereivebeen')
                 ->where('channels.telegram', 'https://t.me/whereivebeen_bot')
@@ -76,7 +76,7 @@ class SupportPageTest extends TestCase
             ],
         ]);
 
-        $this->get('/en/support')
+        $this->get('/support')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('channels.boosty', 'https://boosty.to/whereivebeen')
@@ -94,7 +94,7 @@ class SupportPageTest extends TestCase
             'crypto' => [],
         ]);
 
-        $this->get('/en/support')->assertNotFound();
+        $this->get('/support')->assertNotFound();
         $this->get('/support')->assertNotFound();
     }
 
@@ -106,17 +106,17 @@ class SupportPageTest extends TestCase
             'crypto' => ['TON' => 'UQxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'],
         ]);
 
-        $this->get('/en/support')->assertOk();
+        $this->get('/support')->assertOk();
     }
 
     public function test_the_navigation_knows_whether_the_page_exists()
     {
-        $this->get('/en')
+        $this->get('/')
             ->assertInertia(fn (Assert $page) => $page->where('supportAvailable', true)->etc());
 
         config()->set('support', ['boosty' => null, 'telegram' => null, 'crypto' => []]);
 
-        $this->get('/en')
+        $this->get('/')
             ->assertInertia(fn (Assert $page) => $page->where('supportAvailable', false)->etc());
     }
 }

@@ -5,7 +5,7 @@ import AddonDownloadButton from '@/components/AddonDownloadButton.vue';
 import ProductShot from '@/components/ProductShot.vue';
 import PublicHeader from '@/components/PublicHeader.vue';
 import { useBackgroundMap } from '@/composables/useBackgroundMap';
-import { locale, t } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
 import { faq } from '@/routes';
 import type { AddonDownload } from '@/types';
 
@@ -79,7 +79,7 @@ const clients = [
 
             <div class="mt-8 flex flex-wrap items-center gap-4">
                 <AddonDownloadButton :addon="addon" />
-                <Link :href="faq({ locale })" class="wow-btn-ghost">
+                <Link :href="faq()" class="wow-btn-ghost">
                     {{ t('Read the FAQ') }}
                 </Link>
             </div>

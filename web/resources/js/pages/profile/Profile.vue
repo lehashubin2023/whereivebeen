@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import LocaleController from '@/actions/App/Http/Controllers/LocaleController';
 import ProfileController from '@/actions/App/Http/Controllers/ProfileController';
 import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
@@ -18,11 +19,9 @@ import {
 } from '@/components/ui/select';
 import { locale, t } from '@/lib/i18n';
 import { edit } from '@/routes/profile';
-import type { LocaleOption } from '@/types';
 
 type Props = {
     passwordRules: string;
-    locales: LocaleOption[];
     isMainAdmin: boolean;
 };
 
@@ -48,7 +47,7 @@ function changeLocale(value: unknown): void {
     }
 
     router.patch(
-        ProfileController.updateLocale.url(),
+        LocaleController.update.url(),
         { locale: value },
         { onSuccess: () => window.location.reload() },
     );
@@ -119,7 +118,7 @@ function changeLocale(value: unknown): void {
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem
-                        v-for="option in props.locales"
+                        v-for="option in page.props.locales"
                         :key="option.value"
                         :value="option.value"
                     >

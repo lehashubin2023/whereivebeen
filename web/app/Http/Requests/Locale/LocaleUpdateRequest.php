@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Profile;
+namespace App\Http\Requests\Locale;
 
 use App\Enums\LocaleEnum;
 use Illuminate\Contracts\Validation\ValidationRule;

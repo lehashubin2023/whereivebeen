@@ -4,7 +4,6 @@ export type PageMeta = {
     canonical: string;
     image: string;
     locale: string;
-    alternates: Record<string, string>;
     noindex: boolean;
     schema: Record<string, unknown> | null;
 };

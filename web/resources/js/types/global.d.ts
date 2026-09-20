@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { LocaleCode, LocaleOption } from '@/types/locale';
 import type { PageMeta } from '@/types/seo';
 
 declare module 'vite/client' {
@@ -22,6 +23,8 @@ declare module '@inertiajs/core' {
             backgroundMap: string;
             meta: PageMeta;
             supportAvailable: boolean;
+            locale: LocaleCode;
+            locales: LocaleOption[];
             [key: string]: unknown;
         };
     }

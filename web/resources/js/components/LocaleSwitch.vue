@@ -1,36 +1,47 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
+import LocaleController from '@/actions/App/Http/Controllers/LocaleController';
 import { locale } from '@/lib/i18n';
 
 const page = usePage();
 
-const alternates = computed(() =>
-    Object.entries(page.props.meta.alternates)
-        .filter(([code]) => code !== 'x-default')
-        .map(([code, href]) => ({ code, href })),
-);
+function select(value: string): void {
+    if (value === locale) {
+        return;
+    }
+
+    router.patch(
+        LocaleController.update.url(),
+        { locale: value },
+        { onSuccess: () => window.location.reload() },
+    );
+}
 </script>
 
 <template>
-    <div v-if="alternates.length > 1" class="flex items-center gap-1 text-xs">
+    <div
+        v-if="page.props.locales.length > 1"
+        class="flex items-center gap-1 text-xs"
+    >
         <template
-            v-for="(alternate, index) in alternates"
-            :key="alternate.code"
+            v-for="(option, index) in page.props.locales"
+            :key="option.value"
         >
             <span v-if="index > 0" class="text-muted-foreground/50">/</span>
-            <a
-                :href="alternate.href"
-                :hreflang="alternate.code"
+            <button
+                type="button"
+                :lang="option.value"
+                :title="option.label"
                 :class="[
                     'px-1 font-mono tracking-widest uppercase',
-                    alternate.code === locale
+                    option.value === locale
                         ? 'text-gold'
                         : 'text-muted-foreground hover:text-foreground',
                 ]"
+                @click="select(option.value)"
             >
-                {{ alternate.code }}
-            </a>
+                {{ option.value }}
+            </button>
         </template>
     </div>
 </template>
