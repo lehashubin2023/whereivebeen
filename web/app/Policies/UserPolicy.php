@@ -6,11 +6,6 @@ use App\Models\User;
 
 class UserPolicy
 {
-    public function create(User $actor): bool
-    {
-        return $actor->isAdmin();
-    }
-
     public function update(User $actor, User $target): bool
     {
         if (! $actor->isAdmin()) {

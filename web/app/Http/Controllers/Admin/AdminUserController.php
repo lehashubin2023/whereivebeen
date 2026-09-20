@@ -40,7 +40,6 @@ class AdminUserController extends Controller
     {
         /** @var User $actor */
         $actor = $request->user();
-
         $search = $request->search();
 
         $users = User::query()
@@ -71,8 +70,6 @@ class AdminUserController extends Controller
     #[Get(uri: 'create', name: 'create')]
     public function create(): Response
     {
-        Gate::authorize('create', User::class);
-
         return Inertia::render('admin/users/Create', [
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
             'canAssignAdmin' => Gate::allows('manageAdmins', User::class),
