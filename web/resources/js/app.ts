@@ -20,6 +20,7 @@ createInertiaApp({
         switch (true) {
             case name === 'Welcome':
                 return null;
+            case name === 'Error':
             case name === 'Faq':
             case name === 'Support':
                 return (page.props as { auth?: Auth }).auth?.user

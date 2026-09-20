@@ -30,7 +30,7 @@
         <meta property="og:description" content="{{ $meta['description'] ?? '' }}">
         <meta property="og:url" content="{{ $meta['canonical'] ?? url()->current() }}">
         <meta property="og:image" content="{{ $meta['image'] ?? '' }}">
-        <meta property="og:locale" content="{{ $ogLocale }}">
+        <meta property="og:locale" content="{{ $ogLocale ?? str_replace('_', '-', app()->getLocale()) }}">
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{{ $meta['title'] ?? config('app.name') }}">
         <meta name="twitter:description" content="{{ $meta['description'] ?? '' }}">
@@ -43,8 +43,8 @@
         @fonts
 
         <script>
-            window.__locale = @json($locale);
-            window.__translations = @json((object) $translations);
+            window.__locale = @json($locale ?? app()->getLocale());
+            window.__translations = @json((object) ($translations ?? []));
         </script>
 
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
