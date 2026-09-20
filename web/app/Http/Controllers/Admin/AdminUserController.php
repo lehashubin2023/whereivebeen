@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\User\CreateUser;
-use App\Actions\User\DeleteUser;
 use App\Actions\User\UpdateUser;
 use App\DTOs\User\CreateUserDTO;
 use App\DTOs\User\UpdateUserDTO;
@@ -32,7 +31,6 @@ class AdminUserController extends Controller
     public function __construct(
         private readonly CreateUser $createUser,
         private readonly UpdateUser $updateUser,
-        private readonly DeleteUser $deleteUser,
     ) {}
 
     #[Get(uri: '', name: 'index')]
@@ -123,7 +121,7 @@ class AdminUserController extends Controller
     #[Delete(uri: '{managedUser}', name: 'destroy')]
     public function destroy(DeleteUserRequest $request, User $managedUser): RedirectResponse
     {
-        $this->deleteUser->exec($managedUser);
+        $managedUser->delete();
 
         Inertia::flash('toast', [
             'type' => 'success',
