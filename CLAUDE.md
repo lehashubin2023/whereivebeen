@@ -24,7 +24,9 @@
 3. Пользователь POST'ит строку на `game-session/import` → [GameSessionController](web/app/Http/Controllers/GameSessionController.php)
    диспатчит [ImportGameSessionJob](web/app/Jobs/ImportGameSessionJob.php) в очередь `import`.
 4. Джоба вызывает [ImportGameSession](web/app/Actions/GameSession/ImportGameSession.php):
-   `DecodeRawInput` (`trim` + `json_decode`, глубина 4) → `GameSessionJsonValidator` → в транзакции
+   `DecodeRawInput` (`trim` + `json_decode`, глубина 4) → `GameSessionJsonValidator` →
+   `RegisterMissingMaps` (карты, которых нет в справочнике, заводятся как `Zone {id}` с флагом
+   `auto_added`, их id уходят в `warnings.new_maps`) → в транзакции
    `CreateGameSession` + `CreateWay` (chunked-insert точек и событий).
 5. Каждый импорт логируется в `import_logs` ([ImportStatusEnum](web/app/Enums/GameSession/ImportStatusEnum.php)).
 

@@ -6,6 +6,7 @@ use App\Actions\GameSession\CreateWay;
 use App\Enums\GameSession\EventTypeEnum;
 use App\Models\Event;
 use App\Models\GameSession;
+use App\Models\Map;
 use App\Models\WayPoint;
 use Database\Seeders\EventTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -65,5 +66,24 @@ class CreateGameSessionWayTest extends TestCase
             'event_type_id' => null,
             'payload' => json_encode([]),
         ]);
+    }
+
+    public function test_it_sanitizes_the_map_id_of_every_point()
+    {
+        Map::query()->insert([['id' => 331, 'name' => 'Ashenvale']]);
+
+        $session = GameSession::factory()->create();
+
+        (new CreateWay)->exec($session, [
+            ['x' => 0.10, 'y' => 0.20, 'mapId' => '331', 't' => 0],
+            ['x' => 0.11, 'y' => 0.21, 'mapId' => 70000, 't' => 0],
+            ['x' => 0.12, 'y' => 0.22, 'mapId' => null, 't' => 0],
+        ]);
+
+        $wayPointTable = (new WayPoint)->getTable();
+
+        $this->assertDatabaseHas($wayPointTable, ['sequence' => 1, 'map_id' => 331]);
+        $this->assertDatabaseHas($wayPointTable, ['sequence' => 2, 'map_id' => null]);
+        $this->assertDatabaseHas($wayPointTable, ['sequence' => 3, 'map_id' => null]);
     }
 }

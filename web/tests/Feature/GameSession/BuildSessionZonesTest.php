@@ -285,7 +285,7 @@ class BuildSessionZonesTest extends TestCase
 
     public function test_maps_without_an_image_do_not_split_a_visit(): void
     {
-        Map::query()->insert(['id' => self::NEIGHBOUR_MAP_ID, 'name' => 'Nowhere Land']);
+        Map::query()->insert(['id' => self::NEIGHBOUR_MAP_ID, 'name' => 'Nowhere Land', 'auto_added' => false]);
 
         $session = GameSession::factory()->create();
 
@@ -296,6 +296,34 @@ class BuildSessionZonesTest extends TestCase
         $zones = (new BuildSessionZones)->exec($session);
 
         $this->assertCount(1, $zones);
+        $this->assertCount(2, $zones[0]['points']);
+    }
+
+    public function test_a_map_with_an_image_exposes_its_path(): void
+    {
+        $session = GameSession::factory()->create();
+
+        $this->addPoint($session, 1);
+
+        $zones = (new BuildSessionZones)->exec($session);
+
+        $this->assertSame('/maps/Ashenvale.png', $zones[0]['image_path']);
+    }
+
+    public function test_an_auto_added_map_is_drawn_without_an_image(): void
+    {
+        Map::query()->insert(['id' => self::NEIGHBOUR_MAP_ID, 'name' => 'Zone 47', 'auto_added' => true]);
+
+        $session = GameSession::factory()->create();
+
+        $this->addPoint($session, 1, null, [], self::NEIGHBOUR_MAP_ID, 100);
+        $this->addPoint($session, 2, null, [], self::NEIGHBOUR_MAP_ID, 200);
+
+        $zones = (new BuildSessionZones)->exec($session);
+
+        $this->assertCount(1, $zones);
+        $this->assertSame('Zone 47', $zones[0]['name']);
+        $this->assertNull($zones[0]['image_path']);
         $this->assertCount(2, $zones[0]['points']);
     }
 }

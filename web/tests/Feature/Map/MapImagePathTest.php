@@ -27,4 +27,14 @@ class MapImagePathTest extends TestCase
 
         $this->assertSame('/maps/Badlands.png', $map->toArray()['image_path']);
     }
+
+    public function test_has_image_is_true_for_a_shipped_map()
+    {
+        $this->assertTrue((new Map(['name' => 'Ashenvale']))->hasImage());
+    }
+
+    public function test_has_image_is_false_when_the_file_is_missing()
+    {
+        $this->assertFalse((new Map(['name' => 'Nowhere Land']))->hasImage());
+    }
 }

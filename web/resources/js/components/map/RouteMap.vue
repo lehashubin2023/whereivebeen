@@ -33,6 +33,8 @@ interface PlacedEvent {
 
 const FAN_SPREAD = 1.9;
 
+const FALLBACK_STAGE = { width: 1002, height: 668 };
+
 const STATE_COLORS: Record<State, { line: string; dot: string }> = {
     ground: { line: '#b8c8db', dot: '#d3e0ee' },
     mounted: { line: EVENT_COLORS.mount, dot: EVENT_COLORS.mount },
@@ -53,7 +55,7 @@ const LEGEND: { state: State; label: string }[] = [
 
 const props = withDefaults(
     defineProps<{
-        image: string;
+        image: string | null;
         points: Point[];
         gameSessionId: number;
         heightClass?: string;
@@ -72,6 +74,13 @@ const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(root);
 
 const picture = ref<HTMLImageElement | null>(null);
 const natural = ref({ width: 0, height: 0 });
+const failed = ref(false);
+
+const hasImage = computed(() => props.image !== null && !failed.value);
+
+const stageSource = computed(() =>
+    hasImage.value ? natural.value : FALLBACK_STAGE,
+);
 
 function readNatural(image: HTMLImageElement): void {
     natural.value = {
@@ -90,8 +99,16 @@ onMounted(() => {
     }
 });
 
+watch(
+    () => props.image,
+    () => {
+        failed.value = false;
+        natural.value = { width: 0, height: 0 };
+    },
+);
+
 const fitted = computed(() => {
-    const { width: naturalWidth, height: naturalHeight } = natural.value;
+    const { width: naturalWidth, height: naturalHeight } = stageSource.value;
 
     if (
         viewportWidth.value === 0 ||
@@ -657,8 +674,9 @@ function reset(): void {
                     }"
                 >
                     <img
+                        v-if="hasImage"
                         ref="picture"
-                        :src="image"
+                        :src="image ?? undefined"
                         alt=""
                         draggable="false"
                         class="absolute block select-none"
@@ -669,7 +687,30 @@ function reset(): void {
                             height: `${fitted.height}px`,
                         }"
                         @load="onImageLoad"
+                        @error="failed = true"
                     />
+
+                    <div
+                        v-else
+                        class="wow-map-blank absolute block select-none"
+                        :style="{
+                            left: `${fitted.left}px`,
+                            top: `${fitted.top}px`,
+                            width: `${fitted.width}px`,
+                            height: `${fitted.height}px`,
+                        }"
+                    />
+                </div>
+
+                <div
+                    v-if="!hasImage"
+                    class="pointer-events-none absolute inset-0 flex items-center justify-center"
+                >
+                    <span
+                        class="font-mono text-[11px] tracking-wide text-muted-foreground uppercase opacity-70"
+                    >
+                        {{ t('No map image for this zone yet') }}
+                    </span>
                 </div>
 
                 <svg

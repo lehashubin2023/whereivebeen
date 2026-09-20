@@ -13,6 +13,7 @@ return new class extends Migration
                 ->unsigned()
                 ->primary();
             $table->string('name', 128);
+            $table->boolean('auto_added')->default(false);
         });
     }
 

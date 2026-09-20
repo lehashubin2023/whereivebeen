@@ -3,6 +3,7 @@
 namespace Tests\Feature\Map;
 
 use App\Actions\Map\ImportMaps;
+use App\Models\Map;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -78,6 +79,23 @@ class ImportMapsTest extends TestCase
 
         $this->assertDatabaseCount('maps', 1);
         $this->assertDatabaseHas('maps', ['id' => 7, 'name' => 'New Name']);
+    }
+
+    public function test_imported_maps_are_not_marked_auto_added()
+    {
+        $this->importer->exec([['id' => '1', 'name' => 'Elwynn Forest']]);
+
+        $this->assertDatabaseHas('maps', ['id' => 1, 'auto_added' => 0]);
+    }
+
+    public function test_upsert_renames_an_auto_added_map_without_clearing_the_flag()
+    {
+        Map::query()->insert([['id' => 2345, 'name' => 'Zone 2345', 'auto_added' => true]]);
+
+        $this->importer->exec([['id' => '2345', 'name' => 'Shadow Vale']]);
+
+        $this->assertDatabaseCount('maps', 1);
+        $this->assertDatabaseHas('maps', ['id' => 2345, 'name' => 'Shadow Vale', 'auto_added' => 1]);
     }
 
     public function test_inserts_more_than_one_chunk()

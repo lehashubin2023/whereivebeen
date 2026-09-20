@@ -29,7 +29,7 @@ export interface Zone {
     key: string;
     id: number;
     name: string;
-    image_path: string;
+    image_path: string | null;
     points_count: number;
     time: string;
     duration: number;
@@ -63,6 +63,7 @@ export type ImportOutcome = 'created' | 'replaced';
 
 export interface ImportWarnings {
     unknown_maps?: Record<string, number>;
+    new_maps?: number[];
 }
 
 export interface ImportRow {

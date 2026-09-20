@@ -92,6 +92,10 @@ function unknownMaps(row: ImportRow): number {
     return Object.keys(row.warnings?.unknown_maps ?? {}).length;
 }
 
+function newMaps(row: ImportRow): number {
+    return (row.warnings?.new_maps ?? []).length;
+}
+
 function toggle(id: number): void {
     expanded.value = expanded.value === id ? null : id;
 }
@@ -287,6 +291,18 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
                                         class="mt-1 overflow-x-auto rounded border border-border/60 bg-muted/40 p-2 font-mono text-[11px] whitespace-pre-wrap text-muted-foreground"
                                         >{{ row.error_message }}</pre>
                                 </div>
+
+                                <p
+                                    v-if="newMaps(row)"
+                                    class="mt-2 max-w-sm text-xs text-muted-foreground"
+                                >
+                                    {{
+                                        t(
+                                            ':count new zones were added to the site — map images for them are not available yet.',
+                                            { count: newMaps(row) },
+                                        )
+                                    }}
+                                </p>
 
                                 <p
                                     v-if="unknownMaps(row)"

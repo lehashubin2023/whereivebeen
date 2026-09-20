@@ -10,7 +10,7 @@ use App\Models\GameSession;
 use App\Models\WayPoint;
 use App\Support\GameSession\ImportProgress\ImportGameSessionProgressContract;
 use App\Support\GameSession\ImportProgress\NullImportGameSessionProgress;
-use App\Support\GameSession\MapIdFilter;
+use App\Support\GameSession\MapId;
 use Illuminate\Support\Facades\DB;
 
 class CreateWay
@@ -23,13 +23,12 @@ class CreateWay
     public function exec(
         GameSession $gameSession,
         array $waypoints,
-        ImportGameSessionProgressContract $progress = new NullImportGameSessionProgress,
-        ?MapIdFilter $maps = null
+        ImportGameSessionProgressContract $progress = new NullImportGameSessionProgress
     ): void {
         $sequence = 1;
 
         foreach (array_chunk($waypoints, $this->getChunkSize()) as $chunk) {
-            [$wayPointData, $eventData] = $this->prepareWayData($chunk, $gameSession->id, $sequence, $maps);
+            [$wayPointData, $eventData] = $this->prepareWayData($chunk, $gameSession->id, $sequence);
 
             DB::transaction(function () use ($wayPointData, $eventData) {
                 WayPoint::insert(array_map(
@@ -43,15 +42,13 @@ class CreateWay
         }
     }
 
-    private function prepareWayData(array $chunk, int $gameSessionId, int &$sequence, ?MapIdFilter $maps): array
+    private function prepareWayData(array $chunk, int $gameSessionId, int &$sequence): array
     {
         $wayPointData = [];
         $eventData = [];
 
         foreach ($chunk as $waypoint) {
-            if ($maps instanceof MapIdFilter) {
-                $waypoint['mapId'] = $maps->resolve($waypoint['mapId'] ?? null);
-            }
+            $waypoint['mapId'] = MapId::sanitize($waypoint['mapId'] ?? null);
 
             $wayPointData[] = CreateWayPointDTO::fromPoint($waypoint, $gameSessionId, $sequence)->toArray();
 

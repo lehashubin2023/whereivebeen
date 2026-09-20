@@ -202,6 +202,14 @@
         border-radius: calc(var(--radius-lg) - 4px);
     }
 
+    .wow-map-blank {
+        background-color: var(--sidebar-background);
+        background-image:
+            linear-gradient(to right, var(--border) 1px, transparent 1px),
+            linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+        background-size: 5% 7.5%;
+    }
+
     .wow-medallion {
         position: absolute;
         top: 0;

@@ -92,9 +92,7 @@ class BuildSessionZones
         return Map::query()
             ->whereIn('id', $points->pluck('map_id')->filter()->unique()->all())
             ->get()
-            ->filter(fn (Map $map) => file_exists(
-                public_path(ltrim((string) $map->getAttribute('image_path'), '/')),
-            ))
+            ->filter(fn (Map $map) => $map->hasImage() || $map->isAutoAdded())
             ->keyBy('id');
     }
 
@@ -159,7 +157,7 @@ class BuildSessionZones
                 continue;
             }
 
-            $imagePath = (string) $map->getAttribute('image_path');
+            $imagePath = $map->hasImage() ? (string) $map->getAttribute('image_path') : null;
             $started = (int) $visit['points'][0]->getAttribute('time');
 
             $zones[] = [

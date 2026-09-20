@@ -3,7 +3,6 @@
 namespace App\Actions\Map;
 
 use App\Models\Map;
-use App\Models\WayPoint;
 
 class ImportMaps
 {
@@ -42,7 +41,7 @@ class ImportMaps
 
         $id = filter_var($entry['id'], FILTER_VALIDATE_INT);
 
-        if ($id === false || $id <= 0 || $id > WayPoint::COODS_FIELD_LENGTH) {
+        if ($id === false || $id <= 0 || $id > Map::MAX_ID) {
             return false;
         }
 
