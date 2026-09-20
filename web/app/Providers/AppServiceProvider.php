@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -43,6 +44,24 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('password-update', fn (Request $request) => Limit::perMinute(6)
             ->by($this->throttleKey($request))
             ->response($this->throttled('current_password')));
+
+        RateLimiter::for('verification', function (Request $request): Limit|array {
+            if (! $request->isMethod('POST')) {
+                return Limit::perMinute(6)->by('verification-verify|'.$this->throttleKey($request));
+            }
+
+            return [
+                Limit::perMinute(1)
+                    ->by('verification-send|'.$this->throttleKey($request))
+                    ->response($this->throttled('email')),
+                Limit::perDay(10)
+                    ->by('verification-send-daily|'.$this->throttleKey($request))
+                    ->response($this->throttled('email')),
+                Limit::perDay(10)
+                    ->by('verification-send-mailbox|'.$this->emailThrottleKey($request))
+                    ->response($this->throttled('email')),
+            ];
+        });
     }
 
     protected function configureDefaults(): void
@@ -69,6 +88,15 @@ class AppServiceProvider extends ServiceProvider
         return (string) ($request->user()?->getAuthIdentifier() ?? $request->ip());
     }
 
+    private function emailThrottleKey(Request $request): string
+    {
+        $email = $request->user()?->email;
+
+        return $email !== null && $email !== ''
+            ? Str::transliterate(Str::lower($email))
+            : (string) $request->ip();
+    }
+
     private function throttled(string $field): Closure
     {
         /**
@@ -77,15 +105,19 @@ class AppServiceProvider extends ServiceProvider
         $respond = function (Request $request, array $headers) use ($field): never {
             $seconds = (int) ($headers['Retry-After'] ?? 60);
 
-            throw ValidationException::withMessages([
-                $field => $seconds >= 60
-                    ? __('Too many attempts. Try again in :minutes minutes.', [
-                        'minutes' => (int) ceil($seconds / 60),
-                    ])
-                    : __('Too many attempts. Try again in :seconds seconds.', [
-                        'seconds' => $seconds,
-                    ]),
-            ]);
+            $message = match (true) {
+                $seconds >= 3600 => __('Too many attempts. Try again in :hours hours.', [
+                    'hours' => (int) ceil($seconds / 3600),
+                ]),
+                $seconds >= 60 => __('Too many attempts. Try again in :minutes minutes.', [
+                    'minutes' => (int) ceil($seconds / 60),
+                ]),
+                default => __('Too many attempts. Try again in :seconds seconds.', [
+                    'seconds' => $seconds,
+                ]),
+            };
+
+            throw ValidationException::withMessages([$field => $message]);
         };
 
         return $respond;

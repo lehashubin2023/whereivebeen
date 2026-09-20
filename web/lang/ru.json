@@ -343,6 +343,7 @@
     "Times": "Раз",
     "to copy the exported line.": "чтобы скопировать экспортированную строку.",
     "Too large to import": "Слишком большая для импорта",
+    "Too many attempts. Try again in :hours hours.": "Слишком много попыток. Повторите через :hours ч.",
     "Too many attempts. Try again in :minutes minutes.": "Слишком много попыток. Повторите через :minutes мин.",
     "Too many attempts. Try again in :seconds seconds.": "Слишком много попыток. Повторите через :seconds с.",
     "to open the sessions window.": "чтобы открыть окно сессий.",

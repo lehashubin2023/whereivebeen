@@ -36,7 +36,14 @@ defineProps<{
     </div>
 
     <div class="space-y-6 text-center">
-        <Form v-bind="send.form()" v-slot="{ processing }">
+        <Form v-bind="send.form()" v-slot="{ processing, errors }">
+            <p
+                v-if="errors.email"
+                class="mb-4 text-sm font-medium text-red-600"
+            >
+                {{ errors.email }}
+            </p>
+
             <Button
                 class="w-full"
                 :disabled="processing"
