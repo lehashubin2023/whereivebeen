@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\User\UpdateProfile;
+use App\DTOs\User\UpdateProfileDTO;
 use App\Http\Requests\Profile\PasswordUpdateRequest;
 use App\Http\Requests\Profile\ProfileDeleteRequest;
 use App\Http\Requests\Profile\ProfileUpdateRequest;
@@ -23,6 +25,10 @@ use Spatie\RouteAttributes\Attributes\Put;
 #[Group(prefix: 'profile', as: 'profile.')]
 class ProfileController extends Controller
 {
+    public function __construct(
+        private readonly UpdateProfile $updateProfile,
+    ) {}
+
     #[Get(uri: '', name: 'edit')]
     public function edit(Request $request): Response
     {
@@ -37,13 +43,10 @@ class ProfileController extends Controller
     #[Patch(uri: '', name: 'update')]
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
+        $this->updateProfile->exec(
+            $request->user(),
+            UpdateProfileDTO::fromArray($request->validated()),
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
 
