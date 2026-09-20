@@ -16,7 +16,7 @@ use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Group;
 use Spatie\RouteAttributes\Attributes\Middleware;
 
-#[Middleware(['auth', 'deny-admins'])]
+#[Middleware(['auth', 'verified', 'deny-admins'])]
 #[Group(prefix: 'game-session', as: 'game-session.')]
 class GameSessionController extends Controller
 {

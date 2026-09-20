@@ -11,7 +11,7 @@ use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 
-#[Middleware(['auth', 'deny-admins'])]
+#[Middleware(['auth', 'verified', 'deny-admins'])]
 class StatisticsController extends Controller
 {
     public function __construct(

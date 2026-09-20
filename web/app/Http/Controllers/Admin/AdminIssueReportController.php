@@ -16,7 +16,7 @@ use Spatie\RouteAttributes\Attributes\Group;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Patch;
 
-#[Middleware(['auth', 'admin'])]
+#[Middleware(['auth', 'verified', 'admin'])]
 #[Group(prefix: 'admin/issue-reports', as: 'admin.issue-reports.')]
 class AdminIssueReportController extends Controller
 {

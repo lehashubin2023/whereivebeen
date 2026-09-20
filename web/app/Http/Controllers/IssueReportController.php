@@ -14,7 +14,7 @@ use Spatie\RouteAttributes\Attributes\Group;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 
-#[Middleware(['auth', 'deny-admins'])]
+#[Middleware(['auth', 'verified', 'deny-admins'])]
 #[Group(prefix: 'issue-report', as: 'issue-report.')]
 class IssueReportController extends Controller
 {

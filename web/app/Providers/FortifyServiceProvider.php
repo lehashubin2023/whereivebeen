@@ -52,6 +52,9 @@ class FortifyServiceProvider extends ServiceProvider
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]));
 
+        Fortify::verifyEmailView(fn (Request $request) => Inertia::render('auth/VerifyEmail', [
+            'status' => $request->session()->get('status'),
+        ]));
     }
 
     private function configureRateLimiting(): void
