@@ -43,6 +43,7 @@ defineProps<{
                     autocomplete="off"
                     autofocus
                     placeholder="email@example.com"
+                    :aria-invalid="Boolean(errors.email)"
                 />
                 <InputError :message="errors.email" />
             </div>

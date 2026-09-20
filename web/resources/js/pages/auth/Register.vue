@@ -43,6 +43,7 @@ defineOptions({
                     autocomplete="email"
                     name="email"
                     placeholder="email@example.com"
+                    :aria-invalid="Boolean(errors.email)"
                 />
                 <InputError :message="errors.email" />
             </div>
@@ -56,6 +57,7 @@ defineOptions({
                     name="password"
                     :placeholder="t('Password')"
                     :passwordrules="passwordRules"
+                    :aria-invalid="Boolean(errors.password)"
                 />
                 <InputError :message="errors.password" />
             </div>
@@ -71,6 +73,7 @@ defineOptions({
                     name="password_confirmation"
                     :placeholder="t('Confirm password')"
                     :passwordrules="passwordRules"
+                    :aria-invalid="Boolean(errors.password_confirmation)"
                 />
                 <InputError :message="errors.password_confirmation" />
             </div>

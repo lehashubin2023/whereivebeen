@@ -53,6 +53,7 @@ defineProps<{
                     :tabindex="1"
                     autocomplete="email"
                     placeholder="email@example.com"
+                    :aria-invalid="Boolean(errors.email)"
                 />
                 <InputError :message="errors.email" />
             </div>
@@ -75,6 +76,7 @@ defineProps<{
                     :tabindex="2"
                     autocomplete="current-password"
                     :placeholder="t('Password')"
+                    :aria-invalid="Boolean(errors.password)"
                 />
                 <InputError :message="errors.password" />
             </div>

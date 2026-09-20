@@ -164,6 +164,7 @@ function changeLocale(value: unknown): void {
                     class="mt-1 block w-full"
                     autocomplete="current-password"
                     :placeholder="t('Current password')"
+                    :aria-invalid="Boolean(errors.current_password)"
                 />
                 <InputError :message="errors.current_password" />
             </div>
@@ -177,6 +178,7 @@ function changeLocale(value: unknown): void {
                     autocomplete="new-password"
                     :placeholder="t('New password')"
                     :passwordrules="props.passwordRules"
+                    :aria-invalid="Boolean(errors.password)"
                 />
                 <InputError :message="errors.password" />
             </div>
@@ -192,6 +194,7 @@ function changeLocale(value: unknown): void {
                     autocomplete="new-password"
                     :placeholder="t('Confirm password')"
                     :passwordrules="props.passwordRules"
+                    :aria-invalid="Boolean(errors.password_confirmation)"
                 />
                 <InputError :message="errors.password_confirmation" />
             </div>

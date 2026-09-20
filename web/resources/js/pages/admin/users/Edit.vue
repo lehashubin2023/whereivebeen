@@ -98,6 +98,7 @@ const roleHint = computed(() => {
                         autocomplete="new-password"
                         :placeholder="t('Leave blank to keep the current one')"
                         :passwordrules="passwordRules"
+                        :aria-invalid="Boolean(errors.password)"
                     />
                     <InputError :message="errors.password" />
                 </div>
@@ -112,6 +113,7 @@ const roleHint = computed(() => {
                         autocomplete="new-password"
                         :placeholder="t('Confirm new password')"
                         :passwordrules="passwordRules"
+                        :aria-invalid="Boolean(errors.password_confirmation)"
                     />
                     <InputError :message="errors.password_confirmation" />
                 </div>
@@ -123,6 +125,7 @@ const roleHint = computed(() => {
                         value="1"
                         :default-value="props.user.is_admin"
                         :disabled="!canEditRole"
+                        :aria-invalid="Boolean(errors.is_admin)"
                     />
                     <Label for="is_admin">{{ t('Administrator') }}</Label>
                 </div>

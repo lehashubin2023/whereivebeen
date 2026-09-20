@@ -86,6 +86,7 @@ const passwordInput = useTemplateRef('passwordInput');
                                 name="password"
                                 ref="passwordInput"
                                 :placeholder="t('Password')"
+                                :aria-invalid="Boolean(errors.password)"
                             />
                             <InputError :message="errors.password" />
                         </div>

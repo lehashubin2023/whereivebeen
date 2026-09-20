@@ -52,6 +52,7 @@ defineOptions({
                         name="email"
                         autocomplete="off"
                         placeholder="email@example.com"
+                        :aria-invalid="Boolean(errors.email)"
                     />
                     <InputError :message="errors.email" />
                 </div>
@@ -64,6 +65,7 @@ defineOptions({
                         autocomplete="new-password"
                         :placeholder="t('Password')"
                         :passwordrules="passwordRules"
+                        :aria-invalid="Boolean(errors.password)"
                     />
                     <InputError :message="errors.password" />
                 </div>
@@ -78,13 +80,19 @@ defineOptions({
                         autocomplete="new-password"
                         :placeholder="t('Confirm password')"
                         :passwordrules="passwordRules"
+                        :aria-invalid="Boolean(errors.password_confirmation)"
                     />
                     <InputError :message="errors.password_confirmation" />
                 </div>
 
                 <template v-if="canAssignAdmin">
                     <div class="flex items-center gap-2">
-                        <Checkbox id="is_admin" name="is_admin" value="1" />
+                        <Checkbox
+                            id="is_admin"
+                            name="is_admin"
+                            value="1"
+                            :aria-invalid="Boolean(errors.is_admin)"
+                        />
                         <Label for="is_admin">{{ t('Administrator') }}</Label>
                     </div>
                     <InputError :message="errors.is_admin" />
