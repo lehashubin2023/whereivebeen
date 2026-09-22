@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Statistic\BuildUserJourney;
+use App\Actions\Journey\BuildUserJourney;
 use App\Actions\Statistic\BuildUserStatistics;
 use App\Models\User;
 use Illuminate\Http\Request;
