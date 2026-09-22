@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\GameSession\BuildUserJourney;
-use App\Actions\GameSession\BuildUserStatistics;
+use App\Actions\Statistic\BuildUserJourney;
+use App\Actions\Statistic\BuildUserStatistics;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

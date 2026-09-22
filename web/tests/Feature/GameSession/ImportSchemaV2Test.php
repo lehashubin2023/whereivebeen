@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\GameSession;
 
-use App\Actions\GameSession\DecodeRawInput;
-use App\Actions\GameSession\ImportGameSession;
+use App\Actions\GameSession\Import\DecodeRawInput;
+use App\Actions\GameSession\Import\ImportGameSession;
 use App\Enums\GameSession\EventTypeEnum;
 use App\Exceptions\GameSession\InvalidGameSessionInputException;
 use App\Models\Event;

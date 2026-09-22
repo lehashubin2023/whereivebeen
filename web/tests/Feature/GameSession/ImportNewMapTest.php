@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\GameSession;
 
-use App\Actions\GameSession\ImportGameSession;
+use App\Actions\GameSession\Import\ImportGameSession;
 use App\Enums\GameSession\ImportStatusEnum;
 use App\Jobs\ImportGameSessionJob;
 use App\Models\Map;

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\GameSession;
 
-use App\Actions\GameSession\BuildUserStatistics;
+use App\Actions\Statistic\BuildUserStatistics;
 use App\Enums\GameSession\EventTypeEnum;
 use App\Models\Event;
 use App\Models\GameSession;

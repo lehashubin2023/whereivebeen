@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Actions\GameSession;
+namespace App\Actions\Statistic;
 
+use App\Actions\GameSession\MeasureSessionTime;
 use App\DTOs\GameSession\StatisticGroupDTO;
 use App\DTOs\GameSession\StatisticTableDTO;
 use App\Enums\GameSession\EventTypeEnum;

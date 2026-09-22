@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\GameSession;
 
-use App\Actions\GameSession\DecodeRawInput;
+use App\Actions\GameSession\Import\DecodeRawInput;
 use App\Exceptions\GameSession\InvalidGameSessionInputException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

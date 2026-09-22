@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Actions\GameSession\ImportGameSession;
+use App\Actions\GameSession\Import\ImportGameSession;
 use App\Actions\GameSession\MapImportFailure;
 use App\Models\User;
 use App\Support\GameSession\ImportProgress\ImportGameSessionProgress;

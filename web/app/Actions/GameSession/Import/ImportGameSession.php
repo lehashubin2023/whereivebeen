@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Actions\GameSession;
+namespace App\Actions\GameSession\Import;
 
+use App\Actions\GameSession\CreateGameSession;
+use App\Actions\GameSession\CreateWay;
 use App\Actions\Map\RegisterMissingMaps;
 use App\DTOs\GameSession\CreateGameSessionDTO;
 use App\Enums\GameSession\ImportOutcomeEnum;

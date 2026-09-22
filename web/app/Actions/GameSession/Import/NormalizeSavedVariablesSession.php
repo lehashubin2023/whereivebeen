@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\GameSession;
+namespace App\Actions\GameSession\Import;
 
 use App\DTOs\GameSession\SavedVariablesSessionDTO;
 use App\Enums\GameSession\SavedVariablesSkipReasonEnum;

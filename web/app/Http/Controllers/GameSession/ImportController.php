@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\GameSession;
 
-use App\Actions\GameSession\BuildImportBatchList;
+use App\Actions\GameSession\Import\BuildImportBatchList;
 use App\Enums\GameSession\ImportBatchStatusEnum;
 use App\Enums\GameSession\ImportTabEnum;
 use App\Http\Controllers\Controller;

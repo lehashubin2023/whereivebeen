@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Actions\GameSession;
+namespace App\Actions\Statistic;
 
+use App\Actions\GameSession\MeasureSessionTime;
 use App\Enums\GameSession\EventTypeEnum;
 use App\Models\Event;
 use App\Models\GameSession;

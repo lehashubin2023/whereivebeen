@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\GameSession;
+namespace App\Actions\GameSession\Import;
 
 use App\Enums\GameSession\ImportBatchStateEnum;
 use App\Enums\GameSession\ImportStatusEnum;
