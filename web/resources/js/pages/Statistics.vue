@@ -12,6 +12,7 @@ const props = defineProps<{
     overview: StatisticOverview[];
     groups: StatisticGroup[];
     journey: Journey;
+    stale: boolean;
 }>();
 
 defineOptions({
@@ -35,6 +36,17 @@ const selectedGroup = computed(
 
     <div class="flex flex-1 flex-col gap-4 p-4 md:p-6">
         <h1 class="sr-only">{{ t('Journey') }}</h1>
+
+        <p
+            v-if="props.stale"
+            class="wow-panel px-4 py-2 text-sm text-muted-foreground"
+        >
+            {{
+                t(
+                    'Your latest import is still being counted — these numbers will catch up shortly.',
+                )
+            }}
+        </p>
 
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             <div

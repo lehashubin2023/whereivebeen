@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DTOs\GameSession;
+namespace App\DTOs\Statistic;
 
 use App\DTOs\DTOContract;
 use Illuminate\Http\Request;

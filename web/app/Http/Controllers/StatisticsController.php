@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Journey\BuildUserJourney;
-use App\Actions\Statistic\BuildUserStatistics;
+use App\Actions\Statistic\ReadUserStatistics;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,10 +13,7 @@ use Spatie\RouteAttributes\Attributes\Middleware;
 #[Middleware(['auth', 'verified', 'deny-admins'])]
 class StatisticsController extends Controller
 {
-    public function __construct(
-        private readonly BuildUserStatistics $buildUserStatistics,
-        private readonly BuildUserJourney $buildUserJourney,
-    ) {}
+    public function __construct(private readonly ReadUserStatistics $readUserStatistics) {}
 
     #[Get('statistics', name: 'statistics')]
     public function index(Request $request): Response
@@ -25,9 +21,6 @@ class StatisticsController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        return Inertia::render('Statistics', [
-            ...$this->buildUserStatistics->exec($user),
-            'journey' => $this->buildUserJourney->exec($user),
-        ]);
+        return Inertia::render('Statistics', $this->readUserStatistics->exec($user));
     }
 }
