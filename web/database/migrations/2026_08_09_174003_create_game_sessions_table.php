@@ -40,6 +40,8 @@ return new class extends Migration
                 ->nullable();
             $table->string('realm', 64);
             $table->string('character', 24);
+            $table->unsignedInteger('duration_seconds')->default(0);
+            $table->unsignedInteger('points_count')->default(0);
             $table->timestamps();
 
             $table->unique(['user_id', 'game_session_id']);
