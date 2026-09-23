@@ -8,6 +8,7 @@ use App\Models\SessionEventCount;
 use App\Models\SessionMapStat;
 use App\Models\SessionStatisticEntry;
 use App\Models\User;
+use App\Models\UserStatistic;
 use Database\Seeders\EventTypeSeeder;
 use Database\Seeders\MapSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -58,5 +59,18 @@ class StatisticsFlowTest extends TestCase
 
         $this->assertDatabaseCount('game_sessions', 1);
         $this->assertSame($before, SessionStatisticEntry::query()->count());
+    }
+
+    public function test_an_import_rebuilds_the_user_snapshot(): void
+    {
+        $user = User::factory()->create();
+        $this->import($user, 'valid1.txt');
+
+        $statistics = UserStatistic::query()->findOrFail($user->id);
+
+        $this->assertFalse($statistics->is_stale);
+        $this->assertSame(1, $statistics->sessions_count);
+        $this->assertGreaterThan(0, $statistics->events_count);
+        $this->assertNotSame([], $statistics->groups);
     }
 }

@@ -8,6 +8,7 @@ use App\Models\GameSession;
 use App\Models\SessionEventCount;
 use App\Models\SessionMapStat;
 use App\Models\SessionStatisticEntry;
+use App\Models\UserStatistic;
 use Illuminate\Support\Facades\DB;
 
 class StoreSessionStatistics
@@ -32,6 +33,8 @@ class StoreSessionStatistics
                 'duration_seconds' => $statistics->durationSeconds,
                 'points_count' => $statistics->pointsCount,
             ]);
+
+            UserStatistic::query()->updateOrCreate(['user_id' => $userId], ['is_stale' => true]);
         });
     }
 

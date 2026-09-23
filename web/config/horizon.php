@@ -59,6 +59,20 @@ return [
             'nice' => 0,
         ],
 
+        'stats-supervisor' => [
+            'connection' => 'redis',
+            'queue' => ['statistics'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'maxProcesses' => 2,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 1,
+            'timeout' => 600,
+            'nice' => 0,
+        ],
+
         /**
          * Разбор файла SavedVariables держится в своей очереди, иначе одна
          * большая загрузка перекрывала бы вставку отдельных сессий.
@@ -89,6 +103,10 @@ return [
             'import-file-supervisor' => [
                 'maxProcesses' => 3,
             ],
+
+            'stats-supervisor' => [
+                'maxProcesses' => 3,
+            ],
         ],
 
         'local' => [
@@ -97,6 +115,10 @@ return [
             ],
 
             'import-file-supervisor' => [
+                'maxProcesses' => 1,
+            ],
+
+            'stats-supervisor' => [
                 'maxProcesses' => 1,
             ],
         ],

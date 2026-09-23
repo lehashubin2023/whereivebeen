@@ -17,6 +17,8 @@ class ImportGameSessionJob implements ShouldQueue
 {
     use Queueable;
 
+    private const REBUILD_DELAY = 5;
+
     public function __construct(
         public string|ImportSourceContract $rawGameSessionInput,
         public User $user,
@@ -31,6 +33,8 @@ class ImportGameSessionJob implements ShouldQueue
         try {
             $gameSessionId = $importer->exec($source->read(), $this->user, $progress);
             $progress->complete($gameSessionId);
+
+            RebuildUserStatisticsJob::dispatch($this->user)->delay(now()->addSeconds(self::REBUILD_DELAY));
         } catch (\Throwable $e) {
             $progress->fail($e, $failures->exec($e));
         } finally {
