@@ -77,6 +77,16 @@ class CollectSessionStatisticsTest extends TestCase
         ], $statistics->maps);
     }
 
+    public function test_a_gap_of_unknown_length_is_not_counted_as_play_time(): void
+    {
+        $statistics = app(CollectSessionStatistics::class)->exec(new ImportedPointSource([
+            ['x' => 0.5, 'y' => 0.5, 't' => 0, 'mapId' => self::NAGRAND],
+            ['x' => 0.5, 'y' => 0.5, 't' => 3600, 'mapId' => self::NAGRAND, 'event' => 'gap', 'reason' => 'loading'],
+        ]));
+
+        $this->assertSame(0, $statistics->durationSeconds);
+    }
+
     public function test_it_keeps_entry_keys_locale_neutral(): void
     {
         $entries = array_map(

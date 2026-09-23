@@ -8,8 +8,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class BuildSessionList
 {
-    public function __construct(private readonly MeasureSessionTime $measureTime) {}
-
     /**
      * @return LengthAwarePaginator<int, array<string, mixed>>
      */
@@ -19,14 +17,9 @@ class BuildSessionList
             ->where('user_id', $user->id)
             ->when($character !== null, fn ($query) => $query->where('character', $character))
             ->when($realm !== null, fn ($query) => $query->where('realm', $realm))
-            ->withCount('wayPoints')
             ->latest('session_start_at')
             ->paginate((int) config('pagination.per_page'))
             ->withQueryString();
-
-        $ids = collect($sessions->items())->pluck('id')->all();
-
-        $durations = $this->measureTime->exec($ids);
 
         /** @var LengthAwarePaginator<int, array<string, mixed>> $rows */
         $rows = $sessions->through(fn (GameSession $session) => [
@@ -35,9 +28,9 @@ class BuildSessionList
             'character' => $session->character,
             'realm' => $session->realm,
             'class' => $session->class,
-            'points_count' => $session->way_points_count,
+            'points_count' => $session->points_count,
             'session_start_at' => $session->session_start_at->toIso8601String(),
-            'duration' => $durations[$session->id] ?? 0,
+            'duration' => $session->duration_seconds,
         ]);
 
         return $rows;

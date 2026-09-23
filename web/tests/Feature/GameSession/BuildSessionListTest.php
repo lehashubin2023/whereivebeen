@@ -3,8 +3,7 @@
 namespace Tests\Feature\GameSession;
 
 use App\Actions\GameSession\BuildSessionList;
-use App\Enums\GameSession\EventTypeEnum;
-use App\Models\Event;
+use App\Actions\Statistic\CollectStoredSessionStatistics;
 use App\Models\GameSession;
 use App\Models\Map;
 use App\Models\User;
@@ -42,49 +41,12 @@ class BuildSessionListTest extends TestCase
         $this->addPoint($session, 2, self::HELLFIRE, 600);
         $this->addPoint($session, 3, self::ZANGARMARSH, 1200);
 
+        app(CollectStoredSessionStatistics::class)->exec($session);
+
         $row = $this->firstRow($user);
 
         $this->assertSame(120, $row['duration']);
         $this->assertSame(3, $row['points_count']);
-    }
-
-    public function test_time_spent_logged_out_is_not_counted_as_play_time(): void
-    {
-        $user = User::factory()->create();
-        $session = GameSession::factory()->forUser($user)->create();
-
-        $this->addPoint($session, 1, self::HELLFIRE, 0);
-        $this->addPoint($session, 2, self::HELLFIRE, 36000);
-
-        $this->addEvent($session, 2, EventTypeEnum::GAP, ['reason' => 'login', 'seconds' => 3000]);
-
-        $this->assertSame(600, $this->firstRow($user)['duration']);
-    }
-
-    public function test_an_absence_the_addon_never_marked_is_not_counted_as_play_time(): void
-    {
-        $user = User::factory()->create();
-        $session = GameSession::factory()->forUser($user)->create();
-
-        $this->addPoint($session, 1, self::HELLFIRE, 0);
-        $this->addPoint($session, 2, self::HELLFIRE, 1200);
-        $this->addPoint($session, 3, self::HELLFIRE, 451200);
-        $this->addPoint($session, 4, self::HELLFIRE, 452400);
-
-        $this->assertSame(840, $this->firstRow($user)['duration']);
-    }
-
-    public function test_a_gap_without_a_length_is_not_counted_as_play_time(): void
-    {
-        $user = User::factory()->create();
-        $session = GameSession::factory()->forUser($user)->create();
-
-        $this->addPoint($session, 1, self::HELLFIRE, 0);
-        $this->addPoint($session, 2, self::HELLFIRE, 36000);
-
-        $this->addEvent($session, 2, EventTypeEnum::GAP, ['reason' => 'loading']);
-
-        $this->assertSame(0, $this->firstRow($user)['duration']);
     }
 
     public function test_the_list_can_be_filtered_by_character(): void
@@ -146,19 +108,6 @@ class BuildSessionListTest extends TestCase
             'time' => $time,
             'x' => 0.5,
             'y' => 0.5,
-        ]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $payload
-     */
-    private function addEvent(GameSession $session, int $sequence, EventTypeEnum $type, array $payload): void
-    {
-        Event::query()->insert([
-            'game_session_id' => $session->id,
-            'sequence' => $sequence,
-            'event_type_id' => $type->value,
-            'payload' => json_encode($payload),
         ]);
     }
 }
