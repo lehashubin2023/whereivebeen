@@ -21,14 +21,19 @@
    См. [addon/Core.lua](addon/Core.lua), [addon/Session.lua](addon/Session.lua), [addon/Methods.lua](addon/Methods.lua).
 2. Экспорт сессии: компактный JSON через [addon/Export.lua](addon/Export.lua) (`WIVBN.ExportSession`) —
    строка отдаётся как есть, без обёртки (копипаст из `EditBox`).
-3. Пользователь POST'ит строку на `game-session/import` → [GameSessionController](web/app/Http/Controllers/GameSessionController.php)
+3. Пользователь POST'ит строку на `game-session/import` → [GameSessionController](web/app/Http/Controllers/GameSession/GameSessionController.php)
    диспатчит [ImportGameSessionJob](web/app/Jobs/ImportGameSessionJob.php) в очередь `import`.
-4. Джоба вызывает [ImportGameSession](web/app/Actions/GameSession/ImportGameSession.php):
+4. Джоба вызывает [ImportGameSession](web/app/Actions/GameSession/Import/ImportGameSession.php):
    `DecodeRawInput` (`trim` + `json_decode`, глубина 4) → `GameSessionJsonValidator` →
    `RegisterMissingMaps` (карты, которых нет в справочнике, заводятся как `Zone {id}` с флагом
    `auto_added`, их id уходят в `warnings.new_maps`) → в транзакции
-   `CreateGameSession` + `CreateWay` (chunked-insert точек и событий).
-5. Каждый импорт логируется в `import_logs` ([ImportStatusEnum](web/app/Enums/GameSession/ImportStatusEnum.php)).
+   `CreateGameSession` + `CreateWay` (chunked-insert точек и событий) +
+   `CollectSessionStatistics`/`StoreSessionStatistics` (факты статистики за один проход
+   по тому же массиву точек, без дополнительных запросов).
+5. После успешного импорта джоба ставит [RebuildUserStatisticsJob](web/app/Jobs/RebuildUserStatisticsJob.php)
+   (очередь `statistics`, `ShouldBeUniqueUntilProcessing`, задержка 5 с — пачка сессий из файла
+   схлопывается в один пересчёт), он пересобирает снапшот `user_statistics` из фактов.
+6. Каждый импорт логируется в `import_logs` ([ImportStatusEnum](web/app/Enums/GameSession/ImportStatusEnum.php)).
 
 ## Архитектура бэкенда (web/)
 
@@ -39,7 +44,8 @@
 - [app/Actions/GameSession/](web/app/Actions/GameSession/) — бизнес-операции. Actions чистые,
   не знают про HTTP; инъектятся через конструктор.
 - [app/DTOs/GameSession/](web/app/DTOs/GameSession/) — `fromArray`/`fromPoint` → `toArray`.
-- [app/Models/](web/app/Models/) — `GameSession`, `WayPoint`, `Event`, `EventType`, `Map`, `ImportLog`, `User`.
+- [app/Models/](web/app/Models/) — `GameSession`, `WayPoint`, `Event`, `EventType`, `Map`, `ImportLog`, `User`,
+  `SessionStatisticEntry`, `SessionEventCount`, `SessionMapStat`, `UserStatistic`.
 - [app/Validators/](web/app/Validators/), [app/Exceptions/GameSession/](web/app/Exceptions/GameSession/) — валидация недоверенного lua-ввода.
 - **Роутинг**: контроллеры используют атрибуты `spatie/laravel-route-attributes`
   (`#[Get]`, `#[Post]`, `#[Group]`, `#[Middleware]`); простые страницы — в [routes/web.php](web/routes/web.php)
@@ -62,6 +68,25 @@
 чтение маршрута = range-scan. `state` (бой/маунт) протаскивается на точку для раскраски
 без join. `events` без координат (берутся по `seq`), payload — JSON. Уникальность
 импорта: `UNIQUE(user_id, game_session_id)`. Миграции: [database/migrations/](web/database/migrations/).
+
+### Статистика (два слоя, без счёта на запрос)
+
+Страница `/statistics` ничего не агрегирует в рантайме — читает одну строку снапшота.
+
+- **Уровень 1, факты по сессии** — считаются один раз на импорте одним проходом по массиву
+  точек: скаляры `game_sessions.duration_seconds`/`points_count`, плюс
+  `session_statistic_entries` (`bucket`/`counter` — tinyint-энумы из [app/Enums/Statistic/](web/app/Enums/Statistic/),
+  `entry_key` — сырой ключ, `meta` — json), `session_event_counts`, `session_map_stats`
+  (секунды/точки/смерти по карте). Переимпорт сессии переписывает только её факты.
+- **Уровень 2, проекция на пользователя** — `user_statistics`: overview-скаляры + `groups` и
+  `journey` в json. Хранится **локаль-нейтрально**: слаги вместо переводов, `map_id` вместо
+  имён карт, секунды вместо `1h 20m`. Переводы, имена и форматирование навешивает
+  [ReadUserStatistics](web/app/Actions/Statistic/ReadUserStatistics.php) на чтении.
+- Сборщики по типам событий — [app/Support/Statistic/Collector/](web/app/Support/Statistic/Collector/),
+  источники точек (импорт / БД) — [app/Support/Statistic/PointSource/](web/app/Support/Statistic/PointSource/),
+  декларативное описание таблиц — [TableCatalog](web/app/Support/Statistic/TableCatalog.php).
+- Бэкфил и аварийный пересчёт: `php artisan statistics:rebuild [--user=ID]`
+  (пересобирает факты из `way_points`/`events` и затем снапшоты).
 
 ## Фронтенд (web/resources/js)
 
@@ -103,7 +128,8 @@ npm run types:check # vue-tsc --noEmit
 
 ## Тесты и качество
 
-- **Pest 5** ([tests/Feature/GameSession/](web/tests/Feature/GameSession/) покрывают импорт/валидацию/парсинг).
+- **Pest 5** ([tests/Feature/GameSession/](web/tests/Feature/GameSession/) покрывают импорт/валидацию/парсинг,
+  [tests/Feature/Statistic/](web/tests/Feature/Statistic/) — сбор фактов, пересчёт снапшота и его рендер).
   Фикстуры сессий: [tests/Fixtures/game-sessions/](web/tests/Fixtures/game-sessions/).
 - Тесты гоняются против контейнера `mysql-test` (tmpfs, эфемерный) — см. [phpunit.xml](web/phpunit.xml).
 - **Pint** (preset laravel), **Larastan/PHPStan level 7** ([phpstan.neon](web/phpstan.neon)),
