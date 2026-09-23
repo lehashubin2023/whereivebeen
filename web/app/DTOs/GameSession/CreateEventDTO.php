@@ -3,6 +3,7 @@
 namespace App\DTOs\GameSession;
 
 use App\DTOs\DTOContract;
+use App\Support\GameSession\EventPayload;
 use Illuminate\Http\Request;
 
 class CreateEventDTO implements DTOContract
@@ -16,43 +17,11 @@ class CreateEventDTO implements DTOContract
 
     public static function fromPoint(array $point, int $gameSessionId, int $sequence, int $eventTypeId): self
     {
-        $map = [
-            'level' => 'level',
-            'action' => 'action',
-            'title' => 'title',
-            'in_combat' => 'inCombat',
-            'mounted' => 'mounted',
-            'on_taxi' => 'onTaxi',
-            'quest_id' => 'questId',
-            'items' => 'items',
-            'joined' => 'joined',
-            'left' => 'left',
-            'places' => 'places',
-            'node' => 'node',
-            'killer' => 'killer',
-            'npc_id' => 'npcId',
-            'npc_name' => 'npcName',
-            'zone' => 'zone',
-            'sub_zone' => 'subZone',
-            'environment' => 'environment',
-            'reason' => 'reason',
-            'spell_id' => 'spellId',
-            'spell_name' => 'spellName',
-            'seconds' => 'seconds',
-        ];
-
-        $payload = [];
-        foreach ($map as $payloadKey => $pointKey) {
-            if (isset($point[$pointKey])) {
-                $payload[$payloadKey] = $point[$pointKey];
-            }
-        }
-
         return new self(
             game_session_id: $gameSessionId,
             sequence: $sequence,
             event_type_id: $eventTypeId,
-            payload: json_encode($payload)
+            payload: json_encode(EventPayload::fromPoint($point))
         );
     }
 
