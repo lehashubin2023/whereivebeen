@@ -15,7 +15,7 @@ class ResolveAddonDownload
      */
     public function exec(): array
     {
-        $archive = $this->addon->latestArchive();
+        $archive = $this->addon->latest();
 
         if ($archive === null) {
             return [
@@ -27,15 +27,9 @@ class ResolveAddonDownload
             ];
         }
 
-        $file = basename($archive);
-        $size = filesize($archive);
-
         return [
             'available' => true,
-            'version' => $this->addon->versionFromName($file),
-            'file' => $file,
-            'url' => '/'.$this->addon->directory().'/'.$file,
-            'size' => $size === false ? null : $size,
+            ...$archive->toArray(),
         ];
     }
 }

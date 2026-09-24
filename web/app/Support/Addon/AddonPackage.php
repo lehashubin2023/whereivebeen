@@ -2,6 +2,7 @@
 
 namespace App\Support\Addon;
 
+use App\DTOs\Addon\AddonArchiveData;
 use App\Exceptions\Addon\AddonSourceNotFoundException;
 use App\Exceptions\Addon\InvalidAddonTocException;
 use FilesystemIterator;
@@ -48,6 +49,11 @@ class AddonPackage
         return public_path($this->directory().'/'.$this->name().'-*.zip');
     }
 
+    public function archiveUrl(string $file): string
+    {
+        return '/'.$this->directory().'/'.$file;
+    }
+
     public function versionFromName(string $file): ?string
     {
         $pattern = '/^'.preg_quote($this->name(), '/').'-(.+)\.zip$/';
@@ -69,6 +75,25 @@ class AddonPackage
         ));
 
         return end($archives);
+    }
+
+    public function latest(): ?AddonArchiveData
+    {
+        $archive = $this->latestArchive();
+
+        if ($archive === null) {
+            return null;
+        }
+
+        $file = basename($archive);
+        $size = filesize($archive);
+
+        return new AddonArchiveData(
+            version: $this->versionFromName($file),
+            file: $file,
+            url: $this->archiveUrl($file),
+            size: $size === false ? null : $size,
+        );
     }
 
     /**
