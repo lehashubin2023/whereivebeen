@@ -57,7 +57,6 @@ class ImportController extends Controller
                 'execution_time' => (float) $log->execution_time,
                 'error_code' => $log->error_code,
                 'error_context' => $log->error_context,
-                'error_message' => $log->error_message,
                 'warnings' => $log->warnings,
                 'import_batch_id' => $log->import_batch_id,
                 'game_session_id' => $log->game_session_id,

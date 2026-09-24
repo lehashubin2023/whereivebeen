@@ -75,7 +75,6 @@ export interface ImportRow {
     execution_time: number;
     error_code: string | null;
     error_context: Record<string, unknown> | null;
-    error_message: string | null;
     warnings: ImportWarnings | null;
     import_batch_id: number | null;
     game_session_id: number | null;

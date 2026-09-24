@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link, router } from '@inertiajs/vue3';
-import { ChevronDown, FileUp, Inbox } from '@lucide/vue';
+import { FileUp, Inbox } from '@lucide/vue';
 import { useIntervalFn } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 import ImportController from '@/actions/App/Http/Controllers/GameSession/ImportController';
@@ -37,7 +37,6 @@ defineOptions({
     },
 });
 
-const expanded = ref<number | null>(null);
 const sessionInput = ref('');
 const dropZone = ref<InstanceType<typeof FileDropZone> | null>(null);
 
@@ -94,10 +93,6 @@ function unknownMaps(row: ImportRow): number {
 
 function newMaps(row: ImportRow): number {
     return (row.warnings?.new_maps ?? []).length;
-}
-
-function toggle(id: number): void {
-    expanded.value = expanded.value === id ? null : id;
 }
 
 const POLL_MS = 3000;
@@ -269,27 +264,6 @@ watch(working, (isWorking) => (isWorking ? resume() : pause()), {
                                         }}
                                     </p>
 
-                                    <button
-                                        v-if="row.error_message"
-                                        type="button"
-                                        class="mt-1 inline-flex items-center gap-1 text-muted-foreground underline-offset-4 hover:underline"
-                                        @click="toggle(row.id)"
-                                    >
-                                        <ChevronDown
-                                            class="size-3 transition-transform"
-                                            :class="
-                                                expanded === row.id
-                                                    ? 'rotate-180'
-                                                    : ''
-                                            "
-                                        />
-                                        {{ t('Technical details') }}
-                                    </button>
-
-                                    <pre
-                                        v-if="expanded === row.id"
-                                        class="mt-1 overflow-x-auto rounded border border-border/60 bg-muted/40 p-2 font-mono text-[11px] whitespace-pre-wrap text-muted-foreground"
-                                        >{{ row.error_message }}</pre>
                                 </div>
 
                                 <p
