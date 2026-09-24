@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Actions\GameSession\Import\MapImportFailure;
 use App\Actions\GameSession\Import\ParseSavedVariablesFile;
-use App\Actions\GameSession\MapImportFailure;
 use App\Enums\GameSession\ImportBatchStatusEnum;
 use App\Models\ImportBatch;
 use App\Models\User;

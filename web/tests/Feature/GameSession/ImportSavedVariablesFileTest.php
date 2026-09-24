@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\GameSession;
 
+use App\Actions\GameSession\Import\MapImportFailure;
 use App\Actions\GameSession\Import\ParseSavedVariablesFile;
-use App\Actions\GameSession\MapImportFailure;
 use App\Enums\GameSession\ImportBatchStatusEnum;
 use App\Enums\GameSession\ImportStatusEnum;
 use App\Jobs\ImportGameSessionJob;
