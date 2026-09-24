@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\DB;
 
 class ImportGameSession
 {
+    private const TRANSACTION_ATTEMPTS = 3;
+
     public function __construct(
         private CreateGameSession $createGameSession,
         private DecodeRawInput $decoder,
@@ -49,7 +51,9 @@ class ImportGameSession
                 $user
             );
 
-            $progress->outcome($gameSession->wasRecentlyCreated
+            $isNew = $gameSession->wasRecentlyCreated;
+
+            $progress->outcome($isNew
                 ? ImportOutcomeEnum::CREATED
                 : ImportOutcomeEnum::REPLACED);
 
@@ -57,11 +61,14 @@ class ImportGameSession
 
             $this->storeStatistics->exec(
                 $gameSession,
-                $this->collectStatistics->exec(new ImportedPointSource($points))
+                $this->collectStatistics->exec(new ImportedPointSource($points)),
+                $isNew === false
             );
 
             return $gameSession->id;
-        });
+        }, self::TRANSACTION_ATTEMPTS);
+
+        $this->storeStatistics->markStale((int) $user->id);
 
         if ($newMapIds !== []) {
             $progress->warn(['new_maps' => $newMapIds]);

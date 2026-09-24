@@ -15,5 +15,7 @@ class CollectStoredSessionStatistics
     public function exec(GameSession $gameSession): void
     {
         $this->store->exec($gameSession, $this->collect->exec(new StoredPointSource($gameSession->id)));
+
+        $this->store->markStale((int) $gameSession->getAttribute('user_id'));
     }
 }

@@ -15,10 +15,15 @@ class StoreSessionStatistics
 {
     private const CHUNK_SIZE = 1000;
 
-    public function exec(GameSession $gameSession, SessionStatisticsDTO $statistics): void
-    {
-        DB::transaction(function () use ($gameSession, $statistics) {
-            $this->purge($gameSession);
+    public function exec(
+        GameSession $gameSession,
+        SessionStatisticsDTO $statistics,
+        bool $purgeExisting = true
+    ): void {
+        DB::transaction(function () use ($gameSession, $statistics, $purgeExisting) {
+            if ($purgeExisting) {
+                $this->purge($gameSession);
+            }
 
             $userId = (int) $gameSession->getAttribute('user_id');
 
@@ -33,9 +38,12 @@ class StoreSessionStatistics
                 'duration_seconds' => $statistics->durationSeconds,
                 'points_count' => $statistics->pointsCount,
             ]);
-
-            UserStatistic::query()->updateOrCreate(['user_id' => $userId], ['is_stale' => true]);
         });
+    }
+
+    public function markStale(int $userId): void
+    {
+        UserStatistic::query()->updateOrCreate(['user_id' => $userId], ['is_stale' => true]);
     }
 
     public function purge(GameSession $gameSession): void

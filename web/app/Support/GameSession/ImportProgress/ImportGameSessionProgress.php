@@ -71,6 +71,11 @@ class ImportGameSessionProgress implements ImportGameSessionProgressContract
         $this->log->update(['warnings' => $warnings]);
     }
 
+    public function discard(): void
+    {
+        $this->log->delete();
+    }
+
     public function id(): int
     {
         return $this->log->id;

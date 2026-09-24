@@ -3,6 +3,7 @@
 namespace Tests\Feature\Statistic;
 
 use App\Jobs\ImportGameSessionJob;
+use App\Jobs\RebuildUserStatisticsJob;
 use App\Models\GameSession;
 use App\Models\SessionEventCount;
 use App\Models\SessionMapStat;
@@ -12,6 +13,7 @@ use App\Models\UserStatistic;
 use Database\Seeders\EventTypeSeeder;
 use Database\Seeders\MapSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class StatisticsFlowTest extends TestCase
@@ -59,6 +61,18 @@ class StatisticsFlowTest extends TestCase
 
         $this->assertDatabaseCount('game_sessions', 1);
         $this->assertSame($before, SessionStatisticEntry::query()->count());
+    }
+
+    public function test_an_import_marks_the_snapshot_stale_for_the_rebuild(): void
+    {
+        Queue::fake([RebuildUserStatisticsJob::class]);
+
+        $user = User::factory()->create();
+        $this->import($user, 'valid1.txt');
+
+        Queue::assertPushed(RebuildUserStatisticsJob::class);
+
+        $this->assertTrue(UserStatistic::query()->findOrFail($user->id)->is_stale);
     }
 
     public function test_an_import_rebuilds_the_user_snapshot(): void
