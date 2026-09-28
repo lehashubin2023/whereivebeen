@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(cd \"//wsl.localhost/Ubuntu/home/aleksey/home/whereivebeen/web\" && grep -rn \"redirectUsing\\\\|RedirectIfAuthenticated\" vendor/laravel/fortify/src/FortifyServiceProvider.php vendor/laravel/fortify/src/*.php 2>/dev/null | head -10; echo \"--- app alias check ---\"; grep -rn \"'guest'\" vendor/laravel/framework/src/Illuminate/Foundation/Configuration/Middleware.php | head)",
-      "Read(///wsl.localhost/Ubuntu/home/aleksey/home/whereivebeen/**)",
-      "WebSearch"
-    ]
-  }
-}
